@@ -1,0 +1,324 @@
+---
+title: 'Report 8'
+description: 'Discussion and idea for research.'
+date: 2025-12-10
+tags: ['Research', 'L-star algorithm','Syntactic Monoid',]
+authors: ['enscribe']
+order: 2
+---
+
+## 1 	Straightforward algorithm
+
+### Terminology and OT
+
+#### **i)** Syntactic Monoid: 
+
+For a language $L \subseteq \Sigma^*$, $w \in L$ and $w^{\prime} \in L$ is *syntactic congruence* when:
+
+$$
+\forall u,v \in \Sigma^* \space uwv \in L \Leftrightarrow uw^{\prime}v \in L
+$$
+
+We can use $u ∼_L v$ to describe this relation. 
+
+Then we can use $∼_L$ divide $\Sigma^*$ into many classes, for example $[u]$ means every string which is syntactic congruence with $u$. In other words:
+
+$$
+u ∼_L v \Leftrightarrow v\in [u]
+$$
+
+Define $\cdot$ as the symbol of *binary operation* on these equivalence classes, then:
+
+$$
+[u]\cdot[v] = [uv]
+$$
+
+Then by this equivalence relation, the monoid $M(L)$ is the *Syntactic Monoid* of the language $L$ and we can say $M(L)$ recognize the language $L$. Also, $M(L)$ is the smallest transition monoid which recognize the language $L$ and it is the transition monoid of the *minimal DFA* which recognize the language $L$.
+
+#### **ii)** unknown regular set: $U$
+
+#### **iii)** Fixed alphabet: $\Sigma$
+
+#### **iv)** Observation table( $OT$ ) :
+
+Observation table( $OT$ ) is a 4-tuple $OT = (I,P,S,T)$ : 
+
+① $I \subseteq \Sigma^*$ : prefix-closed infix set;
+
+② $P\subseteq \Sigma^*$ : prefix-closed prefix set;
+
+③ $S\subseteq \Sigma^*$ : suffix-closed suffix set;
+
+④ $T$ is a function 
+
+$$
+T := (P\cdot( \Sigma \cdot I  \cup  I \cup I \cdot \Sigma) \cdot S ) \rightarrow \{0,1\}\\\\
+$$
+
+$T(u) = 1$  $\text{iff} $  $u$ is a member of $U$.
+
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$​. This table can seen as a three-dimension array. 
+
+The result is:
+
+-  Elements of $I$ are the candidates for states of the syntactic monoid of $U$;
+
+-  Elements of $P$ and  $ S$  correspond to distinguishing experiments for these states.
+
+-  Elements of $I \cdot \Sigma$​ are used to construct the transition function. 
+
+-  Elements of $I \cdot \Sigma$  and $\Sigma \cdot I$ are used to fulfill our proof. 
+
+If 
+$$
+\forall p\in P,\forall s\in S, T(p\cdot i \cdot s) = T(p \cdot i^{\prime} \cdot s)
+$$
+Then we see $i$ and $i^{\prime}$ is in the same status.
+
+So here is a new definition:
+
+⑤ $status$ is a function:
+$$
+status := (P \times S) \rightarrow \{0,1\}
+$$
+And 
+$$
+status_i(p,s) = T(p\cdot i \cdot s)
+$$
+
+
+This says: "The state for $i$, when given the pair $(p, s)$, is defined as the result of the membership query on the string $p·i·s$​."
+
+Then if 
+$$
+\forall p\in P,\forall s\in S, status_i(p,s) = status_{i^{\prime}}(p,s)
+$$
+Then we call $i$ and $i^{\prime}$ is $status - equivalent$ which denoted $i \equiv_{status} i^{\prime}$. And we use $[i]_{status}$ to represent that at the condition of this $status$ function word $i$ forms a equivalence class. Then obviously $[i]_{status} = [i^{\prime}]_{status}$
+
+#### **v)** Acceptor:
+
+If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 5-tuples $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ where
+
+• $Q = \{status_i| i \in I\}$
+
+• $q_0 = T(\epsilon) \in Q$
+
+• $F = \{status_i \in Q|status(\epsilon,\epsilon) = 1\}$
+
+• $\delta:Q \times \Sigma \rightarrow Q$ is the transition function defined as $\delta(status_i,a) = status_{i \cdot a}$. This is well-defined if the table is closed.
+
+The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
+
+$$
+\delta^{*}(q,w) = 
+\begin{cases}
+q & \text{if} & w = \epsilon \\\\
+\delta(\delta^{*}(q,w^{\prime}),a) & \text{if} & w = w^{\prime}a \space, \space a \in \Sigma\\
+\end{cases}
+$$
+
+#### vi) Membership queries: 
+
+The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer whether or not $w \in L$.
+
+#### vii) Equivalence queries:
+
+When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{A}$ according to the acceptor, and the teacher answers whether or not $L$ is the language of $\mathcal{A}$. If the answer is yes, then the algorithm terminates. If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{A}$​.
+
+### Separability and Closedness
+
+Actually at each step of the algorithm, the learner maintains:
+
+- A set $I \subseteq \Sigma^{*}$ of access words, with $\epsilon \in I$
+- A set $P \subseteq \Sigma^*$ of prefix test words.
+- A set $S \subseteq \Sigma ^{*}$ of suffix test words.
+
+On the $(I,P,S)$ we can define:
+
+- **Separability**: no two distinct words in $I$ are $status-equivalent$. 
+- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some  $i^{\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$​
+
+If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$, according to the definition of acceptor and the propositions as follow.
+
+**Proposition 1.** *If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$.*
+
+According to the definition of Separability, we can assume each $i \in I$ is related to a $status_i$ which means $[i]_{status}$ is a equivalence class defined by $P$ and $S$.   
+
+According to the definition of syntactic monoid, $u ∼_L v \Leftrightarrow [u] = [v]$.
+
+Assume that now there is an acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ and the language of $\mathcal{M}$ is $L_{\mathcal{M}}$. Because  $(I,P,S)$ is separable, in other words : 
+$$
+\forall u,v \in I.  u \equiv_{status} v \leftrightarrow(\forall p\in P, s \in S. (p\cdot i_1 \cdot s \in L_{\mathcal{M}}) \space \wedge \space (p\cdot i_2 \cdot s \in L_{\mathcal{M}}))
+$$
+So actually using the information we get now, we can know $[u]_{status} = [v]_{status}$. Under the status function, the minimal number of syntactic monoid is at most $|I|$. 
+
+And in the contrary, if now $u \not\equiv_{status} v$, then $[u]_{status} \ne [v]_{status}$, in the future learning process $[u] \ne [v]$ in other words $u \not∼_L v$ is always correct. 
+
+So the proposition is correct.
+
+**Proposition 2.** *If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} ∈ I \cdot Σ^{*}  $such that  $(I ∪ {i^{\prime}}, P,S) $remains separable.*
+
+Obviously, according to the definition of closedness, there exists $i^{\prime} \in I \cdot \Sigma$  :
+$$
+\forall i \in I. i \not\equiv_{status} i^{\prime}
+$$
+We should add this $i^{\prime}$ into $I$​ so that we try to make it separable. 
+
+**Proposition 3.** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
+
+**Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = δ(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$. 
+
+Writing $χ_L$ for the characteristic function of the target language L:
+$$
+χ_L(w) = 
+    \begin{cases}
+    0 & \text{if}\space w \notin L \\\\
+    1 & \text{if} \space w \in L
+    \end{cases}
+$$
+We say that state $i_k$ is correct if $χ_L(i_kw_{k+1} . . . w_n) = χ_L(w)$. Note that correctness of $i_k$ can be checked with a membership query. 
+
+Now state $i_0 = ε$ is obviously correct.
+
+State $i_n$ is not correct since $w$ is a counterexample and hence $χ_L(i_n) \neq χ_L(w)$ by definition of the set of accepting states of $\mathcal{M}$. Thus, we can find $k$ such that $i_{k−1}$ is correct and $i_{k}$​ is not correct, that is,
+$$
+χ_L(i_{k−1}w_i. . . w_n) \neq χ_L(i_{k}w_{i+1} . . . w_n).
+$$
+Now let $I^{\prime} = I ∪ {i_{k−1}w_i}$ and $S^{\prime} = S ∪ {w_{i+1} . . . w_n}$. By definition of closedness, $i_k$ is the unique element of $I$ that is $Status-equivalent$ to $i_{k−1}w_i$ . And the new suffix $w_{i+1} . . . w_n$ distinguishes $i_k$ from $i_{k−1}w_i$ . We conclude that $i_{k−1}w_i \notin I$ and that the new $OT$ is separable.
+
+**Proposition 4.** *Assume that $(I,P,S)$ is closed and separable observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ is the syntactic monoid of the language $L$​.*
+
+**Proof:**
+
+Actually we want to prove this conclusion:
+
+$$
+δ(q_0,w)=δ(q_0,w') \Leftrightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)
+$$
+
+for the acceptor $M = (Q,\Sigma,\delta,q_0,F)$.
+
+From assumption we know some facts:
+
+**a.** The algorithm terminated. There is no counterexample to make the $OT$ extend.
+
+**b.** Because the observation table is consistent, then for $i_1,i_2 \in (I \cup I \cdot \Sigma)$
+
+If $i_1 \equiv_{status} i_2$, then $a\cdot i_1 \cdot b \equiv_{status} a\cdot i_2 \cdot b$, which $a,b \in \Sigma \cup \{\epsilon\}$.
+
+① $\forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L) \Rightarrow δ(q_0,w)=δ(q_0,w')$ is clear. 
+
+Because now $[w] = [w^{\prime}]$, then we can know $w \in L \Leftrightarrow w^{\prime} \in L$, which is equal to $δ(q_0,w)=δ(q_0,w')$
+
+② Prove $δ(q_0,w)=δ(q_0,w') \Rightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$
+
+This is clear:
+$$
+\exists i \in I, δ(q_0,w) = δ(q_0,w') = status_i
+$$
+
+according to separablility:
+
+$$
+\forall  a,b \in \Sigma \cup \{\epsilon\}. a\cdot w\cdot b \equiv_{status} a\cdot w'\cdot b
+$$
+
+When $|u| = |v| = 0$ and $|u| = |v| = 1$, $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is clear.
+
+When $|u| = k$ and $|v| = l$, assume $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is true. It means $δ(q_0,uwv)=δ(q_0,uw^{\prime}v)$. Then we can also know:
+
+$$
+\exists i^{\prime} \in I, δ(q_0,uwv) = δ(q_0,uw^{\prime}v) = status_{i^{\prime}} = status_{uwv} = status_{uw^{\prime}v}
+$$
+
+Then according to the consistency:
+
+$$
+\forall a,b \in \Sigma \cup \{\epsilon\}. status_{a\cdot uwv\cdot b} = status_{a\cdot uw^{\prime}v\cdot b}
+$$
+
+So for 
+$$
+|u| = k+1 \text{ and } |v| = l\\
+     |u| = k \text{ and } |v| = l+1\\
+     |u| = k+1 \text{ and } |v| = l+1\\
+$$
+
+all these three conditions, the conclusion is clear.
+
+Then we can actually know ② is correct and the whole conclusion is correct. 
+
+### Process of Algorithm
+
+#### i. Main
+
+
+Initialize I to $\{\epsilon\}$.
+
+Initialize $P$ and $S$ to $\{\epsilon\} \cup \Sigma$.
+
+**Repeat:**
+
+While $OT$ is not closed and not consistent: 
+
+​	① While $OT$ is not closed: 
+
+​		Find $i^{\prime} \in I \cdot \Sigma$ which is different with any $status_{i}, i \in I$. 
+
+​		Add $i^{\prime}$ to $I$ and renew the $I\cup \Sigma$, in other words, add $i^{\prime}\cdot a$ to $I\cdot \Sigma$ for all $a \in \Sigma$. 
+
+​		Repeat ① until $OT$ is closed. 
+
+​	② While $OT$ is not consistent:
+
+​		It means that for $i_1 \equiv_{status} i_2$ but :
+$$
+\exists p\in P,s\in S, status_{i_1}(p,s) \neq status_{i_2}(p,s)
+$$
+​		We find this $p$ and $s$, put $p$ into $P$ and $s$ into $S$.
+
+​		Then we know $i_2$ is separated from $i_1$ because now $T(p\cdot i_1 \cdot s) \neq T(p\cdot i_2 \cdot s)$
+
+​		So this $OT$ is not closed now.
+
+Repeat ① and ② until $OT$ is closed and consistent. 
+
+**********
+
+Once $OT$ is closed and consistent, let acceptor $M$ be the result and let Teacher find counter-example $t$, if $t$ is a counter-example:
+
+Use Proposition 3 to deal with the situation. 
+
+**********
+
+Use membership query to check new element in $P\cdot (I \cup I \cdot \Sigma) \cdot S$. 
+
+Until the Teacher replies yes to acceptor $M$.
+
+Stop and output $M$​.
+
+#### **ii. Check**
+
+① Check if $OT$ is closed. 
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is different with any $status_i, i \in I$.
+
+② Check if $OT$ is consistent.
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is the same with a $status_i, i \in I$. 
+
+Check if
+
+$$
+\forall a,b \in \Sigma \cup \{\epsilon\}. a\cdot i\cdot b \equiv_{status} a\cdot i^{\prime}\cdot b
+$$
+
+is correct. 
+
+So we have to check:
+
+- ​	$status_{i \cdot \Sigma}$ and $status_{i^{\prime} \cdot \Sigma}$
+- ​	$status_{\Sigma \cdot i}$ and $status_{ \Sigma \cdot i^{\prime} }$
+- ​	$status_{\Sigma \cdot i \cdot \Sigma}$ and $status_{ \Sigma \cdot i^{\prime} \Sigma }$
+
+Use the membership query to get results. 
