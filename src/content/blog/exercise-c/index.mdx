@@ -1,0 +1,27 @@
+---
+title: 'Exercise C: Investigate the ω-Triviality of Regular Languages by converting syntactic semigroup to Wilke algebra'
+description: 'Exercise C report'
+date: 2025-12-09
+tags: ['Research','Syntactic Semigroup','Wilke Algebra','Exercise C']
+image: './banner.png'
+authors: ['enscribe']
+---
+
+## Coversion from Regular Language to ω-Regular Language
+
+One can convert a regular language $L$ to a $\omega-$ regular language $L'$ in the following way:
+
+1. Transform a regular language $L$ into a unique finite semigroup $S_L$, the syntactic semigroup of $L$.
+2. By calculating linked pairs and conjugate classes in $S_L$, $S_L$ is converted to the Wilke algebra $S = (S_f,S_{\omega})$, the ``$\omega$-version'' of $S_L$.
+3. Reconstruct the $\omega$-language $L'$ from Wilke algebra $S$.
+
+
+## Investigate the $\omega$-Triviality of Regular Languages
+
+Using the above conversion, we can investigate the $\omega$-triviality of regular languages. 
+A regular language $L$ is said to be $\omega$-trivial if its corresponding Wilke algebra $S = (S_f,S_{\omega})$ satisfies condition:
+$$
+    |S_{\omega}| = 1
+$$
+
+We will introduce this investigation process with some examples. And we want to find what kind of regular languages are $\omega$-trivial. 

@@ -1,0 +1,42 @@
+---
+title: 'Concepts in Exercise C'
+description: 'Exercise C report'
+date: 2025-12-09
+tags: ['Research','Syntactic Semigroup','Wilke Algebra','Exercise C']
+authors: ['enscribe']
+order: 1
+---
+
+## How to Transform a Regular Language to its Syntactic Semigroup
+
+1. Write the generators in the form of Transformation Vector.
+2. Compute closure using multiplication table (Cayley Table) until there
+is no new pattern.
+3. The number of transition function’s pattern(without ϵ) is the number of
+the element in the Syntactic Semigroup SL.
+4. Use Cayley Table to get the relations in semigroup.
+If we add the identity(with ϵ in step 3), then we get the transition monoid of this
+language.
+
+## What is Wilke Algebra
+
+A Wilke algebra is a two-sorted algebra $(S_f,S_{\omega})$ equipped with three operations:
+    
+1. $\odot_{f}$ : $S_f \times S_f \rightarrow S_f$ (associative)
+2. $\odot_{mix}$: $S_f \times S_{\omega} \rightarrow S_{\omega}$
+3. $\pi$ : $S_f \rightarrow S_{\omega}$
+
+such that $s,t \in S_f$, there has:
+$$
+s\odot_{mix}\pi((t\odot_{f}s)) = \pi(s \odot_f t)\\
+
+\pi(\underbrace{s\odot_f s\dots \odot_f s}_{\text{n times}}) = \pi(s)
+$$
+
+**Completeness** A wilke algebra is complete if all $w \in S_{\omega}$ can be written by:
+$$
+\exists s,t\in S_f.w = s \odot_{mix} \pi(t)  
+$$
+    
+If we don't stress, all the wilke algebras mentioned in this report are complete.
+

@@ -1,0 +1,922 @@
+---
+title: 'Report 7'
+description: 'Discussion and idea for research.'
+date: 2025-12-09
+tags: ['Research', 'L-star algorithm','Syntactic Monoid',]
+authors: ['enscribe']
+order: 1
+---
+
+## 1 Straightforward algorithm
+
+### Terminology and OT
+
+#### **i)** Syntactic Monoid:
+
+For a language $L \subseteq \Sigma^*$, $w \in L$ and $w^{\prime} \in L$ is _syntactic congruence_ when:
+
+$$
+\forall u,v \in \Sigma^* \space uwv \in L \Leftrightarrow uw^{\prime}v \in L
+$$
+
+We can use $u ∼_L v$ to describe this relation.
+
+Then we can use $∼_L$ divide $\Sigma^*$ into many classes, for example $[u]$ means every string which is syntactic congruence with $u$. In other words:
+
+$$
+u ∼_L v \Leftrightarrow v\in [u]
+$$
+
+Define $\cdot$ as the symbol of _binary operation_ on these equivalence classes, then:
+
+$$
+[u]\cdot[v] = [uv]
+$$
+
+Then by this equivalence relation, the monoid $M(L)$ is the _Syntactic Monoid_ of the language $L$ and we can say $M(L)$ recognize the language $L$. Also, $M(L)$ is the smallest transition monoid which recognize the language $L$ and it is the transition monoid of the _minimal DFA_ which recognize the language $L$.
+
+#### **ii)** unknown regular set: $U$
+
+#### **iii)** Fixed alphabet: $\Sigma$
+
+#### **iv)** Observation table( $OT$ ) :
+
+Observation table( $OT$ ) is a 4-tuple $OT = (I,P,S,T)$ :
+
+① $I \subseteq \Sigma^*$ : prefix-closed infix set;
+
+② $P\subseteq \Sigma^*$ : prefix-closed prefix set;
+
+③ $S\subseteq \Sigma^*$ : suffix-closed suffix set;
+
+④ $T$ is a function
+
+$$
+T := (P\cdot(I \cup I \cdot \Sigma) \cdot S ) \rightarrow \{0,1\}\\\\
+$$
+
+$T(u) = 1$ $\text{iff} $  $u$ is a member of $U$.
+
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$​. This table can seen as a three-dimension array.
+
+The result is:
+
+- Elements of $I$ are the candidates for states of the syntactic monoid of $U$;
+
+- Elements of $P$ and $ S$ correspond to distinguishing experiments for these states.
+
+- Elements of $I \cdot \Sigma$​ are used to construct the transition function.
+
+If
+
+$$
+\forall p\in P,\forall s\in S, T(p\cdot i \cdot s) = T(p \cdot i^{\prime} \cdot s)
+$$
+
+Then we see $i$ and $i^{\prime}$ is in the same status.
+
+So here is a new definition:
+
+⑤ $status$ is a function:
+
+$$
+status := (P \times S) \rightarrow \{0,1\}
+$$
+
+And
+
+$$
+status_i(p,s) = T(p\cdot i \cdot s)
+$$
+
+This says: "The state for $i$, when given the pair $(p, s)$, is defined as the result of the membership query on the string $p·i·s$​."
+
+Then if
+
+$$
+\forall p\in P,\forall s\in S, status_i(p,s) = status_{i^{\prime}}(p,s)
+$$
+
+Then we call $i$ and $i^{\prime}$ is $status - equivalent$ which denoted $i \equiv_{status} i^{\prime}$. And we use $[i]_{status}$ to represent that at the condition of this $status$ function word $i$ forms a equivalence class. Then obviously $[i]_{status} = [i^{\prime}]_{status}$
+
+#### **v)** Acceptor:
+
+If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 5-tuples $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ where
+
+• $Q = \{status_i| i \in I\}$
+
+• $q_0 = T(\epsilon) \in Q$
+
+• $F = \{status_i \in Q|status(\epsilon,\epsilon) = 1\}$
+
+• $\delta:Q \times \Sigma \rightarrow Q$ is the transition function defined as $\delta(status_i,a) = status_{i \cdot a}$. This is well-defined if the table is closed.
+
+The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
+
+$$
+\delta^{*}(q,w) =
+\begin{cases}
+q & \text{if} & w = \epsilon \\\\
+\delta(\delta^{*}(q,w^{\prime}),a) & \text{if} & w = w^{\prime}a \space, \space a \in \Sigma\\
+\end{cases}
+$$
+
+#### vi) Membership queries:
+
+The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer whether or not $w \in L$.
+
+#### vii) Equivalence queries:
+
+When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{A}$ according to the acceptor, and the teacher answers whether or not $L$ is the language of $\mathcal{A}$. If the answer is yes, then the algorithm terminates. If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{A}$​.
+
+### Separability, Closedness and consistency
+
+Actually at each step of the algorithm, the learner maintains:
+
+- A set $I \subseteq \Sigma^{*}$ of access words, with $\epsilon \in I$
+- A set $P \subseteq \Sigma^*$ of prefix test words.
+- A set $S \subseteq \Sigma ^{*}$ of suffix test words.
+
+On the $(I,P,S)$ we can define:
+
+- **Separability**: no two distinct words in $I$ are $status-equivalent$.
+- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some $i^{\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$​
+- **Consistency:** for every $i_1,i_2 \in I \cup I \cdot \Sigma$, if $i_1 \equiv_{status} i_2$, then $\forall a,b \in \Sigma \cup \{\epsilon\}. (a\cdot i_1 \cdot b \equiv_{status} a\cdot i_2 \cdot b)$​.
+- $i_1$ is consistent with $i_2$ : $i_1,i_2 \in \Sigma^*$
+
+If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$, according to the definition of acceptor and the propositions as follow.
+
+**Proposition 1.** _If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$._
+
+According to the definition of Separability, we can assume each $i \in I$ is related to a $status_i$ which means $[i]_{status}$ is a equivalence class defined by $P$ and $S$.
+
+According to the definition of syntactic monoid, $u ∼_L v \Leftrightarrow [u] = [v]$.
+
+Assume that now there is an acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ and the language of $\mathcal{M}$ is $L_{\mathcal{M}}$. Because $(I,P,S)$ is separable, in other words :
+
+$$
+\forall u,v \in I.  u \equiv_{status} v \leftrightarrow(\forall p\in P, s \in S. (p\cdot i_1 \cdot s \in L_{\mathcal{M}}) \space \wedge \space (p\cdot i_2 \cdot s \in L_{\mathcal{M}}))
+$$
+
+So actually using the information we get now, we can know $[u]_{status} = [v]_{status}$. Under the status function, the minimal number of syntactic monoid is at most $|I|$.
+
+And in the contrary, if now $u \not\equiv_{status} v$, then $[u]_{status} \ne [v]_{status}$, in the future learning process $[u] \ne [v]$ in other words $u \not∼_L v$ is always correct.
+
+So the proposition is correct.
+
+**Proposition 2.** _If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} ∈ I \cdot Σ^{\*} $such that $(I ∪ {i^{\prime}}, P,S) $remains separable._
+
+Obviously, according to the definition of closedness, there exists $i^{\prime} \in I \cdot \Sigma$ :
+
+$$
+\forall i \in I. i \not\equiv_{status} i^{\prime}
+$$
+
+We should add this $i^{\prime}$ into $I$​ so that we try to make it separable.
+
+**Proposition 3.** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable.
+
+**Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = δ(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$.
+
+Writing $χ_L$ for the characteristic function of the target language L:
+
+$$
+χ_L(w) =
+    \begin{cases}
+    0 & \text{if}\space w \notin L \\\\
+    1 & \text{if} \space w \in L
+    \end{cases}
+$$
+
+We say that state $i_k$ is correct if $χ_L(i_kw_{k+1} . . . w_n) = χ_L(w)$. Note that correctness of $i_k$ can be checked with a membership query.
+
+Now state $i_0 = ε$ is obviously correct.
+
+State $i_n$ is not correct since $w$ is a counterexample and hence $χ_L(i_n) \neq χ_L(w)$ by definition of the set of accepting states of $\mathcal{M}$. Thus, we can find $k$ such that $i_{k−1}$ is correct and $i_{k}$​ is not correct, that is,
+
+$$
+χ_L(i_{k−1}w_i. . . w_n) \neq χ_L(i_{k}w_{i+1} . . . w_n).
+$$
+
+Now let $I^{\prime} = I ∪ {i_{k−1}w_i}$ and $S^{\prime} = S ∪ {w_{i+1} . . . w_n}$. By definition of closedness, $i_k$ is the unique element of $I$ that is $Status-equivalent$ to $i_{k−1}w_i$ . And the new suffix $w_{i+1} . . . w_n$ distinguishes $i_k$ from $i_{k−1}w_i$ . We conclude that $i_{k−1}w_i \notin I$ and that the new $OT$ is separable.
+
+**Proposition 4.** _Assume that $(I,P,S)$ is closed and consistent observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ is the syntactic monoid of the language $L$​._
+
+**Proof:**
+
+Actually we want to prove this conclusion:
+
+$$
+δ(q_0,w)=δ(q_0,w') \Leftrightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)
+$$
+
+for the acceptor $M = (Q,\Sigma,\delta,q_0,F)$.
+
+From assumption we know some facts:
+
+**a.** The algorithm terminated. There is no counterexample to make the $OT$ extend.
+
+**b.** Because the observation table is consistent, then for $i_1,i_2 \in (I \cup I \cdot \Sigma)$
+
+If $i_1 \equiv_{status} i_2$, then $a\cdot i_1 \cdot b \equiv_{status} a\cdot i_2 \cdot b$, which $a,b \in \Sigma \cup \{\epsilon\}$.
+
+① $\forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L) \Rightarrow δ(q_0,w)=δ(q_0,w')$ is clear.
+
+Because now $[w] = [w^{\prime}]$, then we can know $w \in L \Leftrightarrow w^{\prime} \in L$, which is equal to $δ(q_0,w)=δ(q_0,w')$
+
+② Prove $δ(q_0,w)=δ(q_0,w') \Rightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$
+
+This is clear:
+
+$$
+\exists i \in I, δ(q_0,w) = δ(q_0,w') = status_i
+$$
+
+according to consistency:
+
+$$
+\forall  a,b \in \Sigma \cup \{\epsilon\}. a\cdot w\cdot b \equiv_{status} a\cdot w'\cdot b
+$$
+
+When $|u| = |v| = 0$ and $|u| = |v| = 1$, $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is clear.
+
+When $|u| = k$ and $|v| = l$, assume $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is true. It means $δ(q_0,uwv)=δ(q_0,uw^{\prime}v)$. Then we can also know:
+
+$$
+\exists i^{\prime} \in I, δ(q_0,uwv) = δ(q_0,uw^{\prime}v) = status_{i^{\prime}} = status_{uwv} = status_{uw^{\prime}v}
+$$
+
+Then according to the consistency:
+
+$$
+\forall a,b \in \Sigma \cup \{\epsilon\}. status_{a\cdot uwv\cdot b} = status_{a\cdot uw^{\prime}v\cdot b}
+$$
+
+So for
+
+$$
+|u| = k+1 \text{ and } |v| = l\\
+     |u| = k \text{ and } |v| = l+1\\
+     |u| = k+1 \text{ and } |v| = l+1\\
+$$
+
+all these three conditions, the conclusion is clear.
+
+Then we can actually know ② is correct and the whole conclusion is correct.
+
+### Process of Algorithm
+
+#### i. Main
+
+Initialize I to $\{\epsilon\}$.
+
+Initialize $P$ and $S$ to $\{\epsilon\} \cup \Sigma$.
+
+**Repeat:**
+
+While $OT$ is not closed and not consistent:
+
+​ ① While $OT$ is not closed:
+
+​ Find $i^{\prime} \in I \cdot \Sigma$ which is different with any $status_{i}, i \in I$.
+
+​ Add $i^{\prime}$ to $I$ and renew the $I\cup \Sigma$, in other words, add $i^{\prime}\cdot a$ to $I\cdot \Sigma$ for all $a \in \Sigma$.
+
+​ Repeat ① until $OT$ is closed.
+
+​ ② While $OT$ is not consistent:
+
+​ It means that for $i_1 \equiv_{status} i_2$ but :
+
+$$
+\exists p\in P,s\in S, status_{i_1}(p,s) \neq status_{i_2}(p,s)
+$$
+
+​ We find this $p$ and $s$, put $p$ into $P$ and $s$ into $S$.
+
+​ Then we know $i_2$ is separated from $i_1$ because now $T(p\cdot i_1 \cdot s) \neq T(p\cdot i_2 \cdot s)$
+
+​ So this $OT$ is not closed now.
+
+Repeat ① and ② until $OT$ is closed and consistent.
+
+---
+
+Once $OT$ is closed and consistent, let acceptor $M$ be the result and let Teacher find counter-example $t$, if $t$ is a counter-example:
+
+Use Proposition 3 to deal with the situation.
+
+---
+
+Use membership query to check new element in $P\cdot (I \cup I \cdot \Sigma) \cdot S$.
+
+Until the Teacher replies yes to acceptor $M$.
+
+Stop and output $M$​.
+
+#### **ii. Check**
+
+① Check if $OT$ is closed.
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is different with any $status_i, i \in I$.
+
+② Check if $OT$ is consistent.
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is the same with a $status_i, i \in I$.
+
+Check if
+
+$$
+\forall a,b \in \Sigma \cup \{\epsilon\}. a\cdot i\cdot b \equiv_{status} a\cdot i^{\prime}\cdot b
+$$
+
+is correct.
+
+So we have to check:
+
+- ​ $status_{i \cdot \Sigma}$ and $status_{i^{\prime} \cdot \Sigma}$
+- ​ $status_{\Sigma \cdot i}$ and $status_{ \Sigma \cdot i^{\prime} }$
+- ​ $status_{\Sigma \cdot i \cdot \Sigma}$ and $status_{ \Sigma \cdot i^{\prime} \Sigma }$
+
+Use the membership query to get results.
+
+## 2 Idea
+
+### Terminology and OT
+
+**i)** Syntactic Monoid: same with part 1.
+
+**ii)** unknown regular set: $U$
+
+**iii)** Fixed alphabet: $\Sigma$
+
+**iv)** Observation table( $OT$ ) is a 4-tuple $OT = (I,P,S,T)$ :
+
+① $I \subseteq \Sigma^*$ : prefix-closed infix set;
+
+② $P\subseteq \Sigma^*$ : prefix-closed prefix set;
+
+③ $S\subseteq \Sigma^*$ : suffix-closed suffix set;
+
+④ $T$ is a pair of function $(T_{prefix},T_{suffix})$
+
+$$
+T_{prefix} :=
+    (P\cdot(I \cup I \cdot \Sigma) ) \rightarrow \{0,1\}\\\\
+    T_{suffix} := ((I \cup I \cdot \Sigma) \cdot S) \rightarrow \{0,1\}
+$$
+
+$T_{prefix}(u) = T_{suffix}(u)$ is 1 $\text{iff} $  $u$ is a member of $U$.
+
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$
+
+Similarly, this table can seen as a two-dimension array, whose row can be defined as:
+
+$$
+(I\cup I\cdot \Sigma) \rightarrow \{0,1\}^{(P\biguplus S)}
+$$
+
+It follows the rules like:
+
+$$
+\text{row}(i)(j) =
+    \begin{cases}
+    T_{\text{prefix}}(j \cdot i) & \text{if}\space j \in P \\\\
+    T_{\text{suffix}}(i \cdot j) & \text{if} \space j \in S
+    \end{cases}
+$$
+
+which $i \in (I\cup I \cdot \Sigma)$.
+
+Thus, the table can be divided into 2 parts:
+
+$$
+row_{prefix} :(I\cup I\cdot \Sigma) \rightarrow \{0,1\}^{P}\\\\
+    row_{suffix} :(I\cup I\cdot \Sigma) \rightarrow \{0,1\}^{S}
+$$
+
+and:
+
+$$
+    row_{prefix}(i)(p) = row(i)(p)\\\\
+    row_{suffix}(i)(s) = row(i)(s)
+$$
+
+The result is:
+
+① Rows labelled by elements of $I$ are the candidates for states of the syntactic monoid of $U$;
+
+② Columns labelled by elements of $P \cup S$ correspond to distinguishing experiments for these states.
+
+③ Rows labelled by elements of $I \cdot \Sigma$ are used to construct the transition function.
+
+**v)** Acceptor:
+
+If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 5-tuples $M = (Q,\Sigma,\delta,q_0,F)$ where
+
+• $Q = \{row(i)| i \in I\}$
+
+• $q_0 = row(\epsilon) \in Q$
+
+• $F = \{row(i)\in Q|row_{suffix}(i)(\epsilon) = 1\}$
+
+• $\delta:Q \times \Sigma \rightarrow Q$ is the transition function defined as $\delta(row(i),a) = row(i \cdot a)$. This is well-defined if the table is closed.
+
+The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
+
+$$
+\delta^{*}(q,w) =
+\begin{cases}
+q & \text{if} & w = \epsilon \\\\
+\delta(\delta^{*}(q,w^{\prime}),a) & \text{if} & w = w^{\prime}a \space, \space a \in \Sigma\\
+\end{cases}
+$$
+
+### Closed, consistent observation tables
+
+**Closed**:
+
+$$
+\forall i^{\prime} \in I \cup \Sigma,j \in P\cup S,\exists i \in I, row(i)(j) = row(i^{\prime})(j)
+$$
+
+or we use $row(i)$ to represent the whole elements in entire row for $i \in \Sigma$, which is similar to one-dimension array, then we have:
+
+$$
+    \forall i^{\prime} \in I \cup \Sigma,\exists i \in I, row(i) = row(i^{\prime})
+$$
+
+**Consistent**:
+
+If $row(i_1) = row(i_2)$, then $row(a\cdot i_1\cdot b) = row(a\cdot i_2\cdot b)$, which $a,b \in \Sigma \cup \{\epsilon\}$.
+
+### Theorem and lemma
+
+#### i. some facts
+
+① Because $I$ is prefix-closed,it must contain $\epsilon$, $q_0$ must be defined;
+
+② Because $P$ is nonempty and prefix-closed, it also must contain $\epsilon$. Then if $row(i_1) = row(i_2)$, $T(\epsilon \cdot i_1) = T(i_1) = T(\epsilon \cdot i_2) = T(i_2)$;
+
+③ Because $S$ is nonempty and suffix-closed, it also must contain $\epsilon$. Then if $row(i_1) = row(i_2)$, $T(i_1 \cdot \epsilon) = T(i_1) = T(i_2 \cdot \epsilon) = T(i_2)$;
+
+④ Because $(I,P,S,T)$ is consistent, $\forall a,b\in \Sigma, \forall row(i_1) = row(i_2),row(a\cdot i_1 \cdot b) = row(a\cdot i_2 \cdot b)$
+
+#### ii. lemma
+
+**lemma 2.** _Assume that $OT = (I,P,S,T)$ is closed and consistent observation table. For the acceptor $M = (Q,\Sigma,\delta,q_0,F)$ and for every $s \in I \cup I\cdot \Sigma, \delta(q_0,i) = row(i)$._
+
+let the length of $i$ is at most $k$.
+
+① when $k = 0$, in other words $i = \epsilon$, $q_0 = row(\epsilon)$.
+
+② If $\forall i \in (I \cup I\cdot \Sigma)$, the length of $i$ is less than $k$, $\delta(q_0,i) = row(i)$. Let $i^{\prime} \in (I \cup I \cdot \Sigma)$ in the $k+1$ round, in other words $i^{\prime} = i \cdot a, a \in \Sigma$. So that means $i \in I$ or $i^{\prime} \in I$.
+
+Then
+
+$$
+\delta(q_0,i^{\prime}) = \delta(\delta^{*}(q_0,i),a)\\\\
+=\delta(row_{suffix}(i),a)\\\\
+=row(i \cdot a)\\\\
+=row(i^{\prime})
+$$
+
+**lemma 3.** _Assume that $(I,P,S,T)$ is closed and consistent observation table. Then the acceptor $M = (Q,\Sigma,\delta,q_0,F)$ with the finite function $T$. That is for every $i \in (I \cup I\cdot \Sigma)$ and $j \in S$, $\delta(q_0,i\cdot j) \in F \space iff \space T_{suffix}(i\cdot j) = 1$._
+
+proof:
+
+$$
+\forall i \in (I \cup I\cdot \Sigma), j \in S,\delta^{*}(q_0,i\cdot j) \in F \space \text{iff} \space T_{suffix}(i\cdot j) = 1
+$$
+
+① When $j = \epsilon$ and $i$ is any element of $(I \cup I\cdot \Sigma)$, $\delta^{*}(q_0, i\cdot j)$ is $row(i)$. $row(i) \in F \space iff \space T_{suffix}(i) = 1$ (definition of F). If $i \in I\cdot \Sigma$, because the observation table is closed, it means $row(i) = row(i^{\prime}), i^{\prime} \in I$. $row(i^{\prime}) \in F \space iff \space T_{suffix}(i^{\prime}) = 1, iff \space T_{suffix}(i) = 1$.
+
+② Let's assume the result holds for all $s \in S$ of length at most $k$, and let $j$ is an element of length $k + 1$. Then, since $S$ is suffix-closed:
+
+$$
+\exists j^{\prime} \in  S, a\in \Sigma, j = a \cdot j^{\prime}
+$$
+
+and we know the length of $j^{\prime}$ is $k$.
+
+And because of the observation table is closed:
+
+$$
+    \forall i \in I,\exists i^{\prime} \in (I \cup I\cdot \Sigma), row(i) = row(i^{\prime})
+$$
+
+Then:
+
+$$
+\delta^{*}(q_0,i \cdot j) = \delta^{*}(\delta^{*}(q_0,i),a\cdot j^{\prime})\\\\
+    =\delta^{*}(row(i),a\cdot j^{\prime})\\\\
+    =\delta^{*}(row(i^{\prime}),a\cdot j^{\prime})\\\\
+    =\delta^{*}(\delta^{*}(row(i^{\prime}),a),j^{\prime})\\\\
+    =\delta^{*}(row(i^{\prime} \cdot a),j^{\prime})\\\\
+    =\delta^{*}(\delta^{*}(q_0,i^{\prime} \cdot a),j^{\prime})\\\\
+    =\delta^{*}(q_0,i^{\prime} \cdot a \cdot j^{\prime})
+$$
+
+According to the assumption, $\delta^{*}(q_0,i^{\prime} \cdot a \cdot j^{\prime}) \in F \space iff \space T_{suffix}(i^{\prime} \cdot a \cdot j^{\prime}) = 1$. (Because $i^{\prime} \cdot a \in (I \cup I\cdot \Sigma)$ and the length of $j^{\prime} \in S$ is not larger than $k$).
+
+Then because $row(i) = row(i^{\prime})$ and $j = a\cdot j^{\prime}$, $T_{suffix}(i^{\prime} \cdot a \cdot j^{\prime}) = T_{suffix}(i \cdot a \cdot j^{\prime}) = T_{suffix}(i\cdot j)$. So we know $\delta_{suffix}(q_0, i \cdot j) \in F \space iff \space T(i\cdot j) = 1$.
+
+---
+
+**lemma 4.**
+_Assume that $(I,P,S,T)$ is closed and consistent observation table and the algorithm terminated. Then the acceptor $M = (Q,\Sigma,\delta,q_0,F)$ is the syntactic monoid of the language $U$._
+
+Proof:
+
+Actually we want to prove this conclusion:
+
+$$
+δ(q_0,w)=δ(q_0,w') \Leftrightarrow \forall u,v ∈ Σ^*, (uwv ∈ U \text{ iff } uw^{\prime}v ∈ U)
+$$
+
+for the acceptor $M = (Q,\Sigma,\delta,q_0,F)$.
+
+From assumption we know some facts:
+
+**a.** The algorithm terminated. There is no counterexample to make the $OT$ extend.
+
+**b.** Because the observation table is consistent, then for $i_1,i_2 \in (I \cup I \cdot \Sigma)$
+
+If $row(i_1) = row(i_2)$, then $row(a\cdot i_1\cdot b) = row(a\cdot i_2\cdot b)$, which $a,b \in \Sigma \cup \{\epsilon\}$.
+
+① $\forall u,v ∈ Σ^*, (uwv ∈ U \text{ iff } uw^{\prime}v ∈ U) \Rightarrow δ(q_0,w)=δ(q_0,w')$ is clear.
+
+Because now $[w] = [w^{\prime}]$, then we can know $w \in L \Leftrightarrow w^{\prime} \in L$, which is equal to $δ(q_0,w)=δ(q_0,w')$
+
+② Prove $δ(q_0,w)=δ(q_0,w') \Rightarrow \forall u,v ∈ Σ^*, (uwv ∈ U \text{ iff } uw^{\prime}v ∈ U)$
+
+This is clear:
+
+$$
+\exists i \in I, δ(q_0,w) = δ(q_0,w') = row(i) = row(w) = row(w^{\prime})
+$$
+
+according to consistency:
+
+$$
+row(a\cdot w\cdot b) = row(a\cdot w'\cdot b), a,b \in \Sigma \cup \{\epsilon\}
+$$
+
+When $|u| = |v| = 0$ and $|u| = |v| = 1$, $(uwv ∈ U \text{ iff } uw^{\prime}v ∈ U)$ is clear.
+
+When $|u| = k$ and $|v| = l$, assume $(uwv ∈ U \text{ iff } uw^{\prime}v ∈ U)$ is true. It means $δ(q_0,uwv)=δ(q_0,uw^{\prime}v)$. Then we can also know:
+
+$$
+    \exists i^{\prime} \in I, δ(q_0,uwv) = δ(q_0,uw^{\prime}v) = row(i^{\prime}) = row(uwv) = row(uw^{\prime}v)
+$$
+
+Then according to the consistency:
+
+$$
+row(a\cdot uwv\cdot b) = row(a\cdot uw^{\prime}v\cdot b), a,b \in \Sigma \cup \{\epsilon\}
+$$
+
+So for
+
+$$
+|u| = k+1 \text{ and } |v| = l\\
+     |u| = k \text{ and } |v| = l+1\\
+     |u| = k+1 \text{ and } |v| = l+1\\
+$$
+
+all these three conditions, the conclusion is clear.
+
+Then we can actually know ② is correct and the whole conclusion is correct.
+
+So here we get _Theorem 1_:
+_If observation table OT is closed and consistent, then the acceptor M is consistent with OT.
+Any other acceptor consistent with OT but inequivalent to M must have more states._
+
+### Process
+
+#### i. Main
+
+Initialize I to $\{\epsilon\}$.
+
+Initialize $P$ and $S$ to $\{\epsilon\} \cup \Sigma$.
+
+**Repeat:**
+
+While $OT$ is not closed and not consistent:
+
+① If $OT$ is not closed:
+
+Find $i^{\prime} \in I \cdot \Sigma$ which is different with any $row(i), i \in I$.
+
+Add $i^{\prime}$ to $I$ and renew the $I\cup \Sigma$, in other words, add $i^{\prime}\cdot a$ to $I\cdot \Sigma$ for all $a \in \Sigma$.
+
+② If $OT$ is not consistent:
+
+It means that $row(i_1) = row(i_2)$ and $T(a\cdot i_1 \cdot b) \neq T(a\cdot i_2 \cdot b)$.
+
+If $T(a\cdot i_1) \neq T(a\cdot i_2)$. Put all prefix of $a$ into $P$.
+
+If $T( i_1\cdot b) \neq T(i_2\cdot b)$. Put all suffix of $b$ into $S$.
+
+---
+
+Once $OT$ is closed and consistent, let acceptor $M$ be the result and let Teacher find counter-example $t$, if $t$ is a counter-example:
+
+Add all its prefix to $P$ and all its suffix to $S$.
+
+---
+
+Use membership query to check new element in $P\cdot (I \cup I \cdot \Sigma)$ and $(I \cup I \cdot \Sigma)\cdot S$.
+
+Until the Teacher replies yes to acceptor $M$.
+
+Stop and output $M$.
+
+#### ii. Check
+
+① Check if $OT$ is closed.
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $row(i^{\prime})$ is different with any $row(i), i \in I$.
+
+② Check if $OT$ is consistent.
+
+Check $i^{\prime} \in I \cdot \Sigma$ to find if $row(i^{\prime})$ is the same with a $row(i), i \in I$.
+
+If $row(i^{\prime}) = row(i)$, check if
+
+$$
+row(a\cdot i\cdot b) = row(a\cdot i^{\prime}\cdot b), a,b \in \Sigma \cup \{\epsilon\}
+$$
+
+Here because $i \cdot \Sigma \in \{I \cdot \Sigma\}$, so we don't need to ask teacher about $\Sigma \cdot i \cdot \Sigma$. But $\Sigma \cdot i^{\prime} \cdot \Sigma$ are unknown. So here we have to ask teacher to get the result.
+
+**lemma 5** _Let $OT = (I,P,S,T)$ be an observation table. Let $n$ denote the number of different values of $row(i)$ for $i \in I$. Any acceptor consistent with $M$ must have at least $n$ states._
+
+Let $M = (Q,\Sigma,\delta,q_0,F)$ be any acceptor of $OT$. Suppose $i_1$ and $i_2$ are elements of $I$ such that $row(i_1)$ and $row(i_2)$ are distinct. Then there exists $b\in \Sigma$ such that $T_{suffix}(i_1 \cdot b) \neq T_{suffix}(i_2 \cdot b)$ or $T_{prefix}(b \cdot i_1) \neq T_{prefix}(b \cdot i_2)$.
+
+① $T_{suffix}(i_1 \cdot b) \neq T_{suffix}(i_2 \cdot b)$: Exactly one of $\delta^{*}(q_0, i_1 \cdot b)$ and $\delta^{*}(q_0, i_2 \cdot b)$ is in $F$. Thus, $\delta^{*}(q_0, i_1 \cdot b)$ and $\delta^{*}(q_0, i_2 \cdot b)$ must be distinct states.
+
+② $T_{prefix}(i_1 \cdot b) \neq T_{prefix}(i_2 \cdot b)$: Exactly one of $\delta^{*}(q_0, b \cdot i_1)$ and $\delta^{*}(q_0, b \cdot i_2)$ is in $F$. Thus, $\delta^{*}(q_0, b \cdot i_1)$ and $\delta^{*}(q_0, b \cdot i_2)$ must be distinct states.
+
+Thus, There are at least n different values as $i \in I$, so M must
+have at least $n$ states, proving Lemma 5.
+
+**Correctness** lemma 4.
+
+**Termination** lemma 5.
+
+### Example run
+
+Frist, we introduce the structure of the observation table we use in this chapter.
+
+|                  | $P$                      |     | $S$                      |
+| ---------------- | ------------------------ | --- | ------------------------ |
+| $I$              | $P \cdot I$              |     | $I \cdot S$              |
+|                  |                          |     |                          |
+| $I \cdot \Sigma$ | $P \cdot I \cdot \Sigma$ |     | $I \cdot \Sigma \cdot S$ |
+
+Assume that an unknown regular set $U$ is on $\Sigma = \{a,b\}$.
+
+Initialize the $P$, $S$ and $I$ and use the membership query to ask the teacher, then we can get the chart.
+
+|            | $\epsilon$ | $a$ | $b$ |     | $\epsilon$ | $a$ | $b$ |
+| ---------- | ---------- | --- | --- | --- | ---------- | --- | --- |
+| $\epsilon$ | 1          | 1   | 1   |     | 1          | 1   | 1   |
+|            |            |     |     |     |            |     |     |
+| $a$        | 1          | 1   | 1   |     | 1          | 1   | 1   |
+| $b$        | 1          | 1   | 1   |     | 1          | 1   | 1   |
+
+This table is obviously closed but we should check the consistency. Because now $row(a)$ and $row(\epsilon)$ is the same.
+
+We only need to use membership query to check $\Sigma \cdot a \cdot \Sigma$. Then we got result here:
+
+    aaa is NO.
+    aab is YES.
+    baa is NO.
+    bab is YES.
+
+Compared with $\Sigma \cdot \epsilon \cdot \Sigma$, we find that all answers are YES. So this $OT$ is not consistent.
+
+We only choose the one inconsistent string. Add all of the prefix of $aaa$ into $P$ and all suffix into $S$. And then use membership query:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+
+This table now is not closed. The prefix and suffix of string $aaa$ cause the change.
+
+Then we put $a$ into $I$. And put $a \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+
+Then we put $b$ into $I$. And put $b \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $ba$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bb$       | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+
+Put $aa$ into $I$. And put $aa \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ba$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bb$       | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aaa$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $aab$      | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+
+Put $ab$ into $I$. And put $ab \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $ba$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bb$       | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aaa$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $aab$      | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aba$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $abb$      | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+
+We find $row(ba)$ is same as $row(aa)$. We should check if they are consistent. Just check $\Sigma \cdot ba \cdot \Sigma$. The answer is:
+
+    abaa is NO.
+    abab is NO.
+    bbaa is NO.
+    bbab is NO.
+
+Actually we can find $\Sigma \cdot aa \cdot \Sigma$ in table and all are 0. So they are consistent.
+
+Put $bb$ into $I$. And put $bb \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bb$       | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $ba$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aaa$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $aab$      | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aba$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $abb$      | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bba$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $bbb$      | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+
+Put $aaa$ into $I$. And put $aaa \cdot \Sigma$ into $I \cdot \Sigma$:
+
+|            | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |     | $\epsilon$ | $a$ | $b$ | $aa$ | $aaa$ |
+| ---------- | ---------- | --- | --- | ---- | ----- | --- | ---------- | --- | --- | ---- | ----- |
+| $\epsilon$ | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 1    | 0     |
+| $a$        | 1          | 1   | 1   | 0    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $b$        | 1          | 1   | 1   | 1    | 0     |     | 1          | 1   | 1   | 0    | 0     |
+| $aa$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $ab$       | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bb$       | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aaa$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+|            |            |     |     |      |       |     |            |     |     |      |       |
+| $ba$       | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aab$      | 1          | 0   | 0   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aba$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $abb$      | 1          | 1   | 1   | 0    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $bba$      | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $bbb$      | 1          | 1   | 1   | 1    | 0     |     | 1          | 0   | 1   | 0    | 0     |
+| $aaaa$     | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+| $aaab$     | 0          | 0   | 0   | 0    | 0     |     | 0          | 0   | 0   | 0    | 0     |
+
+This table now is closed. We should check the consistency by row in $I \cdot \Sigma$.
+
+We find $row(aab)$ is same as $row(aa)$. We should check if they are consistent. Just check $\Sigma \cdot aab \cdot \Sigma$. The answer is:
+
+    abaa is NO.
+    abab is NO.
+    bbaa is NO.
+    bbab is NO.
+
+We just found $\Sigma \cdot aa \cdot \Sigma$ in table and all is 0. So they are consistent.
+
+$row(aba)$ is same as $row(aaa)$. Check $\Sigma \cdot aba \cdot \Sigma$. The answer is:
+
+    aabaa is NO.
+    aabab is NO.
+    babaa is NO.
+    babab is NO.
+
+Actually we can find $\Sigma \cdot aaa \cdot \Sigma$ in table and all are 0. So they are consistent.
+
+$row(abb)$ is same as $row(ab)$. Check $\Sigma \cdot abb \cdot \Sigma$. The answer is:
+
+    aabba is NO.
+    aabbb is YES.
+    babba is NO.
+    babbb is YES.
+
+Actually we can find $\Sigma \cdot ab \cdot \Sigma$ in table:
+
+    aaba is 0.
+    aabb is 1.
+    baba is 0.
+    babb is 1.
+
+This is the same as the answer we ask.
+
+$row(bba)$, $row(aaaa)$,$row(aaab)$ are all same as $row(aaa)$. Check $\Sigma \cdot bba \cdot \Sigma$,$\Sigma \cdot aaaa \cdot \Sigma$, and $\Sigma \cdot aaab \cdot \Sigma$. All of the answers are NO. They are consistent with each other.
+
+$row(bbb)$ is same as $row(bb)$. Check $\Sigma \cdot bbb \cdot \Sigma$. The answer is:
+
+```
+abbba is NO.
+abbbb is YES.
+bbbba is NO.
+bbbbb is YES.
+```
+
+Actually we can find $\Sigma \cdot ab \cdot \Sigma$ in table:
+
+    abba is 0.
+    abbb is 1.
+    bbba is 0.
+    bbbb is 1.
+
+This is the same as the answer we ask.
+
+So now we get a closed and consistent observation table. And the algorithm is terminated because the teacher can not find a counterexample.
+
+This is actually the _syntactic monoid_ of language:
+
+$$
+L = \Sigma \cdot \Sigma \cdot b^* + \Sigma + \epsilon
+$$
+
+### Time analysis
+
+Because the structure of $U$ is unknown, so the time complexity depends on the number and length of counterexample and the number of the states of $U$. Then we use $m$ to represent the number of counterexample and $n$ to represent the number of states. We can assume the average length of counterexample is $p$. And we use $k$ to represent $|\Sigma|$.
+
+The time cost is from:
+
+① Each time $OT$ is discovered to be not closed, one element is added to $I$.
+
+② Each time $OT$ is discovered to be not consistent, all the prefixes of the inconsistent string are added to $P$ and all the suffixes of the inconsistent string are added to $S$.
+
+③ Each time we find a counterexample, all the prefixes of the counterexample are added to $P$ and all the suffixes of the counterexample string are added to $S$​.
+
+First we know $|I|$ must be $n$, because neither ② nor ③ add elements into $I$. So $|I \cup I \cdot \Sigma|$ is $k(n+1)$​ .
+
+Let's think about ②.
+
+According to the algorithm, we can know the number of the inconsistent string will not exceed $n-1$. This is because if we find a pair of inconsistent strings $s$ and $t$ ($|t|$ is larger). The changes of $P$ and $S$ must cause the differ in $row(s)$ and $row(t)$ , which means the $OT$ is not closed. Then a new row will be added into $I$. Because the number of states is $n$. So this is clear.
+
+Let's analyze the length of inconsistent string. Each time we find a pair of inconsistent strings $s$ and $t$, it is clear that $s \in I$ and $t \in I \cdot \Sigma$. Then because $|I|$ must be $n$, we know the biggest length of the string in $I$ can not exceed $n$. So $|t| \leq n+1$ .
+
+Now we know inconsistent strings number can not exceed $n - 1$ and the length can not exceed $n + 1$, so we know the inconsistency will cause at most $(n+1)(n-1) = n^2 -1$ prefixes added into $P$ and suffixes added into $S$​ .
+
+Let's think about ③.
+
+The average length of counterexample is $p$ and the number of counterexample is $m$, so clearly $pm$ prefixes and suffixes will be added into $P$ and $S$.
+
+So the cardinality of $(I\cup I \cdot \Sigma) \cdot (P\cup S)$ is at most
+
+$$
+2(n^2 - 1 + pm)(n + 1)k = O(n^3 + pmn)
+$$
+
+And at last we think about consistency check. As the example run we can know, actually if we want check $s$ and $t$ is consistent or not, we can only check $\Sigma \cdot s \cdot \Sigma$ and $\Sigma \cdot t \cdot \Sigma$ , because this time $row(s) = row(t)$, which means $\Sigma \cdot s \epsilon$ and $\Sigma \cdot t \epsilon$ is the same and $\epsilon  s \cdot \Sigma $ and $\epsilon  t \cdot \Sigma$ is the same. And here we also know $\Sigma \cdot s \cdot \Sigma$ has already known because $s\cdot \Sigma \in I\cdot\Sigma$. So actually only $\Sigma \cdot t \cdot \Sigma$ is need to check. This will cost $k^2$.
+
+Because we have to check when $row(s) = row(t)$, so the cost of consistency check is at most $k^2(kn) = k^3n$.
+
+So the time complexity is :
+
+$$
+O(n^3 + pmn + k^3n)
+$$
+
+Actually we know both inconsistent string and counterexample will cause the addition of state. So this complexity is under extreme condition.

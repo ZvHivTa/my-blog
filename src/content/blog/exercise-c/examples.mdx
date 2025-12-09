@@ -1,0 +1,162 @@
+---
+title: 'Two examples of transformation'
+description: 'Exercise C report'
+date: 2025-12-09
+tags: ['Research','Syntactic Semigroup','Wilke Algebra','Exercise C']
+authors: ['enscribe']
+order: 3
+---
+Let $\Sigma = \{a,b\}$.
+## Example 1 -- $L = \Sigma^* ab$
+We want to transform regular language $L = \Sigma^* ab$ to its Wilke Algebra and $\omega$-language.
+
+*Construct the semigroup of this language*
+
+Step 1: construct minimal DFA
+
+$\mathcal{A} = (Q, \Sigma, \delta, q_0, F)$,  $\Sigma = \{a,b\}$. $Q = \{q_0,q_1,q_2\}$ $F = \{q_2\}$
+
+Then :
+$$
+\delta(q_0,a) = q_1\\
+\delta(q_0,b) = q_0\\
+\delta(q_1,a) = q_1\\
+\delta(q_1,b) = q_2\\
+\delta(q_2,a) = q_1\\
+\delta(q_2,b) = q_0\\
+$$
+Step 2 : Get Syntactic Semigroup
+
+$$
+f_{\epsilon}(q_0,q_1,q_2) = (q_0,q_1,q_2)\\
+f_a(q_0,q_1,q_2) = (q_1,q_1,q_1)\\
+f_b(q_0,q_1,q_2) = (q_0,q_2,q_0)\\
+$$
+then
+$$
+f_{aa}(q_0,q_1,q_2) = (q_1,q_1,q_1)\\
+f_{ab}(q_0,q_1,q_2) = (q_2,q_2,q_2)\\
+f_{ba}(q_0,q_1,q_2) = (q_1,q_1,q_1)\\
+f_{bb}(q_0,q_1,q_2) = (q_0,q_0,q_0)\\
+$$
+then in a semigroup, $f_{\epsilon}$ can not exist. Then $S(L) = \{a,b,ab,bb\}$, and there are some rules:
+
+|      | $a$  | $b$  | $ab$ | $bb$ |
+| :--: | :--: | :--: | :--: | :--: |
+| $a$  | $a$  | $ab$ | $ab$ | $bb$ |
+| $b$  | $a$  | $bb$ | $ab$ | $bb$ |
+| $ab$ | $a$  | $bb$ | $ab$ | $bb$ |
+| $bb$ | $a$  | $bb$ | $ab$ | $bb$ |
+
+*Extend to Wilke Algebra*:
+
+step 1:Find **idempotent**
+$$
+aa = a\\
+abab = ab\\
+bbbb = bb\\
+$$
+So $E = \{a,ab,bb\}$
+
+step 2 : Find **Linked pairs**
+
+Linked pairs $(s, e)$ must fulfill $e \in E$ and $se = s$. 
+
+$(a,a) = a$ and $(bb,bb) = bb$ and $(ab,ab) = ab$ are linked pairs. 
+
+step 3: Find **Conjugacy Classes** in  Linked pairs. 
+
+$E = \{a,ab,bb\}$ is a right-zero set. All of the linked pairs are conjugacy equivalant. 
+
+So $(a,a)\thicksim(bb,bb) \thicksim (ab,ab)$
+
+step 4: Construct the definition of operations in Wilke Algebra
+
+1. $\omega$-power ($t^{\omega}$):
+
+   $a^2 = a$ then $a^{\omega} = [a,a]$
+
+   $(bb)^2 = bb$ then $bb^{\omega} = [bb,bb] = [a,a]$​
+
+   $(ab)^2 = ab$ then $ab^{\omega} = [ab,ab] = [a,a]$
+
+2. Mixed Product ( $t[s, e]$ )
+
+   $a[a,a] = [aa,a] = [a,a]$
+
+   $b[a,a] = [ba,a] = [a,a]$
+
+
+So the Wilke Algebra $(S_f,S_{\omega})$ is defined. 
+
+$S_f = \{a,b\}$
+
+$S_{\omega} = \{[a,a]\}$
+
+$\odot_{f}$ : $S_f \times S_f \rightarrow S_f$
+
+$\odot_{mix}$: $S_f \times S_{\omega} \rightarrow S_{\omega}$
+
+$\pi$ : $S_f \rightarrow S_{\omega}$
+
+function rules are defined in step 4.
+
+So we choose $[a,a]$ as a accept set. 
+
+This is $U = \Sigma^{\omega}$​
+
+## Example 2 -- $L = \{a,ab\}$
+
+*Construct the semigroup of this language*
+
+Step 1: construct minimal DFA
+
+ $\mathcal{A} = (Q,\Sigma,\delta,q_0,F)$ is the Minimal DFA of $L$. 
+        
+And $Q = \{q_0,q_1,q_2,q_3\}$,$F = \{q_1,q_2\}$. And transition function:
+$$
+    \delta(q_0, a) = q_1 \quad{} \delta(q_0, b) = q_3\\
+    \delta(q_1, a) = q_3 \quad{} \delta(q_1, b) = q_2\\
+    \delta(q_2, a) = q_3 \quad{} \delta(q_2, b) = q_3\\
+    \delta(q_3, a) = q_3 \quad{} \delta(q_3, b) = q_3\\
+$$
+
+Step 2: Get Syntactic Semigroup
+
+We omit the process here. Its syntactic semigroup is $S(L) = \{a,b,aa,ab\}$. Some rules:
+$$
+    ba = aa,bb = aa\\
+    aab = aa,aaa = aa
+$$
+
+*Extend to Wilke Algebra*:
+
+Step 1: Find idempotents
+
+Now for its Wilke Algebra $S = (S_f,S_{\omega})$, $S_f = \{a,b,aa,ab\}$.
+Find idempotent in $S_f$, $E = \{aa\}$.
+
+Step 2: Check the Linked Pairs
+$$
+aaa = aa,baa = aa\\
+aaaa = aa,abaa = aa\\
+$$
+
+So $\mathcal{L} = \{(aa,aa)\}$.
+
+Step 3: Find **Conjugacy Classes** in Linked pairs
+    
+    $\mathcal{L} = \{(aa,aa)\}$. Then there is only one conjugate class in $S_f$. So $S_{\omega} = \{[aa,aa]\}$. 
+
+step 4: Construct the definition of operations in Wilke Algebra
+
+$\odot_{mix}$: $a[aa,aa] = [aaa,aa] = [aa,aa]$
+
+$\pi$: Find the smallest positive integer $n$ such that $s^n$ is idempotent for all $s \in S_f$:
+
+For example: $a^1$ is not an idempotent because $aa \neq a$. But $a^2$ is an idempotent because $aaaa = aa$. Check all $s \in S_f$ and $n = 2$.
+So $\pi(a) = [aa,aa]$. $\pi(b) = [bb,bb] = [aa,aa]$.
+        
+    
+We get $S_L = (S_f,S_{\omega})$ and its operations. If we choose $[aa,aa]$ as the accepting state, then $U = \Sigma^{\omega}$. . 
+

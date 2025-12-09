@@ -1,0 +1,41 @@
+---
+title: 'How to Transform Syntactic Semigroup in Wilke Algebra'
+description: 'Exercise C report'
+date: 2025-12-09
+tags: ['Research','Syntactic Semigroup','Wilke Algebra','Exercise C']
+authors: ['enscribe']
+order: 2
+---
+
+Let Wilke algebra be $S = (S_f , S_ω)$.
+
+## Calculate $S_ω$
+We must calculate $S_ω$ first.
+
+1. Maintain the ”finite part”. This means if we have syntactic semigroup $(S_L,\odot)$, then we set $S_f = S_L$ and $\odot_f = \odot$.
+2. Find idempotents in Sf . And we call the set of idempotents E.
+3. Find Linked pairs. And we call the set of linked pairs L.
+4. Find Conjugacy Classes in L.
+5. Conjugacy classes form Sω which is the ”infinite part”.
+
+#### Linked Pair
+    A linked pair in a finite semigroup $S$ is a pair $(s, e) \in S \times S$ such that $e\in E$ and $se = s$. 
+
+#### Conjugacy Class
+    Two linked pairs $(s, e)$ and $(s', e')$ are conjugate (notation $(s, e) \sim (s', e')$) if there exist $x, y \in S_f$ such that $e = xy$, $e' = yx$ and $s' = sx$.
+
+    Note that these conditions also imply $s = s'y$, since $s'y = sxy = se = s$.
+
+## Define Operations
+$\odot_{mix}$: If $[s,e] \in L$ and $t\in S_f$, then $t\odot_{mix}[s,e] = [ts,e]$.
+
+$\pi$: If $t\in S_f$, then $\pi(t) = [t^n,t^n]$, which $n$ is the smallest positive integer such that $s^n$ is idempotent for all $s \in S_f$.
+
+## Definition of Recognition by Wilke Algebra
+ A $\omega-$language $U \subseteq \Sigma^{\omega}$ is recognized by a Wilke algebra $S = (S_f,S_{\omega})$, if there exists a morphism $\phi$ and a set $X \subseteq S_{\omega}$:
+
+        $$
+            L = \phi^{-1}(X) = \{ w \in \Sigma^\omega \mid \phi(w) \in X \}
+        $$
+
+ It means we find a subset $X$ in $S_{\omega}$, as a "accept set".
