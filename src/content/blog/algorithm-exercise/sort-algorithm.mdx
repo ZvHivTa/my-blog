@@ -1,0 +1,169 @@
+---
+title: 'Sort Algorithm'
+description: 'Some common sort algorithms and their implementations'
+date: 2025-12-09
+tags: ['Algorithm','Coding test','Exercise','Sort Algorithm']
+authors: ['enscribe']
+order: 1
+---
+import Callout from '@/components/Callout.astro'
+
+## Common Sort Algorithms
+
+We omit insertion sort, bubble sort and selection sort here. 
+
+Just remember that their time complexity is $O(n^2)$ in average and worst case. 
+
+Let's start with merge sort and quick sort.
+
+### Merge Sort
+
+Merge sort is a divide-and-conquer algorithm that divides the input array into two halves, recursively sorts each half, and then merges the sorted halves back together.
+
+Actually what we want to do in sort algorithm is to delete the inversion pairs in the array. We can find the proof that at least $O(n \log n)$ time is needed to sort an array by using the concept of inversion pairs.
+
+Here is a simple implementation of merge sort in Java:
+
+```astro title="merge sort"
+import java.util.*;
+
+public class Main{
+    static int N = 100010;
+    static int[] a = new int[N];
+    static int[] t = new int[N];
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for(int i = 0;i<n;i++){
+            a[i] = sc.nextInt();
+        }
+        mergesort(0,n-1);
+        for(int i = 0;i<n;i++){
+            System.out.print(a[i]);
+            System.out.print(" ");
+        }
+    }
+    
+    public static void mergesort(int l,int r){
+        if(l>=r){
+            return;
+        }
+        int mid = (l+r) >> 1;
+        mergesort(l,mid);
+        mergesort(mid+1,r);
+        int i = l;
+        int j = mid+1;
+        int k = 0;
+        while(i<=mid&&j<=r){
+            if(a[i]<=a[j]){
+                t[k++] = a[i++];
+            }else{
+                t[k++] = a[j++];
+            }
+        }
+        while(i<=mid){
+            t[k++] = a[i++];
+        }
+        while(j<=r){
+            t[k++] = a[j++];
+        }
+        for(i = l;i<=r;i++){
+            a[i] = t[i-l];
+        }
+    }
+}
+```
+
+We can see this is a typical divide-and-conquer algorithm. 
+
+First we divide the array into two halves until we reach the base case where the subarray has one or zero elements (which are inherently sorted). Then we merge the sorted subarrays back together.
+
+Its complexity is $O(n \log n)$ in average and worst case.
+
+### Quick Sort
+
+Quick sort is another divide-and-conquer algorithm that selects a 'pivot' element from the array and partitions the other elements into two sub-arrays according to whether they are less than or greater than the pivot. If the elments are larger than the pivot, they go to the right sub-array; if smaller, to the left sub-array.
+
+The sub-arrays are then sorted recursively.
+
+Here is a simple implementation of quick sort in Java:
+```astro title="quick sort" {23-24,27-28}
+import java.util.*;
+
+public class Main{
+    static int N = 100010;
+    static int[] a = new int[N];
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for(int i = 0;i<n;i++){
+            a[i] = sc.nextInt();
+        }
+        quicksort(0,n-1);
+        for(int i = 0;i<n;i++){
+            System.out.print(a[i]);
+            System.out.print(" ");
+        }
+    }
+    
+    public static void quicksort(int l,int r){
+        if(l>=r){
+            return;
+        }
+        int i = l-1;
+        int j = r+1;
+        int x = a[(l+r)>>1];
+        while(i<j){
+            while(a[++i]<x);
+            while(a[--j]>x);
+            if(i<j){
+                int t = a[j];
+                a[j] = a[i];
+                a[i] = t;
+            }
+        }
+        quicksort(l,j);
+        quicksort(j+1,r);
+    }
+}
+```
+This is a really strong template for quick sort. Let's analyze it step by step.
+
+1. Attention on line 23-24, where we select the pivot as the middle element of the array. Here we use the Hoare partition scheme to partition the array around the pivot.
+
+So why do we use `i = l - 1` and `j = r + 1`? 
+
+Because we want to use the `++i` and omit the boundary check in the inner while loop.
+
+2. Why we don't need `=` in while loop line 27-28?
+
+Reason 1: Assume that all elements in the array are the same. 
+
+If we use `<=` or `>=`, the pointers `i` and `j` will meet at start or end index. This is not efficient.
+
+Reason 2: Forced swap when `i == j`. 
+
+Seems that this will not affect the result, but it will make pivot stay at the middle postion.
+
+3. This is the most important part:
+
+```java
+int x = a[(l + r) >> 1]; // choose pivot
+// ... 
+quicksort(l, j);    // left side
+quicksort(j + 1, r); // right side
+```
+
+This has a strong rule：
+
+    If the recursive split is `(l, j)` and `(j + 1, r)`, then Pivot absolutely cannot be selected as the right boundary `a[r]`.
+
+    If the recursive split is `(l, i - 1)` and `(i, r)`, then Pivot absolutely cannot be selected as the left boundary `a[l]`.
+
+Otherwise there will be dead loop.
+
+This quick sort implementation has an average time complexity of $O(n \log n)$, but in the worst case (which can occur when the smallest or largest element is always chosen as the pivot), its time complexity degrades to $O(n^2)$. 
+
+However, with good pivot selection strategies (like choosing the median or using randomization), quick sort can perform very efficiently in practice.
+
+So this template is really worth memorizing. 
