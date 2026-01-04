@@ -1,0 +1,56 @@
+name: Sync Blog Changes to AI Brain
+
+# 触发条件：只有当 push 到 main 分支，且 src/content/blog 下的 mdx 文件发生变化时才触发
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/content/blog/**/*.mdx'
+
+jobs:
+  sync-posts:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 必须拉取完整历史，才能通过 git diff 找出变动的文件
+
+      # 2. 找出本次提交中发生变化的文件
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: src/content/blog/**/*.mdx
+
+      # 3. 遍历变化的文件，逐个上传给后端
+      - name: Upload to Spring Boot Backend
+        # 只有检测到有文件变化时才运行
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+        run: |
+          echo "检测到博客文章更新，准备同步..."
+          
+          # 遍历所有修改或新增的文件
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "正在同步文件: $file"
+            
+            # 使用 curl 发送 POST 请求
+            # -F "file=@$file": 把文件作为 multipart/form-data 发送
+            # 这和你用 Postman 上传 PDF 是完全一样的原理！
+            response=$(curl -s -w "\n%{http_code}" -X POST -F "file=@$file" "$BACKEND_URL/api/research/upload")
+            
+            http_code=$(echo "$response" | tail -n1)
+            content=$(echo "$response" | sed '$d')
+            
+            if [ "$http_code" -eq 200 ]; then
+              echo "✅ 同步成功: $file"
+            else
+              echo "❌ 同步失败: $file (HTTP $http_code)"
+              echo "后端返回: $content"
+              # 不退出，继续尝试下一个文件，或者你可以选择 exit 1 报错
+            fi
+          done
