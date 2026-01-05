@@ -26,7 +26,7 @@ export default function ResearchAssistant() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
-  const API_BASE = 'http://localhost:8080/api/research';
+  const API_BASE = 'https://www.zvhivta.space/api/research';
 
   // 自动滚动
   useEffect(() => {
