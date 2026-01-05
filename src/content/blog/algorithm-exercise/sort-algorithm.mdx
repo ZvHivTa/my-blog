@@ -167,3 +167,119 @@ This quick sort implementation has an average time complexity of $O(n \log n)$, 
 However, with good pivot selection strategies (like choosing the median or using randomization), quick sort can perform very efficiently in practice.
 
 So this template is really worth memorizing. 
+
+### Radix Sort
+
+Radix Sort is actually not based on inversion pair. LSD (Least Significant Digit) is used by this algorithm. It exploits the concept of "positional notation" (digits):
+
+Digit Splitting: It processes integers by individual digits (ones, tens, hundreds, etc.).
+
+Bucketing: It prepares 10 buckets (numbered 0-9).
+
+Multiple Rounds:
+
+    First, sort based on the 1's digit (Least Significant Digit).
+
+    Then, sort based on the 10's digit.
+
+    Continue until the highest digit is reached.
+
+Stability: To ensure the order established in lower digits isn't messed up when sorting higher digits, the sub-sorting algorithm used in each round must be stable. (We typically use Counting Sort for this).
+
+```java
+
+import java.util.Arrays;
+
+public class RadixSort {
+
+    // Utility function to get the maximum value in arr[]
+    // This is needed to know the number of digits/rounds required.
+    private static int getMax(int[] arr) {
+        int max = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] > max) {
+                max = arr[i];
+            }
+        }
+        return max;
+    }
+
+    // A function to do counting sort of arr[] according to
+    // the digit represented by exp (1, 10, 100...)
+    private static void countSort(int[] arr, int exp) {
+        int n = arr.length;
+        int[] output = new int[n]; // Output array that will have sorted numbers
+        int[] count = new int[10]; // Count buckets for digits 0-9
+
+        // 1. Store count of occurrences in count[]
+        // (arr[i] / exp) % 10 extracts the digit at the current position
+        for (int i = 0; i < n; i++) {
+            int digit = (arr[i] / exp) % 10;
+            count[digit]++;
+        }
+
+        // 2. Change count[i] so that count[i] now contains actual
+        // position of this digit in output[] (Prefix Sum)
+        for (int i = 1; i < 10; i++) {
+            count[i] += count[i - 1];
+        }
+
+        // 3. Build the output array (CRITICAL: Iterate from REAR to FRONT!)
+        // Traversing backwards ensures the algorithm is STABLE.
+        // Elements with the same digit preserve their original relative order.
+        for (int i = n - 1; i >= 0; i--) {
+            int digit = (arr[i] / exp) % 10;
+            output[count[digit] - 1] = arr[i];
+            count[digit]--;
+        }
+
+        // 4. Copy the output array to arr[], so that arr[] now
+        // contains sorted numbers according to current digit
+        for (int i = 0; i < n; i++) {
+            arr[i] = output[i];
+        }
+    }
+
+    // The main function to that sorts arr[] using Radix Sort
+    public static void radixSort(int[] arr) {
+        if (arr == null || arr.length == 0) {
+            return;
+        }
+
+        // 1. Find the maximum number to know number of digits
+        int max = getMax(arr);
+
+        // 2. Do counting sort for every digit. Note that instead
+        // of passing digit number, exp is passed. exp is 10^i
+        // (1, 10, 100, etc.)
+        for (int exp = 1; max / exp > 0; exp *= 10) {
+            countSort(arr, exp);
+            // Optional: Print array after each pass to see the progress
+            System.out.println("Sorting for exp=" + exp + ": " + Arrays.toString(arr));
+        }
+    }
+
+    // Main method for testing
+    public static void main(String[] args) {
+        int[] arr = {170, 45, 75, 90, 802, 24, 2, 66};
+        
+        System.out.println("Original Array: " + Arrays.toString(arr));
+        
+        radixSort(arr);
+        
+        System.out.println("Sorted Array:   " + Arrays.toString(arr));
+    }
+}
+```
+
+Complexity AnalysisTime Complexity: $O(d \times (n + k))$
+
+$n$: Number of elements in the array.
+
+$d$: Number of digits in the maximum number (e.g., 802 has 3 digits).
+
+$k$: The base/radix (here it is 10, for decimal numbers).
+
+Since $d$ and $k$ are usually small constants, this is often considered linear time $O(n)$, making it faster than QuickSort $O(n \log n)$ for specific datasets.
+
+Space Complexity: $O(n + k)$Requires an extra output array and count array.
