@@ -55,7 +55,7 @@ $$
 T := (P\cdot( \Sigma \cdot I  \cup  I \cup I \cdot \Sigma) \cdot S ) \rightarrow \{0,1\}\\\\
 $$
 
-$T(u) = 1$  $\text{iff} $  $u$ is a member of $U$.
+$T(u) = 1$  $\text{iff}$  $u$ is a member of $U$.
 
 Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$​. This table can seen as a three-dimension array. 
 
@@ -97,23 +97,25 @@ Then we call $i$ and $i^{\prime}$ is $status - equivalent$ which denoted $i \equ
 
 #### **v)** Acceptor:
 
-If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 5-tuples $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ where
+If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 6-tuples $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ where
 
 • $Q = \{status_i| i \in I\}$
 
 • $q_0 = T(\epsilon) \in Q$
 
+• $\{l,r\}$ is the mark of operations. We can also see $\Sigma_d = \Sigma \times \{l,r\}$ as an enhanced alphabet.
+
 • $F = \{status_i \in Q|status(\epsilon,\epsilon) = 1\}$
 
-• $\delta:Q \times \Sigma \rightarrow Q$ is the transition function defined as $\delta(status_i,a) = status_{i \cdot a}$. This is well-defined if the table is closed.
+• $\delta:Q \times \Sigma \times \{l,r\} \rightarrow Q$ is the transition function defined as $\delta(status_i,a,r) = status_{i \cdot a},\delta(status_i,a,l) = status_{a \cdot i}$. This is well-defined if the table is closed.
 
-The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
+The transition function $\delta$ is extended to the function $\delta^{*}:Q \times (\Sigma\times\{l,r\})^{*} \rightarrow Q$:
 
 $$
 \delta^{*}(q,w) = 
 \begin{cases}
-q & \text{if} & w = \epsilon \\\\
-\delta(\delta^{*}(q,w^{\prime}),a) & \text{if} & w = w^{\prime}a \space, \space a \in \Sigma\\
+q & \text{if} & w = (\epsilon,l/r) \\\\
+\delta(\delta^*(q,w^{\prime}),a,d) & \text{if} & w = w^{\prime} \cdot(a,d) \space, \space a \in \Sigma,d \in \{l,r\}\\
 \end{cases}
 $$
 
@@ -136,7 +138,7 @@ Actually at each step of the algorithm, the learner maintains:
 On the $(I,P,S)$ we can define:
 
 - **Separability**: no two distinct words in $I$ are $status-equivalent$. 
-- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some  $i^{\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$​
+- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some  $i^{\prime},i^{\prime\prime}∈ I$ such that $ia ≡_{status} i^{\prime},ai ≡_{status} i^{\prime\prime}$​
 
 If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$, according to the definition of acceptor and the propositions as follow.
 
@@ -146,7 +148,7 @@ According to the definition of Separability, we can assume each $i \in I$ is rel
 
 According to the definition of syntactic monoid, $u ∼_L v \Leftrightarrow [u] = [v]$.
 
-Assume that now there is an acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ and the language of $\mathcal{M}$ is $L_{\mathcal{M}}$. Because  $(I,P,S)$ is separable, in other words : 
+Assume that now there is an acceptor $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ and the language of $\mathcal{M}$ is $L_{\mathcal{M}}$. Because  $(I,P,S)$ is separable, in other words : 
 $$
 \forall u,v \in I.  u \equiv_{status} v \leftrightarrow(\forall p\in P, s \in S. (p\cdot i_1 \cdot s \in L_{\mathcal{M}}) \space \wedge \space (p\cdot i_2 \cdot s \in L_{\mathcal{M}}))
 $$
@@ -164,9 +166,9 @@ $$
 $$
 We should add this $i^{\prime}$ into $I$​ so that we try to make it separable. 
 
-**Proposition 3.** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
+**Proposition 3.** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,l/r,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
 
-**Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = δ(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$. 
+**Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = \delta(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$. 
 
 Writing $χ_L$ for the characteristic function of the target language L:
 $$
@@ -186,52 +188,59 @@ $$
 $$
 Now let $I^{\prime} = I ∪ {i_{k−1}w_i}$ and $S^{\prime} = S ∪ {w_{i+1} . . . w_n}$. By definition of closedness, $i_k$ is the unique element of $I$ that is $Status-equivalent$ to $i_{k−1}w_i$ . And the new suffix $w_{i+1} . . . w_n$ distinguishes $i_k$ from $i_{k−1}w_i$ . We conclude that $i_{k−1}w_i \notin I$ and that the new $OT$ is separable.
 
-**Proposition 4.** *Assume that $(I,P,S)$ is closed and separable observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ is the syntactic monoid of the language $L$​.*
+**Proposition 4.** *Assume that $(I,P,S)$ is closed and separable observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ is the syntactic monoid of the language $L$​.*
 
 **Proof:**
 
 Actually we want to prove this conclusion:
 
 $$
-δ(q_0,w)=δ(q_0,w') \Leftrightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)
+\delta^*(q_0,w)=\delta^*(q_0,w') \Leftrightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)
 $$
 
-for the acceptor $M = (Q,\Sigma,\delta,q_0,F)$.
+for the acceptor $M = (Q,\Sigma,\delta,l/r,q_0,F)$. Here $w$ is extended into string like $(a,l/r)(b,l/r)\cdots$.
 
 From assumption we know some facts:
 
 **a.** The algorithm terminated. There is no counterexample to make the $OT$ extend.
 
-**b.** Because the observation table is consistent, then for $i_1,i_2 \in (I \cup I \cdot \Sigma)$
+**b.** Because the observation table is consistent, then for $i_1,i_2 \in (I \cup I \cdot \Sigma \cup \Sigma \cdot I)$
 
 If $i_1 \equiv_{status} i_2$, then $a\cdot i_1 \cdot b \equiv_{status} a\cdot i_2 \cdot b$, which $a,b \in \Sigma \cup \{\epsilon\}$.
 
-① $\forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L) \Rightarrow δ(q_0,w)=δ(q_0,w')$ is clear. 
+① $\forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L) \Rightarrow \delta^*(q_0,w)=\delta^*(q_0,w')$ is clear. 
 
-Because now $[w] = [w^{\prime}]$, then we can know $w \in L \Leftrightarrow w^{\prime} \in L$, which is equal to $δ(q_0,w)=δ(q_0,w')$
+Because now $[w] = [w^{\prime}]$, then we can know $w \in L \Leftrightarrow w^{\prime} \in L$, which is equal to $\delta^*(q_0,w)=\delta^*(q_0,w')$
 
-② Prove $δ(q_0,w)=δ(q_0,w') \Rightarrow \forall u,v ∈ Σ^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$
+② Prove $\delta^*(q_0,w)=\delta^*(q_0,w') \Rightarrow \forall u,v ∈ \Sigma^*, (uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$
 
 This is clear:
 $$
-\exists i \in I, δ(q_0,w) = δ(q_0,w') = status_i
+\exists i \in I, \delta^*(q_0,w) = \delta^*(q_0,w') = status_i
 $$
 
-according to separablility:
-
 $$
-\forall  a,b \in \Sigma \cup \{\epsilon\}. a\cdot w\cdot b \equiv_{status} a\cdot w'\cdot b
+    \forall  a,b \in \Sigma \cup \{\epsilon\}. \delta(\delta^*(q_0,w),a,l) = \delta(\delta^*(q_0,w'),a,l)\\
 $$
 
-When $|u| = |v| = 0$ and $|u| = |v| = 1$, $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is clear.
+Then we have $\delta(\delta^*(q_0,aw),b,r) = \delta(\delta^*(q_0,aw'),b,r)$. It is same if we concat $b$ at right side first.
 
-When $|u| = k$ and $|v| = l$, assume $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is true. It means $δ(q_0,uwv)=δ(q_0,uw^{\prime}v)$. Then we can also know:
+So we actually have $\delta^*(q_0,awb) = \delta^*(q_0,aw'b)$, it is also means:
 
 $$
-\exists i^{\prime} \in I, δ(q_0,uwv) = δ(q_0,uw^{\prime}v) = status_{i^{\prime}} = status_{uwv} = status_{uw^{\prime}v}
+    \forall  a,b \in \Sigma \cup \{\epsilon\}. a\cdot w\cdot b \equiv_{status} a\cdot w'\cdot b
 $$
 
-Then according to the consistency:
+Returning to the mathematical induction mentioned earlier, so when $|u| = |v| = 0$ and $|u| = |v| = 1$, $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is clear.
+
+When $|u| = k$ and $|v| = l$, assume $(uwv ∈ L \text{ iff } uw^{\prime}v ∈ L)$ is true. It means $\delta(q_0,uwv)=\delta(q_0,uw^{\prime}v)$. 
+
+$$
+\exists i^{\prime} \in I, \delta(q_0,uwv) = \delta(q_0,uw^{\prime}v) = status_{i^{\prime}} = status_{uwv} = status_{uw^{\prime}v}
+$$
+
+
+Then according to the discussion, we can also know:
 
 $$
 \forall a,b \in \Sigma \cup \{\epsilon\}. status_{a\cdot uwv\cdot b} = status_{a\cdot uw^{\prime}v\cdot b}
