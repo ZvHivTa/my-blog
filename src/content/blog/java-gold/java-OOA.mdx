@@ -1,0 +1,336 @@
+---
+title: 'Java OOA'
+description: ''
+date: 2026-1-12
+tags: ['Java','Java OOA']
+authors: ['enscribe']
+order: 1
+---
+import Callout from '@/components/Callout.astro'
+
+# 啥是Java OOA
+
+OOA就是面向对象设计和编程，先来看考纲，Java Gold主要考察以下几个部分：
+
+- 声明并实例化 Java 对象（包括嵌套类对象），并解释对象生命周期（包括创建、引用重新赋值和垃圾回收）。
+- 创建类和记录类 (`record`)，定义并使用实例字段和静态字段、方法、构造函数，以及实例初始化块和静态初始化块。
+- 实现方法重载（Overloading），包括可变参数（var-arg）方法。
+- 理解变量作用域，使用局部变量类型推断 (`var`)，应用封装原则，并使对象不可变（Immutable）。
+- 实现继承，包括抽象类 (`abstract`) 和密封类 (`sealed`)。重写 (`Override`) 方法，包括 `Object` 类的方法。实现多态，区分对象类型与引用类型。执行类型转换，使用 `instanceof` 运算符和模式匹配（Pattern Matching）来识别对象类型。
+- 创建并使用接口，识别函数式接口，并利用接口的 `private`、`static` 和 `default` 方法。
+- 创建并使用包含字段、方法和构造函数的枚举 (`enum`)。
+
+但实际上这里有很多司马的细节是平时不会用的，考试会出很司马的写法来考细节，我们概括几个方面。
+
+## 初始化和各种代码块
+
+假如我们初始化一个类，首先要进行类加载，然后再创建实例。也就说，首先JVM把“图纸”实例化，然后根据图纸创建一个实体。
+
+那么问题就在于什么能触发类加载，这是关键的：
+
+- new 一个对象时
+- 访问类的 static 变量 (非 Final)
+- 调用类的 static 方法
+- 使用反射 (Reflection)
+- 初始化子类时，父类会被“连坐”
+- 虚拟机启动时的“启动类” (Main Class)
+
+但是当混合了静态代码块和实例代码块（虽然这些b用没有）时，会觉得混乱，看个例子：
+
+```java title="Parent and Child"
+class Parent {
+    // 1. 父类静态
+    static { System.out.println("A: Parent Static"); }
+    
+    // 3. 父类实例
+    { System.out.println("B: Parent Instance"); }
+    
+    // 4. 父类构造
+    Parent() { System.out.println("C: Parent Constructor"); }
+}
+
+class Child extends Parent {
+    // 2. 子类静态
+    static { System.out.println("D: Child Static"); }
+    
+    // 5. 子类实例
+    { System.out.println("E: Child Instance"); }
+    
+    // 6. 子类构造
+    Child() { System.out.println("F: Child Constructor"); }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println("--- 第一次 new ---");
+        new Child();
+        
+        System.out.println("\n--- 第二次 new ---");
+        new Child();
+    }
+}
+```
+
+静态块会在类加载阶段就执行，想象一下，我们必须先将“图纸”看一遍。所以首先是父类的类加载，然后是子类的类加载。
+
+接着`实例化之前` 会执行实例代码块，然后再实例化，这两个步骤对于一个类是紧接着完成的。在 JVM 眼里，实例代码块的代码会被“拷贝”到构造函数的 super() 之后、构造函数代码体之前执行。
+
+那么其实就是父类实例代码块-父类实例化，然后子类同理。
+
+所以完整的输出就是：
+
+```
+--- 第一次 new ---
+
+A: Parent Static (先加载父类)
+
+D: Child Static (再加载子类)
+
+B: Parent Instance (开始初始化父类对象)
+
+C: Parent Constructor
+
+E: Child Instance (父类好了，开始初始化子类对象)
+
+F: Child Constructor
+
+--- 第二次 new --- (注意：静态块不再执行！)
+
+B: Parent Instance
+
+C: Parent Constructor
+
+E: Child Instance
+
+F: Child Constructor
+```
+
+还有需要注意的是，假如我们想对于一个类连续创建两个实例化对象，其中的静态代码块会执行两次吗？显然是不会的，因为类加载只会在第一次new对象时才执行，就算你使用反射，只要不用不同的ClassLoader，是不会重新加载这个类的。
+
+下面这个代码可以强制触发二次类加载：
+
+```java title="二次类加载"
+import java.net.URL;
+import java.net.URLClassLoader;
+
+class MyTest {
+    // 这是一个静态块，正常情况下只打印一次
+    static {
+        System.out.println("🔥 静态块执行了！类被加载了！");
+    }
+}
+
+public class DoubleLoadTest {
+    public static void main(String[] args) throws Exception {
+        // 1. 获取当前类路径
+        URL url = DoubleLoadTest.class.getProtectionDomain().getCodeSource().getLocation();
+
+        // 2. 创建【加载器 A】
+        ClassLoader loaderA = new URLClassLoader(new URL[]{url}, null); // parent设为null以强制自己加载
+        Class<?> classA = loaderA.loadClass("MyTest");
+        // 触发初始化
+        classA.newInstance(); 
+
+        System.out.println("--- 分割线 ---");
+
+        // 3. 创建【加载器 B】
+        ClassLoader loaderB = new URLClassLoader(new URL[]{url}, null);
+        Class<?> classB = loaderB.loadClass("MyTest");
+        // 再次触发初始化
+        classB.newInstance(); 
+        
+        // 4. 验证它们是不是同一个类
+        System.out.println("classA == classB ? " + (classA == classB));
+    }
+}
+```
+
+我们使用了两个不同的ClassLoader对象强制触发了类加载。其实这个技术叫`热部署`，它会用在一些需要调试的场景，比如使用Springboot开发时，一修改后端就要重启着实司马，但是伟大的Spring Boot DevTools和Tomcat就会解决这个问题，它们内部就使用了这个机制。
+
+接着我们看看第二条，为什么故意强调了非final呢？如果是一个`static final`的变量，实际上这就是个常量。
+
+```java
+class Constant {
+    static final String MSG = "Hello";
+    static { System.out.println("Static Block"); }
+}
+
+// 调用代码：
+System.out.println(Constant.MSG);
+```
+这样做不会触发类加载，因为 `MSG` 是常量，编译器在编译阶段就把它偷偷“宏替换”到了 `Main` 类的常量池里。运行时 `Main` 类其实根本没理会 `Constant` 类。
+
+然后我们看最傻逼的，`通过子类引用父类的静态变量`。
+
+```java
+class Super { 
+    static int value = 123; 
+    static { System.out.println("Super Init"); } 
+}
+class Sub extends Super { 
+    static { System.out.println("Sub Init"); } 
+}
+
+// 调用代码：
+System.out.println(Sub.value);
+```
+为什么这样做不会触发子类的类加载呢？实际上这叫做`懒加载`，虽然一个智力正常的人类会直接写`Super.value`，但是你用子类去这样写没任何问题。编译器非常聪明地看到实际上你根本没用子类的任何东西，也就无需加载子类了。
+
+然后是定义数组引用：
+
+```java
+Student[] students = new Student[10];
+```
+这当然不会触发类加载，因为压根就没建对象，里面都是null，其他的什么ArrayList也是一样的道理。
+
+## 多态和绑定 （Polymorphism & Binding）
+
+这部分有一个铁律：左边 = 引用类型（Reference Type，如 `Animal a`） 右边 = 对象类型（Object Type，如 `new Dog()`）
+
+export const cellStyle = { padding: '10px', borderBottom: '1px solid #eee' };
+export const headerStyle = { padding: '10px', borderBottom: '2px solid #333', textAlign: 'left' };
+
+<table>
+  <thead>
+    <tr>
+      <th style={headerStyle}>考点类型</th>
+      <th style={headerStyle}>绑定方式</th>
+      <th style={headerStyle}>此时看谁？</th>
+      <th style={headerStyle}>口诀</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style={cellStyle}><strong>实例方法</strong><br/><small style={{color:'#666'}}>(void run)</small></td>
+      <td style={cellStyle}>动态绑定 (运行期)</td>
+      <td style={cellStyle}><strong style={{color: 'blue'}}>看右边</strong><br/>(实际对象)</td>
+      <td style={cellStyle}>“认人不认衣”</td>
+    </tr>
+    <tr>
+      <td style={cellStyle}><strong>成员变量</strong><br/><small style={{color:'#666'}}>(int x)</small></td>
+      <td style={cellStyle}>静态绑定 (编译期)</td>
+      <td style={cellStyle}><strong style={{color: 'orange'}}>看左边</strong><br/>(引用类型)</td>
+      <td style={cellStyle}>“认衣不认人”</td>
+    </tr>
+    <tr>
+      <td style={cellStyle}><strong>静态方法</strong><br/><small style={{color:'#666'}}>(static run)</small></td>
+      <td style={cellStyle}>静态绑定 (编译期)</td>
+      <td style={cellStyle}><strong style={{color: 'orange'}}>看左边</strong><br/>(引用类型)</td>
+      <td style={cellStyle}>“认衣不认人”</td>
+    </tr>
+  </tbody>
+</table>
+
+其实最容易混淆的就是`成员变量`这里，因为静态的我们都清楚它是和类直接绑定的，所以我们只看左边就行，但是成员变量竟然也是静态绑定的。
+
+所以`Java的多态，是非静态方法的多态`
+
+看一个纯唐例子：
+
+```java
+class Baap {
+    public int h = 4;
+
+    public int getH() {
+        System.out.println("Baap " + h);
+        return h;
+    }
+}
+
+public class Beta extends Baap {
+    public int h = 44;
+
+    @Override
+    public int getH() {
+        System.out.println("Beta " + h);
+        return h;
+    }
+
+    public static void main(String[] args) {
+        Baap b = new Beta();
+        System.out.println(b.h + " " + b.getH());
+        Beta bb = (Beta) b;
+        System.out.println(bb.h + " " + bb.getH());
+    }
+}
+```
+
+首先`b` 声明类型为 Baap，实际对象为 Beta，那访问属性看左边但调用方法看右边，所以`b.getH()`的返回值就是Beta类内部的h的值，就是44
+
+```
+Beta 44 
+4 44 
+```
+
+接着他强转了类型，换言之声明类型为 Beta，实际对象为 Beta，那这就好办了
+
+```
+Beta 44 
+44 44
+```
+
+这个例子就很好说明了刚才表格写的。
+
+接着我们来看一个例子：
+
+```java
+class Super {
+    public int num = 10;
+    public void run() { System.out.println("Super Run"); }
+    public static void fly() { System.out.println("Super Fly"); }
+}
+
+class Sub extends Super {
+    public int num = 20;
+    public void run() { System.out.println("Sub Run"); }
+    public static void fly() { System.out.println("Sub Fly"); }
+}
+
+public class Exam {
+    public static void main(String[] args) {
+        Super s = new Sub(); // 【核心】左边 Super，右边 Sub
+        
+        
+        System.out.println(s.num); 
+        s.run();
+        // !!
+        s.fly();
+    }
+}
+```
+
+我们试图用对象调用一个静态方法，虽然这是一种脑瘫写法，因为这等价于`Super.fly()`，但是我们还是要说一句：`静态方法是不参与多态的`。
+
+最后是关于`重载 (Overloading) 的绑定时机`，这个容易出错：
+
+```java
+class Tester {
+    void test(Animal a) { System.out.println("测试动物"); }
+    void test(Dog d)    { System.out.println("测试狗"); }
+}
+
+Animal a = new Dog(); // 左边 Animal，右边 Dog
+Tester t = new Tester();
+
+t.test(a);
+```
+
+必须强调，`重载是静态绑定`。那么就根据之前那个表格我们就知道了，看左边。
+
+test(a)尽管对象是Dog类，但是声明是Animal类的，所以参数类型就是Animal类型，输出必然是：
+
+```
+测试动物！
+```
+
+总结一下：
+
+在做 OOA 题目时，看到 Parent p = new Child();，脑子里立刻要浮现出三行字：
+
+- 方法调用： 它是谁？(看 new 出来的对象)
+
+- 变量访问： 它的引用类型是什么？(看定义的类型)
+
+- 静态方法： 它的引用类型是什么？(看定义的类型)
+
+只有普通方法是“特立独行”的，其他全是看引用类型。

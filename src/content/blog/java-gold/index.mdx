@@ -1,0 +1,195 @@
+---
+title: 'Java Technical blog'
+description: 'using for technical problem and java gold test'
+date: 2026-1-12
+tags: ['Java']
+image: './banner.jpg'
+authors: ['enscribe']
+---
+
+# Java学习博客
+
+分类目录将在完善内容后添加。
+
+目前主要用于学习Java Gold考试。
+
+# Java Gold -- 1Z0-829
+
+这个考试是Java 17下的Gold资格考试。它和以往的先通过silver才能考gold不同，直接备考这个考试就被视为是有Java Gold资格。
+
+当然还有日本特供版本的1Z0-825-JPN(silver) 和 1Z0-826-JPN(gold)，虽然你可以直接报考gold测试，但是必须两者全部通过才被视为具有Gold资格。
+
+双语考纲列在下方
+
+# Java SE 17 Developer Exam Syllabus
+
+## 1. Handling Date, Time, Text, Numeric and Boolean Values
+
+- Use primitives and wrapper classes including `Math API`, parentheses, type promotion, and casting to evaluate arithmetic and boolean expressions.
+- Manipulate text, including text blocks, using `String` and `StringBuilder` classes.
+- Manipulate date, time, duration, period, instant and time-zone objects using **Date-Time API**.
+
+## 2. Controlling Program Flow
+
+- Create program flow control constructs including `if`/`else`, `switch` statements and expressions, loops, and `break` and `continue` statements.
+
+## 3. Utilizing Java Object-Oriented Approach
+
+- Declare and instantiate Java objects including nested class objects, and explain the object life-cycle including creation, reassigning references, and garbage collection.
+- Create classes and `records`, and define and use instance and static fields and methods, constructors, and instance and static initializers.
+- Implement overloading, including var-arg methods.
+- Understand variable scopes, use local variable type inference, apply encapsulation, and make objects immutable.
+- Implement inheritance, including `abstract` and `sealed` classes. Override methods, including that of `Object` class. Implement polymorphism and differentiate object type versus reference type. Perform type casting, identify object types using `instanceof` operator and pattern matching.
+- Create and use interfaces, identify functional interfaces, and utilize `private`, `static`, and `default` interface methods.
+- Create and use enumerations with fields, methods and constructors.
+
+## 4. Handling Exceptions
+
+- Handle exceptions using `try`/`catch`/`finally`, `try-with-resources`, and multi-catch blocks, including custom exceptions.
+
+## 5. Working with Arrays and Collections
+
+- Create Java arrays, `List`, `Set`, `Map`, and `Deque` collections, and add, remove, update, retrieve and sort their elements.
+
+## 6. Working with Streams and Lambda Expressions
+
+- Use Java object and primitive Streams, including lambda expressions implementing functional interfaces, to supply, filter, map, consume, and sort data.
+- Perform decomposition, concatenation and reduction, and grouping and partitioning on sequential and parallel streams.
+
+## 7. Packaging and Deploying Java Code
+
+- **Java Platform Module System (JPMS)**: Define modules and their dependencies, expose module content including for reflection. Define services, producers, and consumers.
+- Compile Java code, produce modular and non-modular jars, runtime images, and implement migration using unnamed and automatic modules.
+
+## 8. Managing Concurrent Code Execution
+
+- Create worker threads using `Runnable` and `Callable`, manage the thread lifecycle, including automations provided by different `Executor` services and concurrent API.
+- Develop thread-safe code, using different locking mechanisms and concurrent API.
+- Process Java collections concurrently including the use of parallel streams.
+
+## 9. Using Java I/O API
+
+- Read and write console and file data using I/O Streams.
+- Serialize and de-serialize Java objects.
+- Create, traverse, read, and write `Path` objects and their properties using `java.nio.file` API.
+
+## 10. Accessing Databases using JDBC
+
+- Create connections, create and execute basic, prepared and callable statements, process query results and control transactions using **JDBC API**.
+
+## 11. Implementing Localization
+
+- Implement localization using `Locale`, `ResourceBundle`, parse and format messages, dates, times, and numbers including currency and percentage values.
+
+---
+
+## Exam Assumptions
+
+Please keep the following assumptions in mind when reviewing code snippets in the exam:
+
+1.  **Missing package and import statements**: If sample code does not include package or import statements, and the question does not explicitly refer to these missing statements, then assume that all sample code is in the same package, or import statements exist to support them.
+2.  **No file or directory path names for classes**: If a question does not state the file names or directory locations of classes, then assume one of the following, whichever will enable the code to compile and run:
+    - All classes are in one file.
+    - Each class is contained in a separate file, and all files are in one directory.
+3.  **Unintended line breaks**: Sample code might have unintended line breaks. If you see a line of code that looks like it has wrapped, and this creates a situation where the wrapping is significant (for example, a quoted `String` literal has wrapped), assume that the wrapping is an extension of the same line, and the line does not contain a hard carriage return that would cause a compilation failure.
+4.  **Code fragments**: A code fragment is a small section of source code presented without its context. Assume that all necessary supporting code exists and that the supporting environment fully supports the correct compilation and execution of the code shown and its omitted environment.
+5.  **Descriptive comments**: Take descriptive comments, such as `// setter and getters go here`, at face value. Assume that correct code exists, compiles, and runs successfully to create the described effect.
+
+## Additional Expectations
+
+Candidates are also expected to:
+
+- Understand the basics of **Java Logging API**.
+- Use Annotations such as:
+  - `@Override`
+  - `@FunctionalInterface`
+  - `@Deprecated`
+  - `@SuppressWarnings`
+  - `@SafeVarargs`
+
+
+# Java SE 17 开发者考试大纲 (Java Gold)
+
+## 1. 处理日期、时间、文本、数值和布尔值
+
+- 使用基本数据类型和包装类（包括 `Math API`）、括号、类型提升（Type Promotion）和强制类型转换来计算算术和布尔表达式。
+- 使用 `String` and `StringBuilder` 类操作文本（包括 Java 17 的文本块 Text Blocks）。
+- 使用 **Date-Time API** 操作日期、时间、时长（Duration）、周期（Period）、时刻（Instant）和时区对象。
+
+## 2. 控制程序流程
+
+- 创建程序流程控制结构，包括 `if`/`else`、`switch` 语句和表达式、循环，以及 `break` 和 `continue` 语句。
+
+## 3. 利用 Java 面向对象方法
+
+- 声明并实例化 Java 对象（包括嵌套类对象），并解释对象生命周期（包括创建、引用重新赋值和垃圾回收）。
+- 创建类和记录类 (`record`)，定义并使用实例字段和静态字段、方法、构造函数，以及实例初始化块和静态初始化块。
+- 实现方法重载（Overloading），包括可变参数（var-arg）方法。
+- 理解变量作用域，使用局部变量类型推断 (`var`)，应用封装原则，并使对象不可变（Immutable）。
+- 实现继承，包括抽象类 (`abstract`) 和密封类 (`sealed`)。重写 (`Override`) 方法，包括 `Object` 类的方法。实现多态，区分对象类型与引用类型。执行类型转换，使用 `instanceof` 运算符和模式匹配（Pattern Matching）来识别对象类型。
+- 创建并使用接口，识别函数式接口，并利用接口的 `private`、`static` 和 `default` 方法。
+- 创建并使用包含字段、方法和构造函数的枚举 (`enum`)。
+
+## 4. 处理异常
+
+- 使用 `try`/`catch`/`finally`、`try-with-resources` 和多重捕获块（multi-catch）处理异常，包括自定义异常。
+
+## 5. 使用数组和集合
+
+- 创建 Java 数组、`List`、`Set`、`Map` 和 `Deque` 集合，并对其元素进行添加、删除、更新、检索和排序操作。
+
+## 6. 使用流 (Streams) 和 Lambda 表达式
+
+- 使用 Java 对象流和基本类型流（包括实现函数式接口的 Lambda 表达式）来提供、过滤、映射、消费和排序数据。
+- 在串行流和并行流上执行分解、连接、归约（Reduction）、分组和分区操作。
+
+## 7. 打包和部署 Java 代码
+
+- **Java 平台模块系统 (JPMS)**：定义模块及其依赖关系，暴露模块内容（包括用于反射的内容）。定义服务（Services）、服务提供者（Producers）和服务消费者（Consumers）。
+- 编译 Java 代码，生成模块化和非模块化 JAR 包、运行时镜像（Runtime Images），并使用未命名模块和自动模块实现迁移。
+
+## 8. 管理并发代码执行
+
+- 使用 `Runnable` 和 `Callable` 创建工作线程，管理线程生命周期（包括使用不同的 `Executor` 服务和并发 API 提供的自动化功能）。
+- 开发线程安全的代码，使用不同的锁机制和并发 API。
+- 并发处理 Java 集合，包括使用并行流。
+
+## 9. 使用 Java I/O API
+
+- 使用 I/O 流（Streams）读取和写入控制台及文件数据。
+- 对 Java 对象进行序列化和反序列化。
+- 使用 `java.nio.file` API 创建、遍历、读取和写入 `Path` 对象及其属性。
+
+## 10. 使用 JDBC 访问数据库
+
+- 使用 **JDBC API** 创建连接，创建并执行基本语句、预编译语句（PreparedStatement）和可调用语句（CallableStatement），处理查询结果并控制事务。
+
+## 11. 实现本地化 (Localization)
+
+- 使用 `Locale`、`ResourceBundle` 实现本地化，解析并格式化消息、日期、时间以及数字（包括货币和百分比值）。
+
+---
+
+## 考试假设 (Exam Assumptions)
+
+在考试中阅读代码片段时，请遵循以下假设：
+
+1.  **省略的包声明和导入语句**：如果示例代码未包含 `package` 或 `import` 语句，且题目未明确指出这些遗漏，则假设所有示例代码位于同一包中，或已存在必要的导入语句以支持代码运行。
+2.  **未指定类的文件或路径名**：如果题目未说明类的文件名或目录位置，则假设以下情况之一（以能使代码编译并运行为准）：
+    - 所有类都在同一个文件中。
+    - 每个类都在单独的文件中，且所有文件都在同一个目录下。
+3.  **非预期的换行**：示例代码可能存在非预期的换行。如果你看到一行代码看起来被换行了，且这种换行会影响语义（例如，引号内的 `String` 字面量换行了），请假设这是同一行的延伸，并且该行不包含会导致编译失败的硬回车符。
+4.  **代码片段**：代码片段是指没有上下文的一小段源代码。请假设所有必要的支持代码都存在，且环境完全支持所示代码及其省略环境的正确编译和执行。
+5.  **描述性注释**：请按字面意思理解描述性注释，例如 `// setter and getters go here`（此处省略 Getter/Setter）。假设已存在正确的代码，能成功编译并运行以实现描述的效果。
+
+## 额外要求 (Additional Expectations)
+
+考生还应具备以下知识：
+
+- 理解 **Java Logging API** 的基础知识。
+- 能够使用常见注解，例如：
+  - `@Override`
+  - `@FunctionalInterface`
+  - `@Deprecated`
+  - `@SuppressWarnings`
+  - `@SafeVarargs`
