@@ -334,3 +334,188 @@ test(a)尽管对象是Dog类，但是声明是Animal类的，所以参数类型�
 - 静态方法： 它的引用类型是什么？(看定义的类型)
 
 只有普通方法是“特立独行”的，其他全是看引用类型。
+
+## 重写三定律 (Overriding Rules)
+
+重写就是子类试图修改父类里已经存在的方法，当你看到打上@Override注解的时候，多半就是这种情况了。
+
+### 定律一：三同 (Signature & Return) —— 身份核查
+
+这里得介绍重载(Overload)的概念，重载其实就是一个类内部的同名但是参数列表不相同的几个方法之间形成的关系，这非常常见，比如构造方法的重载。
+
+- 方法名相同。
+
+- 参数列表相同（类型、个数、顺序完全一样）。
+
+⚠️ 陷阱： 如果参数列表变了一点点（比如 int 变 long），那就不是重写了，那是重载！那是两个无关的方法。
+
+- 返回类型相同（或更小） —— Covariant Return Type (协变返回类型)。
+
+Java 5 之前的古板规则： 必须完全一模一样。
+
+现在的规则： `子类方法的返回值，可以是父类返回值的子类。`
+
+```java
+class Parent {
+    // 父类返回 Number
+    Number getValue() { return 10; }
+}
+
+class Child extends Parent {
+    // ✅ 正确！Integer 是 Number 的子类 (更小/更具体)
+    @Override
+    Integer getValue() { return 20; }
+
+    // ❌ 错误！Object 是 Number 的父类 (太大/太宽泛)
+    // @Override
+    // Object getValue() { return "Error"; } 
+}
+```
+### 定律二：两小 (Exceptions) —— 风险控制
+
+这个是经常注意不到的：
+
+- 抛出的 Checked Exception 范围变小（或相同）。
+
+子类可以抛出父类异常的子类。
+
+子类可以不抛出任何异常。
+
+❌ 绝对不能抛出父类没声明的、更宽泛的 Checked Exception。
+
+- 抛出的 Checked Exception 个数变少。
+
+⚠️ 核心特例（考试必考）：RuntimeException 不受限制！
+
+如果是 NullPointerException, IllegalArgumentException 这种运行时异常，子类爱怎么抛怎么抛，编译器根本不管。
+
+规则只限制 Checked Exception (如 IOException, SQLException)。
+
+```java
+class Parent {
+    void work() throws IOException { } // 声明会有 IO 风险
+}
+
+class Child extends Parent {
+    // ✅ 情况1：抛出子异常 (FileNotFound 是 IO 的子类)
+    @Override
+    void work() throws FileNotFoundException { }
+
+    // ✅ 情况2：什么都不抛 (我很安全)
+    @Override
+    void work() { }
+
+    // ✅ 情况3：抛出运行时异常 (编译器不管)
+    @Override
+    void work() throws NullPointerException { }
+
+    // ❌ 情况4：抛出更大异常 (Exception 是 IO 的父类) -> 编译错误！
+    // @Override
+    // void work() throws Exception { }
+}
+```
+
+你可能觉得，为啥要子类抛的异常要是父类异常的子类？子类弄个更大的异常兜底不好吗？
+
+因为要满足Liskov 替换原则 (Liskov Substitution Principle, LSP) 是面向对象设计原则 (SOLID) 中最重要、也最容易被误解的一个。
+
+简单用一句话概括就是： “凡是父类对象出现的地方，都能用子类对象替换，而且程序不会出错。”
+
+听起来像是废话？但实际上，Java 的重写规则（三同、两小、一大）全都是为了维护这个原则而存在的。
+
+假设你用更大的异常兜底，那么想想看，父类出现的地方还能不能用子类出现？
+
+### 定律三：一大 (Access Modifiers) —— 门户开放
+
+保证“父类能去的地方，子类也能去”。
+
+- 访问权限必须变大（或相同）。排序： public > protected > package-private (默认) > private。
+
+如果父类是 protected，子类只能是 protected 或 public。如果父类是 public，子类只能是 public（不能退步）。
+
+💀 接口实现的终极陷阱：
+
+这也是我们刚才聊过的：
+
+接口方法： 默认是 public abstract。实现类： 必须显式加上 public。如果你忘了写修饰符，它就变成了 package-private，权限变小了 $\rightarrow$ 编译错误。
+
+```java
+class Parent {
+    protected void sleep() { }
+}
+
+class Child extends Parent {
+    // ✅ 变大 (Public > Protected)
+    @Override
+    public void sleep() { }
+
+    // ❌ 变小 (Default < Protected)
+    // @Override
+    // void sleep() { } 
+}
+```
+所以咱们总结一下：
+
+final 方法： 官方禁止修改。
+
+static 方法： 属于类，不属于对象。（子类同名方法叫“隐藏”）。
+
+private 方法： 子类根本看不见，无法重写。（子类同名方法是“新定义的方法”）。
+
+这里这个Default，也就是缺省我们需要注意：
+
+```java
+class Person {
+    String name; // 没写 public，也没写 private -> 这就是 Default 权限
+    
+    void run() { } // 同上
+}
+```
+
+如果是一般的实例方法，缺省其实就是package-private，就是我们最熟悉的那个Default权限。
+
+```java
+interface Runner {
+    // 这里的 default 不是权限！它代表“默认实现”！
+    default void run() { 
+        System.out.println("跑");
+    }
+
+    void stop();
+}
+```
+默认方法不写权限，默认它是public的。而普通的接口内部的方法，是public abstract的
+
+所以我们刚才为什么提这个接口的权限问题，看下面这个：
+
+```java
+// 1. 定义接口
+interface Animal {
+    void eat(); 
+}
+
+// 2. 实现类
+class Dog implements Animal {
+    
+    void eat() { 
+        System.out.println("狗吃肉");
+    }
+}
+```
+
+接口内部必然是public的，但是你实现的方法居然是default，也就是package-private的，这样就会报错。
+
+## 抽象与接口的博弈 (Abstract vs Interface)
+
+我们必须先理解他俩的区别。
+
+抽象类，只不过就是一个无法直接实例化的类，他必须通过其他类的继承去实现内部的`抽象方法`，神奇的是`它有构造方法`，因为这是给他子类提供的。
+
+但是你懂的，囿于他类的身份限制，子类只能继承他一个，他自己也只能有一个父类，这就意味着扩展性没接口好。最重要的`可以有实例变量和实例方法`。
+
+接口是个神奇的东西，它无法实例化，也没构造方法，更没成员变量。他支持多实现，一旦一个类实现某个接口，就必须实现接口内部所有的抽象方法。
+
+如果内部有变量声明，那它一定是个常量（static final）的。Java 9在接口里增加了`默认方法`，下面会说到。
+
+
+
