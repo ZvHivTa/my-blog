@@ -433,11 +433,13 @@ class Child extends Parent {
 
 如果父类是 protected，子类只能是 protected 或 public。如果父类是 public，子类只能是 public（不能退步）。
 
-💀 接口实现的终极陷阱：
+然后也是我们刚才聊过的：
 
-这也是我们刚才聊过的：
+接口方法： 默认是 public abstract。
 
-接口方法： 默认是 public abstract。实现类： 必须显式加上 public。如果你忘了写修饰符，它就变成了 package-private，权限变小了 $\rightarrow$ 编译错误。
+实现类： 必须显式加上 public。
+
+如果你忘了写修饰符，它就变成了 package-private，权限变小了 $\rightarrow$ 编译错误。
 
 ```java
 class Parent {
@@ -462,7 +464,28 @@ static 方法： 属于类，不属于对象。（子类同名方法叫“隐藏
 
 private 方法： 子类根本看不见，无法重写。（子类同名方法是“新定义的方法”）。
 
-这里这个Default，也就是缺省我们需要注意：
+
+## 抽象与接口的博弈 (Abstract vs Interface)
+
+### 我们必须先理解他俩的区别
+
+抽象类，只不过就是一个无法直接实例化的类，他必须通过其他类的继承去实现内部的`抽象方法`，神奇的是`它有构造方法`，因为这是给他子类提供的。
+
+但是你懂的，囿于他类的身份限制，子类只能继承他一个，他自己也只能有一个父类，这就意味着扩展性没接口好。最重要的`可以有实例变量和实例方法`。
+
+接口是个神奇的东西，它无法实例化，也没构造方法，更没成员变量。他支持多实现，一旦一个类实现某个接口，就必须实现接口内部所有的抽象方法。
+
+如果内部有变量声明，那它一定是个常量（static final）的。
+
+Java 8以后，接口内可以有静态方法，并且在接口里增加了`默认方法`，下面会说到他怎么用。
+
+Java 9之后，接口内部的方法可以是private的。
+
+接下来我们介绍几个坑。
+
+### 默认（缺省）的权限区分
+
+方法权限的default，也就是缺省，是因方法的种类而异的。我们需要注意：
 
 ```java
 class Person {
@@ -505,17 +528,379 @@ class Dog implements Animal {
 
 接口内部必然是public的，但是你实现的方法居然是default，也就是package-private的，这样就会报错。
 
-## 抽象与接口的博弈 (Abstract vs Interface)
+### 抽象类的“假”构造函数
 
-我们必须先理解他俩的区别。
+刚才我们说，抽象类的构造函数其实就是个摆设，他是为了给将来的子类继承用的。
 
-抽象类，只不过就是一个无法直接实例化的类，他必须通过其他类的继承去实现内部的`抽象方法`，神奇的是`它有构造方法`，因为这是给他子类提供的。
+```java
+abstract class Base {
+    Base() { System.out.println("Base"); }
+}
 
-但是你懂的，囿于他类的身份限制，子类只能继承他一个，他自己也只能有一个父类，这就意味着扩展性没接口好。最重要的`可以有实例变量和实例方法`。
+// 问：下面哪行代码能编译？
+// A. Base b = new Base();
+// B. Base b = new Sub(); // Sub 是具体子类
+```
 
-接口是个神奇的东西，它无法实例化，也没构造方法，更没成员变量。他支持多实现，一旦一个类实现某个接口，就必须实现接口内部所有的抽象方法。
+肯定是B能编译，我们可以利用多态去构建子类对象让一个父类引用接收，哪怕父类是个抽象类，这和接口的道理类似。
 
-如果内部有变量声明，那它一定是个常量（static final）的。Java 9在接口里增加了`默认方法`，下面会说到。
+### 矛盾的修饰符
 
+到这我们捋一捋修饰符abstract。各种权限和各种特性的修饰符，有些不能共存，从逻辑上就能简单地理解。
 
+1. abstract final ： abstract意味着没有方法体需要子类给我重写，而final意味着禁止重写，这当然不行。
+2. abstract static：static意味着我这个方法应该是和类绑定的，按照逻辑上来说必须有方法体，因为我无需实例化就能通过类名调用静态方法，而它没有方法体，这就是矛盾的。
+3. abstract private：这更好理解，如果你的方法对于子类都不可见，那还重写个锤子啊，所以这也不行。
+
+所以，abstract修饰方法只能和public和protected搭配。
+
+### 最出生的--默认方法冲突 (Diamond Problem)
+
+```java
+interface A { default void run() {} }
+interface B { default void run() {} }
+
+class C implements A, B { } 
+```
+
+不是默认方法压根就不用实现类重写吗？但是这就出问题了，一个类C实现的两个接口A和B里的默认方法run长得一毛一样，编译器就懵逼了，所以这种情况必须重写。
+
+### 欠债还钱
+
+接口以及抽象类内的抽象方法你可以认为是一种承诺，终有一天它们必须被实现，但是如果出现了多继承、多实现的情况会怎么样？
+
+```java
+interface I { void work(); }
+
+// 1. 抽象类 A 实现 I，但没写 work()
+abstract class A implements I { } // ✅ 编译通过（它也是老赖）
+
+// 2. 抽象类 B 继承 A
+abstract class B extends A { }    // ✅ 编译通过（继续传给下一代）
+
+// 3. 实体类 C 继承 B
+class C extends B { }             // ❌ 编译错误！
+```
+所以最终这个欠债的C必须偿还之前所有的债务。
+
+### 这些东西存在的意义
+
+接下来说说为什么要搞这些默认方法之类的东西。
+
+首先来说说抽象类，它与一个设计模式紧密联系：`模板方法模式 (Template Method Pattern)`
+
+抽象父类定义好工作流程，让子类去具体拓展实现，举个例子：
+
+```java
+// 【抽象类】：定义模板
+abstract class Worker {
+
+    // 1. 【模板方法】 (Template Method)
+    public final void dailyRoutine() {
+        getUp();
+        commute(); // 抽象的，由子类决定怎么去
+        work();    // 抽象的，由子类决定干什么
+        goHome();
+    }
+
+    // 【具体方法】：通用的步骤，父类直接写死
+    private void getUp() {
+        System.out.println("闹钟响了，起床洗漱");
+    }
+
+    private void goHome() {
+        System.out.println("下班回家，躺平");
+    }
+
+    // 【抽象方法】：留给子类填空的“坑”
+    protected abstract void commute();
+    protected abstract void work();
+}
+
+// 【子类 A】：程序员
+class Programmer extends Worker {
+    @Override
+    protected void commute() { System.out.println("坐地铁去公司"); }
+    
+    @Override
+    protected void work() { System.out.println("写 Java 代码"); }
+}
+
+// 【子类 B】：老板
+class Boss extends Worker {
+    @Override
+    protected void commute() { System.out.println("开豪车去公司"); }
+    
+    @Override
+    protected void work() { System.out.println("给员工画饼"); }
+}
+
+// 【测试】
+public class Test {
+    public static void main(String[] args) {
+        Worker w1 = new Programmer();
+        w1.dailyRoutine(); // 跑一套标准流程
+        
+        System.out.println("---");
+        
+        Worker w2 = new Boss();
+        w2.dailyRoutine(); // 流程一样，细节不同
+    }
+}
+```
+抽象类`dailyRoutine`这个方法，内部安排好了一套方法执行的流程。核心要点是他加了 final关键字。因为这是 SOP，不允许子类瞎改流程顺序。
+
+两个方法getUp、goHome由于是通用的步骤，也就是说无论子类咋样都这么执行，所以写死在父类里，通过private权限阻止传递。
+
+剩下的交给子类实现。
+
+你发现Programmer和Boss的实现完全不一样，所以这样我们其实就完成了一套模板和两个具体实现。
+
+然后来说说默认方法，默认方法是Java 8之后提出的。为啥要有这种东西？
+
+首先它`能调用接口内部的抽象方法`。这个属实牛逼，因为反正这之后你也得找个实现类实现这个方法，我可以参照模板方法模式的思路去无痛拓展接口功能。
+
+比如我们看看：
+
+```java
+public interface Iterator<E> {
+    boolean hasNext();
+    E next();
+
+    // 【实锤】这里用了 default！
+    default void remove() {
+        throw new UnsupportedOperationException("remove");
+    }
+
+    // 【实锤】forEachRemaining 也是 default 的
+    default void forEachRemaining(Consumer<? super E> action) { ... }
+}
+```
+用迭代器访问集合时，移除其中的元素是不安全的，所以你调用remove就会报错。
+
+但是我现在实现一个接口，但我完全不想内部的所有方法，因为很多方法吊用没有。比如
+
+```java
+interface GymMember {
+    void run();          // 跑步
+    void swim();         // 游泳
+    void liftWeights();  // 举重
+    void yoga();         // 瑜伽
+    void boxing();       // 拳击
+}
+
+```
+
+哥们儿想运动，但是它只跑步：
+
+```java
+class ZhangSan implements GymMember {
+    public void run() { System.out.println("我就想跑个步..."); }
+    
+    // 下面全是垃圾代码，但不写编译不过！
+    public void swim() {} 
+    public void liftWeights() {}
+    public void yoga() {}
+    public void boxing() {}
+}
+```
+张三累死了，写了一堆废话代码。
+
+这时候就要用到另一个模式，也就是`缺省适配器模式 (Default Adapter Pattern)`。
+
+传统的方法是，用抽象类过桥，你可能觉得这就是把史藏了起来：
+
+```java
+// 这是一个抽象类，它把活儿都揽下来了，但都是敷衍了事（空实现）
+abstract class GymAdapter implements GymMember {
+    public void run() {}
+    public void swim() {}
+    public void liftWeights() {}
+    public void yoga() {}
+    public void boxing() {}
+}
+
+class ZhangSan extends GymAdapter {
+    // 只需要重写这一项！其他的都自动用父类的空实现。
+    @Override
+    public void run() {
+        System.out.println("爽！只写我关心的代码。");
+    }
+}
+```
+
+这样就没毛病了。
+
+但是既然现在有了伟大的默认方法你就可以：
+
+```java
+interface GymMember {
+    // 默认全是空的
+    default void run() {}
+    default void swim() {}
+    default void liftWeights() {}
+    default void yoga() {}
+    default void boxing() {}
+}
+
+class ZhangSan implements GymMember{
+    // 只需要重写这一项！其他的都自动用父类的空实现。
+    @Override
+    public void run() {
+        System.out.println("爽！只写我关心的代码。");
+    }
+}
+```
+
+这是不是就非常合理了呢，所以默认方法，一能扩展老接口（史）的功能，二能选择性地让实现类重写方法，真的是大大滴好。
+
+## 嵌套类 (Nested Classes)
+
+这是最狗史的、最出生的一部分。嵌套类有以下几种：
+
+1. 静态嵌套类
+2. 成员内部类
+3. 局部内部类
+4. 匿名内部类
+
+### 静态嵌套类 (Static Nested Class)
+
+这是纯骗人玩的，因为它其实和外部类是平级关系：
+
+```java
+class Outer {
+    static String staticStr = "外部静态";
+    String instanceStr = "外部实例";
+
+    // 【静态嵌套类】
+    static class Roommate {
+        void test() {
+            // ✅ 可以访问外部类的 static 变量
+            System.out.println(staticStr); 
+            
+            // ❌ 编译错误！不能访问外部类的实例变量
+            // System.out.println(instanceStr); 
+        }
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        // 【考点】实例化语法：
+        // 不需要先 new Outer()，直接 new Outer.Roommate()
+        Outer.Roommate r = new Outer.Roommate(); 
+    }
+}
+```
+当然它有一个小特权就是，它内部无需去通过外部类的`类名.变量`的形式，换言之`Outer.staticStr`的形式去访问（当然想写也行）。
+
+它的实例化也无需外部类的实例对象，就像这段代码做的。
+
+### 成员内部类 (Member Inner Class)
+
+这种是最需要注意的，也是最恶心的。
+
+```java
+class Outer {
+    private String name = "宿主";
+
+    // 【成员内部类】
+    class Parasite {
+        void eat() {
+            // ✅ 随便访问，Private 也不在话下
+            System.out.println("吃掉：" + name); 
+        }
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        // 1. 先要有宿主
+        Outer host = new Outer();
+        
+        // 2. 【考点】变态的实例化语法：
+        // 必须用 宿主对象.new 内部类()
+        Outer.Parasite p = host.new Parasite();
+        
+        // 或者一行写完：
+        // Outer.Parasite p2 = new Outer().new Parasite();
+    }
+}
+```
+
+必须要有外部类的对象，你才能实例化内部类，必须用 宿主对象.new 内部类()这个形式去实例化。
+
+所以成员内部类可以随意地访问外部类的任何内容。
+
+这里要注意this
+
+```java
+class Outer {
+    int x = 100; // 外部类的 x
+
+    class Inner {
+        int x = 200; // 内部类的 x
+
+        void print() {
+            int x = 300; // 局部变量 x
+            
+            System.out.println(x);            // 输出 300 (就近原则)
+            System.out.println(this.x);       // 输出 200 (内部类的成员)
+            System.out.println(Outer.this.x); // 输出 100 (外部类的成员) -> 【必考】
+        }
+    }
+}
+```
+内部类如何访问外部的成员变量？Outer.this
+
+### 局部内部类 (Local Inner Class)
+
+这个出现在方法内部，临时搭建的一个实例类。
+
+```java
+
+class Outer {
+    void method() {
+        int wage = 100; // 局部变量
+        // wage = 200; // ❌ 如果后面改了它，内部类就不能用了！
+
+        // 【局部内部类】
+        class TempWorker {
+            void work() {
+                // ✅ 可以访问 wage，因为 wage 没变过（Effectively Final）
+                System.out.println("拿钱：" + wage);
+            }
+        }
+        
+        new TempWorker().work();
+    }
+}
+```
+
+它想用方法里的局部变量，那个变量必须是 final 或者 “事实上是 final (Effectively Final)” 的。
+
+### 匿名内部类 (Anonymous Inner Class)
+```java
+interface Button {
+    void click();
+}
+
+public class Test {
+    public static void main(String[] args) {
+        // 【匿名内部类】
+        // 这里的 new Button() 其实是 new 了一个“实现了 Button 的无名类”
+        Button b = new Button() {
+            @Override
+            public void click() {
+                System.out.println("点击！");
+            }
+        };
+        
+        b.click();
+    }
+}
+```
+这是最具有使用价值的，虽然已经被lambda表达式取代了。
+
+你经常能在new接口的时候发现这个实质上的匿名内部类。
 
