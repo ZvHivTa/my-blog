@@ -22,6 +22,8 @@ OOA就是面向对象设计和编程，先来看考纲，Java Gold主要考察�
 
 但实际上这里有很多司马的细节是平时不会用的，考试会出很司马的写法来考细节，我们概括几个方面。
 
+# 常见的几个问题
+
 ## 初始化和各种代码块
 
 假如我们初始化一个类，首先要进行类加载，然后再创建实例。也就说，首先JVM把“图纸”实例化，然后根据图纸创建一个实体。
@@ -904,3 +906,233 @@ public class Test {
 
 你经常能在new接口的时候发现这个实质上的匿名内部类。
 
+# 新特性
+
+## var关键字(Java 10)
+
+这是一个语法糖，官方给它的作用起的名叫：`局部变量类型推断 (Local Variable Type Inference)`。你从这个名也能看出来，它实际上是用来简化局部变量声明的。
+有些变量，尤其是集合类+一堆泛型，属实会在左边增大一堆没用的代码，所以当能一眼看出变量声明的类型时，就可以用这个关键字替代了。
+
+```java
+public void method() {
+    // 1. 基本数据类型
+    var age = 18;           // 推断为 int
+    var money = 100.5;      // 推断为 double
+    
+    // 2. 引用类型
+    var name = "Java";      // 推断为 String
+    
+    // 3. 最爽的时刻：简化啰嗦的泛型
+    // 以前：HashMap<String, List<Integer>> map = new HashMap<String, List<Integer>>();
+    // 现在：
+    var map = new HashMap<String, List<Integer>>(); // 推断为 HashMap
+    
+    // 4. 用在 for 循环里
+    for (var i = 0; i < 10; i++) { }
+    for (var entry : map.entrySet()) { }
+}
+```
+尤其是上面那个HashMap，是不是很好用。
+
+但是要注意，以下几个情况不能使用var关键字：
+
+1.  成员变量
+2.  方法参数
+3.  方法返回值
+4.  只声明不初始化
+5.  数组初始化器
+6.  Lambda 表达式直接赋值
+7.  赋值为 null
+   
+首先，成员变量、方法参数和方法返回值类型非常好理解，因为这需要你显式声明而你直接省略那是不行的。局部变量只声明不初始化、赋值null也是同样的问题，光是null不知道具体究竟是什么类型的。
+
+数组初始化器的例子，比方说：
+
+```java
+int[] arr1 = {1, 2, 3}; // ✅ 传统写法可以
+var arr2 = {1, 2, 3};   // ❌ 编译错误！编译器推断不出这是 int[]
+var arr3 = new int[]{1, 2, 3}; // ✅ 必须加上 new int[] 明确类型
+```
+
+Lambda表达式主要问题在接口的多实现上：
+
+```java
+Runnable r = () -> {}; // ✅ 知道是 Runnable
+var f = () -> {};      // ❌ 编译器懵了：这是 Runnable? 还是 Callable? 还是自定义接口?
+```
+
+
+## Record 关键字(Java 17)
+
+它的主要作用是简化`数据载体类`的定义，啥叫数据载体呢：
+
+```java
+public class Point {
+    private final int x;
+    private final int y;
+
+    public Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+
+    // 还要写 equals, hashCode, toString... 省略 50 行代码
+}
+```
+
+比如说我想要定义这种二维坐标类，内部的坐标一旦赋值就不改。
+
+如果我像传统pojo类一样还写一坨，那属实是有点浪费。因为这种类的参数实际上都不可变，只是一个暂时存储的作用，所以：
+
+```java
+    // 一行搞定！
+public record Point(int x, int y) {}
+```
+
+这里面包含了啥呢？
+ - 私有、Final 的字段
+ - 全参构造函数
+ - 访问方法，也就是getter，但是和POJO累的命名不一样。比如上面这个就是x() 和 y()。
+ - equals() 和 hashCode()，基于内容比较
+ - toString()方法
+
+接下来是它的一些规则：
+  - 禁止 extends 其他类：Record 隐式继承自 java.lang.Record。Java 是单继承的，所以它不能再继承别的类了。但是： 它可以实现接口 (implements Runnable)。
+  - 禁止被继承 (Final)：Record 类默认是 final 的。你不能写 class MyRecord extends Point。
+  - 禁止定义“实例字段” (Instance Fields)：除了头部声明的 (int x, int y)，你不能在花括号 {} 里再定义 private int z;。但是： 你可以定义 静态字段 (static int count;)。
+  - 禁止定义“空参构造” (除非你自己手写)：它默认只有全参构造。如果你想要 new Point()，必须自己手动写一个无参构造器，并在里面调用 this(0, 0)。
+  - 字段全是 Final 的：一旦创建，不能修改！没有 Setter 方法！point.x = 10; $\rightarrow$ ❌ 编译错误。
+  - 访问器方法名字没 get：调用 point.getX() $\rightarrow$ ❌ 编译错误（除非你自己额外写了一个 getX() 包装一下）。
+
+它还有一个小技巧，比如说当我想在创建对象时校验变量：
+```java
+
+public record Point(int x, int y) {
+    public Point {
+        // 1. 做校验
+        if (x < 0) {
+            throw new IllegalArgumentException("x不能小于0");
+        }
+        
+        // 2. 做数据处理（可以直接修改参数）
+        if (y < 0) {
+            y = 0; 
+        }
+        
+        // ⚠️ 注意：最后绝对不要写 this.name = name;
+        // 编译器会在代码最后自动帮你加上赋值语句！
+    }
+}
+```
+
+更高级的操作，比方说我想弄一个嵌套内部Record，这样它就可以是private的：
+
+```java
+public class OrderService {
+
+    // ✅ 合法！
+    // 这是一个私有的内部 Record，只有 OrderService 能用它
+    private record OrderItem(String id, int count) {}
+
+    public void process() {
+        // 自己内部随便用
+        OrderItem item = new OrderItem("A100", 5);
+    }
+}
+```
+但是这样定义的record是一个：`隐式静态的`。这就意味着Record 内部不能直接访问外部类的非静态成员。
+这里需要小小注意。
+
+## sealed permits关键字(Java 17)
+
+要定义密封类，需要两步走：
+
+1. 父类声明： 使用 sealed 开启封锁，使用 permits 指定白名单。
+
+2. 子类回应： 子类必须明确表态，如何处理这个继承权。
+
+首先声明父类，比如这是一个形状类：
+
+```java
+// 【父类】：我是密封的，我只允许 Circle, Square, Rectangle 三个人继承我
+public sealed class Shape permits Circle, Square, Rectangle {
+
+}
+```
+这时候子类的处理有三种：
+1. final，不能被继承
+```java
+final class Circle extends Shape {}
+```
+
+2. sealed，接下来还有指定的子类继承
+```java
+sealed class Square extends Shape permits ColorSquare {}
+final class ColorSquare extends Square {}
+```
+3. non-sealed，接下来随便被继承
+```java
+    non-sealed class Rectangle extends Shape {}
+    class FancyRectangle extends Rectangle {}
+```
+   
+
+接下来是需要注意的：
+
+1. 被 permits 的子类，必须和父类在同一个包里
+2. 匿名内部类禁止，密封类不能有匿名子类，因为名单内没有
+3. Record 与 Sealed 的配合，Record是天然final的，非常适合。
+4. Permits 可省略的情况：如果父类和所有子类都写在同一个 .java 文件里，permits 可以省略，编译器会自动识别。
+
+其中第一个是最重要的，被 permits 的子类，必须和父类在同一个包里，严守。
+
+这东西经常用于搭配switch case语句。根据它的特点，什么情况下可以使用呢：
+
+1. “我知道所有可能的子类”： 比如支付状态、用户等级、API 响应结果。
+
+2. “这些子类的内部数据结构不一样”： 比如成功的包很大，失败的包很小。防止胡乱继承出现问题。
+   
+比如：表达式树 / 语法树 (AST) —— 计算器或解析器
+
+这是计算机科学中最经典的应用，这种语言属于上下文无关文法（CFG）。当你需要解析一个数学公式（如 1 + 2 * 3）时，公式的结构是递归的，且类型是固定的。
+
+结构定义： 一个表达式 (Expr) 只能是以下三种情况之一：
+
+- 一个具体的数字 (Num)
+
+- 加法操作 (Add)
+
+- 乘法操作 (Mult)
+
+这简直是为密封类量身定做的。
+
+```java
+// 密封接口：表达式
+sealed interface Expr permits Num, Add, Mult {}
+
+// 数字
+record Num(int value) implements Expr {}
+
+// 加法：包含左右两个表达式
+record Add(Expr left, Expr right) implements Expr {}
+
+// 乘法：包含左右两个表达式
+record Mult(Expr left, Expr right) implements Expr {}
+
+// --- 计算逻辑 ---
+public int eval(Expr e) {
+    return switch (e) {
+        // 如果是数字，直接返回
+        case Num n -> n.value();
+        
+        // 如果是加法，递归计算左边 + 右边
+        case Add a -> eval(a.left()) + eval(a.right());
+        
+        // 如果是乘法，递归计算左边 * 右边
+        case Mult m -> eval(m.left()) * eval(m.right());
+    };
+}
+```
