@@ -217,3 +217,152 @@ public static void main(String[] args) {
 
 所以它创建了一个新对象去代替了原对象。
 
+#### 其他小坑
+
+Boolean的解析
+```java
+System.out.println(Boolean.parseBoolean("True"));   // true
+System.out.println(Boolean.parseBoolean("yes"));    // false
+System.out.println(Boolean.parseBoolean("1"));      // false
+System.out.println(Boolean.parseBoolean(null));     // false (不死机)
+```
+
+换言之除了true以外的字符串装箱到Boolean类里是不会出问题的，都是false。
+
+
+
+### Math API
+
+#### ceil, floor, round
+
+这几个其实就是数学上的向上、向下取整和四舍五入，我们只需记得这几个规律：
+
+- ceil (天花板/向上): 往 正无穷大 (+∞) 方向找最近的整数。
+
+- floor (地板/向下): 往 负无穷大 (-∞) 方向找最近的整数。
+
+- round (四舍五入): 算法是 (long) Math.floor(x + 0.5d)。
+
+这里最讨厌的是他们的返回值类型。
+
+- 规则 A: ceil() 和 floor() 返回的是 double！哪怕结果看起来是个整数。
+
+- 规则 B: round() 返回的是 long (如果是 float 参数则返回 int)。
+
+
+另外的一些`abs`函数、`random`函数，就没什么特殊的了。
+
+## 文本处理 (String & StringBuilder)
+
+### String
+
+String类内部有些方法是要重新赋值的，所以要注意区别现在流行的链式调用：
+
+```java
+String s = "Java";
+s.concat(" Exam"); // 创建了一个新对象 "Java Exam"，但没人接收它！
+s.toUpperCase();   // 创建了一个新对象 "JAVA"，也没人接收！
+
+System.out.println(s); 
+// 结果还是 "Java"！(s 根本没变)
+```
+
+另外比较重要的：`String Constant Pool (字符串常量池)`
+
+就两条规则：
+
+- 字面量 (" ")： 会放入常量池。如果池子里有，直接复用。
+
+- new String()： 强制在堆内存 (Heap) 创建新对象，不走常量池。
+
+比如：
+```java
+String s1 = "Hello";
+String s2 = "Hello";
+System.out.println(s1 == s2); // ✅ true (同一个池子里的引用)
+
+String s3 = new String("Hello");
+System.out.println(s1 == s3); // ❌ false (s3 是堆里的新地盘)
+```
+另外一些常用的String类方法记忆一下就可以了，一般都和方法名能联系上。
+
+### StringBuilder
+
+StringBuilder 是为了修改而生的。 它的操作大多是 原地修改 (In-place)，不会创建新对象。这也就是我们提到的链式调用的形式。
+
+```java
+StringBuilder sb = new StringBuilder("Java");
+sb.append(" 17").delete(0, 4).insert(0, "OCP");
+
+System.out.println(sb); 
+// 1. append -> "Java 17"
+// 2. delete(0,4) -> " 17" (删掉 Java)
+// 3. insert -> "OCP 17"
+```
+无限连着写，不建新对象。
+
+注意：StringBuilder 没有重写 equals，它比较的就是地址。而String重写了equals，所以比较的是内容。
+
+然后我们看比较头痛的：索引与切片
+
+不管是 String 还是 StringBuilder，只要涉及 范围 (Range) 的方法（substring, delete, replace），都遵循 Java 的 “含头不含尾” 黄金法则。
+
+法则：[startIndex, endIndex)
+
+包含 startIndex
+
+不包含 endIndex
+
+🧠 快速计算长度公式： Length = endIndex - startIndex
+
+### 文本块 (Text Blocks) —— Java 15+
+
+首先看它的形式：
+
+```java
+// ❌ 编译错误
+String s = """Hello"""; 
+
+// ✅ 正确
+String s = """
+           Hello
+           """;
+```
+""" 后面必须有个换行符，不然就会出错。
+
+接下来必须看看它的规则，随便给你一个带各种缩进的文本块，怎么知道它到底是空格还是咋的呢？
+
+编译器非常聪明，它会自动去除“多余的缩进”，也就是偶然空白 (Incidental Whitespace)。 
+
+怎么算多余？ 画一条竖线，以每一行（包括结束的 """）中最左侧的非空字符为基准。
+
+例如：
+```java
+String html = """
+              <html>
+                  <body></body>
+              </html>
+              """; 
+// 问：<html> 前面有几个空格？
+```
+html标签前是没有空格的，因为和起始引号对齐了，body标签前面有4个空格。
+
+还有：
+```java
+String s = """
+           line1
+           line2
+       """; // 注意！结束符 """ 向左缩进了！
+```
+
+下面的结束符向左缩进，那就取起始符和结束符中间最靠左的，所以这个字符串就是`   line1   line2`
+
+### StringBuffer
+
+StringBuffer 就是线程安全的 StringBuilder。似乎前者比后者好，但是事实上，这个线程安全的家伙是鼻祖，因为其实现实业务中，大部分修改字符串的操作都在一个线程里进行，就没什么必要特意用这个效率差的类了。
+
+这两个类的方法完全一致。
+
+
+
+## 日期与时间 (Date-Time API)
