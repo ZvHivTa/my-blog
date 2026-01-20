@@ -1,4 +1,3 @@
----
 title: 'Report 8'
 description: 'Discussion and idea for research.'
 date: 2025-12-10
@@ -7,7 +6,7 @@ authors: ['enscribe']
 order: 2
 ---
 
-## 1 	Straightforward algorithm
+## 1    Straightforward algorithm
 
 ### Terminology and OT
 
@@ -57,7 +56,7 @@ $$
 
 $T(u) = 1$  $\text{iff}$  $u$ is a member of $U$.
 
-Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$​. This table can seen as a three-dimension array. 
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$. This table can seen as a three-dimension array. 
 
 The result is:
 
@@ -65,7 +64,7 @@ The result is:
 
 -  Elements of $P$ and  $ S$  correspond to distinguishing experiments for these states.
 
--  Elements of $I \cdot \Sigma$​ are used to construct the transition function. 
+-  Elements of $I \cdot \Sigma$ are used to construct the transition function. 
 
 -  Elements of $I \cdot \Sigma$  and $\Sigma \cdot I$ are used to fulfill our proof. 
 
@@ -87,13 +86,13 @@ status_i(p,s) = T(p\cdot i \cdot s)
 $$
 
 
-This says: "The state for $i$, when given the pair $(p, s)$, is defined as the result of the membership query on the string $p·i·s$​."
+This says: "The state for $i$, when given the pair $(p, s)$, is defined as the result of the membership query on the string $p·i·s$."
 
 Then if 
 $$
 \forall p\in P,\forall s\in S, status_i(p,s) = status_{i^{\prime}}(p,s)
 $$
-Then we call $i$ and $i^{\prime}$ is $status - equivalent$ which denoted $i \equiv_{status} i^{\prime}$. And we use $[i]_{status}$ to represent that at the condition of this $status$ function word $i$ forms a equivalence class. Then obviously $[i]_{status} = [i^{\prime}]_{status}$
+Then we call $i$ and $i^{\prime}$ is $\text{status - equivalent}$ which denoted $i \equiv_{status} i^{\prime}$. And we use $[i]_{status}$ to represent that at the condition of this $status$ function word $i$ forms a equivalence class. Then obviously $[i]_{status} = [i^{\prime}]_{status}$
 
 #### **v)** Acceptor:
 
@@ -119,13 +118,47 @@ q & \text{if} & w = (\epsilon,l/r) \\\\
 \end{cases}
 $$
 
+A run is $\rho \in \Sigma_d^*$.  For example:
+$$
+\rho_1 = (a,l)(b,l)\\
+\rho_2 = (b,r)(a,r)
+$$
+Actually this is all $w = ba$ but in this model both 2 runs can generate it.
+
+So we define a mapping from enhanced string such as $u \in \Sigma_d^*$ to a normal string as $w \in \Sigma^*$, so we can have a canonical mapping $val: \Sigma_d^* \rightarrow \Sigma^*$ :
+
+
+$$
+val(\rho) =  
+\begin{cases}  
+\epsilon & \text{if } \rho = \epsilon \quad \\ 
+a \cdot val(\rho') & \text{if } \rho = \rho' \cdot (a, l) \quad (\text{left operation}) \\ 
+val(\rho') \cdot a & \text{if } \rho = \rho' \cdot (a, r) \quad (\text{right operation}) 
+\end{cases}
+$$
+Then we can define a $Runs(w)$ :
+$$
+Runs(w) = \{ \rho \in \Sigma_d^* \mid val(\rho) = w \}
+$$
+this is the set of all runs which can generate $w$. 
+
+And we can also use enhanced alphabet to define $\delta^*:Q \times \Sigma_d^{*} \rightarrow Q$, then:
+$$
+\delta^{*}(q,\rho) = 
+\begin{cases}
+q & \text{if} & \rho = (\epsilon,l/r) \\\\
+\delta(\delta^*(q,\rho^{\prime}),(a,d)) & \text{if} & \rho = \rho^{\prime} \cdot(a,d) \space, \space a \in \Sigma,d \in \{l,r\}\\
+\end{cases}
+$$
+
+
 #### vi) Membership queries: 
 
 The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer whether or not $w \in L$.
 
 #### vii) Equivalence queries:
 
-When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{A}$ according to the acceptor, and the teacher answers whether or not $L$ is the language of $\mathcal{A}$. If the answer is yes, then the algorithm terminates. If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{A}$​.
+When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{A}$ according to the acceptor, and the teacher answers whether or not $L$ is the language of $\mathcal{A}$. If the answer is yes, then the algorithm terminates. If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{A}$.
 
 ### Separability and Closedness
 
@@ -138,11 +171,11 @@ Actually at each step of the algorithm, the learner maintains:
 On the $(I,P,S)$ we can define:
 
 - **Separability**: no two distinct words in $I$ are $status-equivalent$. 
-- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some  $i^{\prime},i^{\prime\prime}∈ I$ such that $ia ≡_{status} i^{\prime},ai ≡_{status} i^{\prime\prime}$​
+- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some  $i^{\prime},i^{\prime\prime}∈ I$ such that $ia ≡_{status} i^{\prime},ai ≡_{status} i^{\prime\prime}$
 
 If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$, according to the definition of acceptor and the propositions as follow.
 
-**Proposition 1.** *If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$.*
+**Proposition 1. （Minimal）** *If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$.*
 
 According to the definition of Separability, we can assume each $i \in I$ is related to a $status_i$ which means $[i]_{status}$ is a equivalence class defined by $P$ and $S$.   
 
@@ -158,15 +191,15 @@ And in the contrary, if now $u \not\equiv_{status} v$, then $[u]_{status} \ne [v
 
 So the proposition is correct.
 
-**Proposition 2.** *If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} ∈ I \cdot Σ^{*}  $such that  $(I ∪ {i^{\prime}}, P,S) $remains separable.*
+**Proposition 2. ** If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} \in I \cdot \Sigma^*$ such that  $(I ∪ {i^{\prime}}, P,S) $remains separable.
 
 Obviously, according to the definition of closedness, there exists $i^{\prime} \in I \cdot \Sigma$  :
 $$
 \forall i \in I. i \not\equiv_{status} i^{\prime}
 $$
-We should add this $i^{\prime}$ into $I$​ so that we try to make it separable. 
+We should add this $i^{\prime}$ into $I$ so that we try to make it separable. 
 
-**Proposition 3.** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,l/r,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
+**Proposition 3.(Counterexample)** Suppose that $(I,P,S)$ is separable, closed and consistent. Let $\mathcal{M} = (Q,\Sigma,\delta,l/r,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
 
 **Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = \delta(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$. 
 
@@ -182,13 +215,13 @@ We say that state $i_k$ is correct if $χ_L(i_kw_{k+1} . . . w_n) = χ_L(w)$. No
 
 Now state $i_0 = ε$ is obviously correct.
 
-State $i_n$ is not correct since $w$ is a counterexample and hence $χ_L(i_n) \neq χ_L(w)$ by definition of the set of accepting states of $\mathcal{M}$. Thus, we can find $k$ such that $i_{k−1}$ is correct and $i_{k}$​ is not correct, that is,
+State $i_n$ is not correct since $w$ is a counterexample and hence $χ_L(i_n) \neq χ_L(w)$ by definition of the set of accepting states of $\mathcal{M}$. Thus, we can find $k$ such that $i_{k−1}$ is correct and $i_{k}$ is not correct, that is,
 $$
 χ_L(i_{k−1}w_i. . . w_n) \neq χ_L(i_{k}w_{i+1} . . . w_n).
 $$
 Now let $I^{\prime} = I ∪ {i_{k−1}w_i}$ and $S^{\prime} = S ∪ {w_{i+1} . . . w_n}$. By definition of closedness, $i_k$ is the unique element of $I$ that is $Status-equivalent$ to $i_{k−1}w_i$ . And the new suffix $w_{i+1} . . . w_n$ distinguishes $i_k$ from $i_{k−1}w_i$ . We conclude that $i_{k−1}w_i \notin I$ and that the new $OT$ is separable.
 
-**Proposition 4.** *Assume that $(I,P,S)$ is closed and separable observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ is the syntactic monoid of the language $L$​.*
+**Proposition 4. (Correctness)** *Assume that $(I,P,S)$ is closed and separable observation table and the algorithm terminated. Then the acceptor $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ is the syntactic monoid of the language $L$.*
 
 **Proof:**
 
@@ -220,10 +253,10 @@ $$
 $$
 
 $$
-    \forall  a,b \in \Sigma \cup \{\epsilon\}. \delta(\delta^*(q_0,w),a,l) = \delta(\delta^*(q_0,w'),a,l)\\
+\forall  a,b \in \Sigma \cup \{\epsilon\}. \delta(\delta^*(q_0,w),a,l) = \delta(\delta^*(q_0,w'),a,l)\\
 $$
 
-Then we have $\delta(\delta^*(q_0,aw),b,r) = \delta(\delta^*(q_0,aw'),b,r)$. It is same if we concat $b$ at right side first.
+Then we have $\delta(\delta^*(q_0,aw),b,r) = \delta(\delta^*(q_0,aw'),b,r)$. It is same if we add $b$ at right side first.
 
 So we actually have $\delta^*(q_0,awb) = \delta^*(q_0,aw'b)$, it is also means:
 
@@ -257,6 +290,16 @@ all these three conditions, the conclusion is clear.
 
 Then we can actually know ② is correct and the whole conclusion is correct. 
 
+**Proposition 5. (Acceptor)** If we get an acceptor $\mathcal{M} = (Q,\Sigma,\delta,l/r,q_0,F)$ (hypothesis automaton) in our algorithm, a $w$ which can be generated by different runs can be only transform in only one state. 
+$$
+\forall w \in \Sigma^*, \quad \forall \rho_1, \rho_2 \in Runs(w) \implies \delta^*(q_0, \rho_1) = \delta^*(q_0, \rho_2)
+$$
+Assume that there is a $w = a_1a_2\cdots a_n$, it has 2 run $\rho_1$ and $\rho_2$ go into the different states, in other words $\delta^*(q_0, \rho_1) \neq \delta^*(q_0, \rho_2)$. 
+
+But $\delta^*(q_0, \rho_1) \neq \delta^*(q_0, \rho_2)$, then let's assume $\delta^*(q_0, \rho_1) = q_1$  and $\delta^*(q_0, \rho_2) = q_2$. So as we know, we can definitely find $i_1 \in I, status_{i_1} = q_1$ and  $i_2 \in I, status_{i_2} = q_2 $ . 
+
+So $[w] = status_{i_1} = status_{i_2}$, this is contradiction because $\delta^*(q_0, \rho_1) \neq \delta^*(q_0, \rho_2)$ means $status_{i_1} \neq status_{i_2}$. 
+
 ### Process of Algorithm
 
 #### i. Main
@@ -268,33 +311,17 @@ Initialize $P$ and $S$ to $\{\epsilon\} \cup \Sigma$.
 
 **Repeat:**
 
-While $OT$ is not closed and not consistent: 
+While $OT$ is not closed but separable: 
 
-​	① While $OT$ is not closed: 
+​       Find $i^{\prime} \in I \cdot \Sigma$ which is different with any $status_{i}, i \in I$. 
 
-​		Find $i^{\prime} \in I \cdot \Sigma$ which is different with any $status_{i}, i \in I$. 
+​       Add $i^{\prime}$ to $I$ and renew the $I\cup \Sigma$, in other words, add $i^{\prime}\cdot a$ to $I\cdot \Sigma$ for all $a \in \Sigma$. 
 
-​		Add $i^{\prime}$ to $I$ and renew the $I\cup \Sigma$, in other words, add $i^{\prime}\cdot a$ to $I\cdot \Sigma$ for all $a \in \Sigma$. 
-
-​		Repeat ① until $OT$ is closed. 
-
-​	② While $OT$ is not consistent:
-
-​		It means that for $i_1 \equiv_{status} i_2$ but :
-$$
-\exists p\in P,s\in S, status_{i_1}(p,s) \neq status_{i_2}(p,s)
-$$
-​		We find this $p$ and $s$, put $p$ into $P$ and $s$ into $S$.
-
-​		Then we know $i_2$ is separated from $i_1$ because now $T(p\cdot i_1 \cdot s) \neq T(p\cdot i_2 \cdot s)$
-
-​		So this $OT$ is not closed now.
-
-Repeat ① and ② until $OT$ is closed and consistent. 
+Repeat ① until $OT$ is closed. 
 
 **********
 
-Once $OT$ is closed and consistent, let acceptor $M$ be the result and let Teacher find counter-example $t$, if $t$ is a counter-example:
+Once $OT$ is closed and separable, let acceptor $M$ be the result and let Teacher find counterexample $t$, if $t$ is a counter-example:
 
 Use Proposition 3 to deal with the situation. 
 
@@ -302,32 +329,9 @@ Use Proposition 3 to deal with the situation.
 
 Use membership query to check new element in $P\cdot (I \cup I \cdot \Sigma) \cdot S$. 
 
-Until the Teacher replies yes to acceptor $M$.
+Until the Teacher replies yes to acceptor $\mathcal{M}$.
 
-Stop and output $M$​.
+Stop and output $\mathcal{M}$.
 
-#### **ii. Check**
+#### **ii. Deal with counterexample**
 
-① Check if $OT$ is closed. 
-
-Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is different with any $status_i, i \in I$.
-
-② Check if $OT$ is consistent.
-
-Check $i^{\prime} \in I \cdot \Sigma$ to find if $status_{i^{\prime}}$ is the same with a $status_i, i \in I$. 
-
-Check if
-
-$$
-\forall a,b \in \Sigma \cup \{\epsilon\}. a\cdot i\cdot b \equiv_{status} a\cdot i^{\prime}\cdot b
-$$
-
-is correct. 
-
-So we have to check:
-
-- ​	$status_{i \cdot \Sigma}$ and $status_{i^{\prime} \cdot \Sigma}$
-- ​	$status_{\Sigma \cdot i}$ and $status_{ \Sigma \cdot i^{\prime} }$
-- ​	$status_{\Sigma \cdot i \cdot \Sigma}$ and $status_{ \Sigma \cdot i^{\prime} \Sigma }$
-
-Use the membership query to get results. 
