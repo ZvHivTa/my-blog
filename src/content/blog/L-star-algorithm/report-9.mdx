@@ -55,23 +55,22 @@ $$
 
 $T(u) = 1$  $\text{iff}$  $u$ is a member of $U$.
 
-Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\}\cup\Sigma,T)$. This table can seen as a three-dimension array. 
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\}\cup\Sigma,\{\epsilon\},T)$. This table can seen as a three-dimension array. 
 
 The result is:
 
 -  Elements of $I$ are the candidates for states of the syntactic monoid of $U$;
 
--  Elements of $P$ and  $ S$  correspond to distinguishing experiments for these states.
+-  Elements of $P$ and  $S$  correspond to distinguishing experiments for these states.
 
--  Elements of $I \cdot \Sigma$ are used to construct the transition function. 
+-  Elements of $I \cdot \Sigma$ and $\Sigma \cdot I$ are used to construct the transition function. 
 
--  Elements of $I \cdot \Sigma$  and $\Sigma \cdot I$ are used to fulfill our proof. 
 
 If 
 $$
 \forall p\in P,\forall s\in S, T(p\cdot i \cdot s) = T(p \cdot i^{\prime} \cdot s)
 $$
-Then we see $i$ and $i^{\prime}$ is in the same status.
+It is observed that $i$ and $i^{\prime}$ are in the same status.
 
 So here is a new definition:
 
@@ -174,7 +173,7 @@ On the $(I,P,S)$ we can define:
 
 If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$, according to the definition of acceptor and the propositions as follow.
 
-**Proposition 1. （Minimal）** *If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$.*
+**Proposition 1. (Minimal)** *If $(I,P,S)$ is separable then $|I|$ is at most the number of states of a syntactic monoid for $L$.*
 
 According to the definition of Separability, we can assume each $i \in I$ is related to a $status_i$ which means $[i]_{status}$ is a equivalence class defined by $P$ and $S$.   
 
@@ -190,7 +189,7 @@ And in the contrary, if now $u \not\equiv_{status} v$, then $[u]_{status} \ne [v
 
 So the proposition is correct.
 
-**Proposition 2. ** If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} \in I \cdot \Sigma^*$ such that  $(I ∪ {i^{\prime}}, P,S) $ remains separable.
+**Proposition 2. (Closedness)** If $(I,P,S)$ is separable but not closed, then using membership queries one can find $i^{\prime} \in I \cdot \Sigma^*$ such that  $(I ∪ {i^{\prime}}, P,S) $ remains separable.
 
 Obviously, according to the definition of closedness, there exists $i^{\prime} \in I \cdot \Sigma$  :
 $$
@@ -198,7 +197,7 @@ $$
 $$
 We should add this $i^{\prime}$ into $I$ so that we try to make it separable. 
 
-**Proposition 3.(Counterexample)** Suppose that $(I,P,S)$ is separable and closed. Let $\mathcal{M} = (Q,\Sigma,\delta,l/r,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
+**Proposition 3. (Counterexample)** Suppose that $(I,P,S)$ is separable and closed. Let $\mathcal{M} = (Q,\Sigma,\delta,l/r,i_0,F)$ be the hypothesis automaton. Given a counterexample $w = w_1 . . . w_n$ to $\mathcal{M}$, using membership queries, one can find $i ∈ Σ^∗ \ I$ and $s ∈ Σ^∗$ such that $(I ∪ {i}, S ∪ {s})$ is separable. 
 
 **Proof.** Let $i_0 = ε$ be the initial state of $\mathcal{M}$. For $k = 1, . . . , n$, define $q_k = \delta(i_0, w_1 . . . w_k)$ to be the state reached by $\mathcal{M}$ after reading the prefix $w_1 . . . w_k$ of $w$. 
 
@@ -522,8 +521,6 @@ Add $aab$ into $I$.
 
 Now let's check all the $\text{status-equivalent}$ pairs
 
-
-
 ```
 a with b
 aa with ab and ba
@@ -540,33 +537,22 @@ Finally, equivalence query says yes. We get the syntactic monoid of the $L$.
 
 ### 4. Time analysis
 
-Because the structure of  $U$ is unknown, so the time complexity depends on the number of counterexample and the number of the states of  $U$. Then we use $m$ to represent the number of counterexample, $|w|$ to represent the length of counterexample and $n$ to represent the number of states. And we use $k$ to represent $|\Sigma|$. 
+Because the structure of $U$ is unknown, so the time complexity depends on the number of counterexample and the number of the states of $U$. Then we use $m$ to represent the number of counterexample, $|w|$ to represent the length of counterexample and $n$ to represent the number of states. And we use $k$ to represent $|\Sigma|$. 
 
-The time cost is from: 
+The time complexity of the algorithm arises primarily from two operations: (1) maintaining the closedness of the observation table $OT$, and (2) processing counterexamples.
 
-① Each time $OT$ is discovered to be not closed, one element is added to $I$.
-
-② Each time we find a counterexample, we find one suffix of the counterexample string in $O(log|w|)$ and add it into $S$.
-
-Check ①. When algorithm is terminated, $|I| = n$ and $|I\cdot \Sigma \cup \Sigma \cdot I| \le 2kn$ because there are strings always repeatedly calculated. 
-
-And actually under the proposition 3, the size of $P$ will not be changed during the process because we only add string into $S$. 
-
-Then the number of row is $(2k+1)n$ and the number of column is $k(m+1)$
-
-So the size of table is 
+1. **Maintenance of Closedness** Whenever the observation table $OT$ is found to be non-closed, an element is added to the set $I$. Upon termination, $|I| = n$. Due to redundancy in string calculations, the set of extended rows is bounded by $|I\cdot \Sigma \cup \Sigma \cdot I| \le 2kn$. Furthermore, under Proposition 3, the size of $P$ remains constant as elements are only added to $S$. Consequently, the observation table consists of $(2k+1)n$ rows and $k(m+1)$ columns, yielding a total table size of:
 $$
 (2k+1)nk(m+1)
 $$
-Check ②. This is clear that when we find a counterexample, we use that aspect to find the most precise suffix in $O(log|w|)$.
+   
+2. **Counterexample Processing** For each counterexample found, a distinguishing suffix is identified in $O(\log|w|)$ time. Given $m$ equivalence queries, the total cost for this phase is $O(m\log|w|)$.
 
-So it is $O(mlog|w|)$. 
+**Conclusion**
 
-Now $m \le n$, because if we find a counterexample, then the observation table will be not closed. In other words, a new candidate state has born. So $m \le n$ is correct.  
-
-In summary, the time complexity is 
+It is important to note that $m \le n$, as each counterexample reveals a lack of closedness in the table, which is an identification of a new candidate state. Therefore, substituting $m$ with $n$, the overall time complexity is:
 $$
-O(k^2n^2+nlog|w|)
+O(k^2n^2 + n\log|w|)
 $$
 
 
