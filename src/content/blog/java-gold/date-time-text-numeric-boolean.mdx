@@ -366,3 +366,261 @@ StringBuffer 就是线程安全的 StringBuilder。似乎前者比后者好，�
 
 
 ## 日期与时间 (Date-Time API)
+
+旧时代，Java处理日期时间的包是java.util.Date 和 Calendar，这两个类由于线程不安全+设计垃圾已经被彻底地淘汰。所以见到问线程安全的时间处理包，一旦看到`util`这个包出现了，那它就是错的。
+
+现在我们一般用Java8出品的`java.time` 包，它是通过不可变性+线程安全来维护时间API的。
+
+1. 不可变性：当你想在一个时间对象上进行比如+1天的操作时，是不会在原对象上操作的。它每次都会产生一个新对象，所以我们无法通过链式调用的形式去操作他们。
+
+我们随便举个例子：
+
+```java title="java.time.LocalDateTime 中的"
+    /**
+     * Returns a copy of this date-time with the new date and time, checking
+     * to see if a new object is in fact required.
+     *
+     * @param newDate  the date of the new date-time, not null
+     * @param newTime  the time of the new date-time, not null
+     * @return the date-time, not null
+     */
+
+    private LocalDateTime with(LocalDate newDate, LocalTime newTime) {
+        if (date == newDate && time == newTime) {
+            return this;
+        }
+        return new LocalDateTime(newDate, newTime);
+    }
+```
+LocalDateTime中的操作，基本所有的代码都是这样，返回了一个新对象。with这个方法就是一个组装LocalDate和LocalTime的功能，而其他的操作，比如plus，minus都基于这个方法。
+
+2. 线程安全：正是由于它的不可变性，所以它们在多线程环境下是绝对安全的。
+
+我们分几个层次介绍内部常用的时间类：
+
+1. 只有“数值”，没有“时区” (Local 系列)
+2. 加上“定位”，变成绝对时间 (Zoned & Instant)
+3. 时间的“长度” (Amount)
+4. 工具类 (Formatter & Adjuster)
+   
+### Local 系列
+
+1. LocalDate (只看日子)
+
+包含： 年、月、日。
+
+场景： 生日、入职日期、法定节假日。
+
+代码： LocalDate.of(2023, 10, 1)
+
+2. LocalTime (只看表)
+
+包含： 时、分、秒、纳秒。
+
+场景： 每天的午休时间（12:00）、商店开门时间。
+
+代码： LocalTime.of(13, 30)
+
+3. LocalDateTime (日子+表)
+
+包含： 年月日 + 时分秒。
+
+本质： LocalDate + LocalTime。
+
+场景： 记录在这个系统内部发生的事件（比如“订单创建时间”）。
+
+代码： LocalDateTime.now() 这是最常用的返回当前时间的代码。
+
+这三个类不代表绝对时间点。 比如 LocalDateTime 记下的 2023-01-01 00:00，在纽约是那一刻，在东京是另一刻。它们只是由数字组成的符号，与真实地点的时间没有关系。
+
+### Zoned & Instant
+
+如果你要搞跨国会议，或者记录服务器日志（要求全球统一），就需要这一层。
+
+1. ZoneId (时区 ID)
+
+这是时区的身份证。
+
+常见值： "Asia/Shanghai", "America/New_York", "UTC"。
+
+2. ZonedDateTime (带时区的完整时间)
+
+公式： LocalDateTime + ZoneId = ZonedDateTime
+
+含义： “2023年1月1日 10:00 的 上海时间”。这是一个宇宙中唯一确定的时刻了。
+
+转换： 当你把一个 Local 时间附加上 ZoneId，它就变成了 Zoned 时间。
+
+3. Instant (时间戳/机器时间)
+
+含义： 从 1970-01-01 00:00:00 UTC 开始算起的秒数（纳秒精度）。
+
+场景： 也是宇宙绝对时间，主要给 计算机/数据库 看的。
+
+关系： ZonedDateTime 转化成 Instant 就是同一个时刻，只是表达方式不同（一个是人读的，一个是机器读的）。
+
+所以：
+
+- LocalDateTime = LocalDate + LocalTime
+
+- ZonedDateTime = LocalDateTime + ZoneId
+
+这些常用的时间类，基本都是通过静态工厂方法创建的对象，所以你不能new他们，因为他们的构造方法都是private的。
+
+### 时间的“长度”
+
+这一层专门用来计算 “两个时间点之间隔了多久”。这里最容易混淆，请严格区分 物理时间 和 日历时间。
+
+1. Duration (基于物理秒)
+
+单位： 天(Days)、时(Hours)、分、秒、纳秒。
+
+用途： 它是基于 LocalTime 或 Instant 的。
+
+特征： 极其精准。1天永远等于24小时（86400秒）。
+
+场景： “任务执行了多久”、“倒计时”。
+
+2. Period (基于日历)
+
+单位： 年(Years)、月(Months)、日(Days)。
+
+用途： 它是基于 LocalDate 的。
+
+特征： 不精准（符合人类直觉）。“1个月”可能是28天，也可能是31天；“1天”如果遇到夏令时切换，可能是23小时或25小时。
+
+场景： “距离退休还有多少年”、“如果你只存了年月日，就必须用这个”。
+
+所以你只需记住：
+
+- Duration和LocalTime搭配使用
+- Period和LocalDate搭配使用
+- LocalDateTime这两个都能使
+
+### DateTimeFormatter 和 TemporalAdjusters
+
+1. DateTimeFormatter (格式化器)
+   
+它主要用来实现字符串和时间类互转。它是线程安全的（再次强调，以前的 SimpleDateFormat 是不安全的）。
+
+常用的：
+
+- DateTimeFormatter.ISO_LOCAL_DATE ，或者自定义 ofPattern("yyyy-MM-dd")。
+- format(): 对象 $\rightarrow$ 字符串
+- parse(): 字符串 $\rightarrow$ 对象
+
+```java
+LocalDateTime dt = LocalDateTime.now();
+DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+// 1. 变成字符串
+String s = dt.format(f); 
+// 或者反过来写（效果一样，推荐这种）：
+String s2 = f.format(dt);
+
+// 2. 变成对象
+LocalDateTime dt2 = LocalDateTime.parse("2023-10-01 12:00", f);
+```
+
+2. TemporalAdjusters(时间校正器)
+   
+用于进行复杂的日期计算。比如，“下个月的第一个周五”、“本月的最后一天”。
+
+```java
+LocalDate today = LocalDate.now();
+// 甚至读起来像英语一样通顺：
+LocalDate nextFri = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY));
+```
+
+### 夏令时
+
+那么到此为止，似乎ZonedDateTime和LocalDateTime没啥区别，这就牵扯出最阴险的考点：夏令时（Daylight Saving Time, DST）
+
+在考试中，你不需要背诵哪个国家几月几号切夏令时（题目会告诉你，通常用美国的规则：3月开始，11月结束），但你必须知道 Java 是如何处理这两个特殊时刻的。
+
+1. 春季：时间消失 (Spring Forward) —— "The Gap"
+   
+场景： 春天到了，我们需要把表 拨快 1 小时。 比如：凌晨 1:59:59 过了之后，直接跳到 3:00:00。 意味着： 2:00 到 2:59 这一个小时的时间在当地根本不存在！
+
+考题模拟：如果你非要创建一个“不存在的时间”，Java 会怎么办？
+
+```java
+// 假设：2023年3月12日凌晨2点切换夏令时（2点不存在了）
+ZoneId usZone = ZoneId.of("America/New_York");
+
+// 你的代码非要创建 2023-03-12 02:30 这个不存在的时间
+ZonedDateTime zdt = ZonedDateTime.of(
+    LocalDate.of(2023, 3, 12), 
+    LocalTime.of(2, 30), // 👈 搞事情，这时候正好是真空期
+    usZone
+);
+
+System.out.println(zdt);
+```
+不会报错！ Java 很聪明（也很鸡贼）。
+
+结果： 2023-03-12T03:30-04:00[America/New_York]
+
+Java 的策略： 既然 2:30 不存在，我就顺延那个偏移量（+1小时）。你以为是 2:30，实际变成了 3:30。
+
+2. 秋季：时间重叠 (Fall Back) —— "The Overlap"
+   
+场景： 秋天到了，我们需要把表 拨慢 1 小时。 比如：到了凌晨 2:00，突然时光倒流，变回了 1:00。 意味着： 1:00 到 1:59 这一个小时，这一天经历了两次！
+
+考题模拟：如果你创建 1:30，Java 怎么知道是“第一次的1:30”还是“第二次的1:30”？
+
+```java
+// 假设：2023年11月5日凌晨2点结束夏令时（时间倒流回1点）
+ZoneId usZone = ZoneId.of("America/New_York");
+
+// 创建 1:30
+ZonedDateTime zdt = ZonedDateTime.of(
+    LocalDate.of(2023, 11, 5), 
+    LocalTime.of(1, 30), 
+    usZone
+);
+
+System.out.println(zdt);
+```
+
+仍然不会报错！
+
+默认策略： Java 会选择 早 的那个时间（也就是切换前的那个偏移量）。
+
+结果： 2023-11-05T01:30-04:00 (夏令时还在生效时的 1:30)。
+
+如果你非要那个“第二次的 1:30”，你需要用 withLaterOffsetAtOverlap() 方法。
+
+3. 最出生的：Period vs Duration 在夏令时的表现
+   
+这是考夏令时最阴间的一道题。
+
+问： 过了 1 天，到底意味着什么？是“日历翻了一页”，还是“过了24小时”？
+
+假设 3月12日 是夏令时切换日（这一天只有 23 小时）。
+
+Period (周期) 的逻辑： 我只看日历，不管物理时间。
+
+Duration (时长) 的逻辑： 我是物理时间，我必须过满 24 个小时（3600秒 * 24）。
+
+```java
+ZoneId zone = ZoneId.of("America/New_York");
+// 3月12日 10:00 (切换日)
+ZonedDateTime start = ZonedDateTime.of(2023, 3, 12, 10, 0, 0, 0, zone);
+
+// 方式 A：加 Period (1天)
+ZonedDateTime resultA = start.plus(Period.ofDays(1));
+
+// 方式 B：加 Duration (24小时)
+ZonedDateTime resultB = start.plus(Duration.ofHours(24));
+
+System.out.println(resultA); // ?
+System.out.println(resultB); // ?
+```
+resultA (Period): 2023-03-13T10:00
+
+resultB (Duration): 2023-03-13T11:00
+
+所以一般处理夏令时要用Period，因为它不像Duration精确。Period 只是把日历从 12号 改成了 13号，并保留原本的时间（10:00）。符合人类直觉。而如果使用Duration，它只关注小时层面的东西，所以它会造成错误。
+
+到此为止，时间API这一块就已经结束了。
