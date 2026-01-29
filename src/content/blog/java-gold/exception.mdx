@@ -7,3 +7,164 @@ authors: ['enscribe']
 order: 3
 ---
 
+这里考纲的要求较为简单：
+
+使用 `try`/`catch`/`finally`、`try-with-resources` 和多重捕获块（multi-catch）处理异常，包括自定义异常。
+
+Java 的异常体系有一个共同的老祖宗：java.lang.Throwable。它下面分了三个派系，考试时必须分清：
+
+1. Error (错误) —— 系统级崩溃
+   
+   通常是 JVM 出了问题。程序无法处理，也不应该去捕获。这种问题一出现整个程序就寄了，例如常见的：StackOverflowError (递归死循环), OutOfMemoryError (堆满了)。
+   这种情况下既然程序都寄了，catch它也没什么意义。
+
+2. Exception (异常) —— 程序逻辑或外部环境的问题。程序可以捕获并恢复。
+
+    这是比较常见的程序错误，不会导致整个程序GG，通过catch异常，可以做一些处理异常的补救措施。
+    也是可以自定义业务异常的。
+
+    但是异常分两种：受检异常 (Checked) 和 非受检异常/执行异常 (Unchecked/Runtime)。
+
+    
+## 受检异常 和 非受检异常/执行异常
+
+### 什么是受检异常  (Checked)
+
+这是一群必须处理的异常，它继承自 Exception (但不是 RuntimeException)，也就是说你必须要么 try-catch，要么 throws。否则编译不通过。
+
+最著名的：IOException, SQLException, ClassNotFoundException
+
+一般是外部环境问题（文件不存在、网断了），不是程序员的锅，但程序员必须预案。
+
+### 非受检异常/执行异常 (Unchecked/Runtime)
+
+继承自 RuntimeException，不强制 catch，也不强制 throws。
+
+比如逻辑错误（空指针、除以零），纯属程序员代码写得烂，应该改代码，而不是 catch。
+
+## Try-Catch-Finally
+
+首先注意：Catch 的顺序是子类在前，父类在后！假设你连写`catch (Exception e | IOException e)` ，这样就报错了。因为后面这个异常是不必要的。
+
+接下来是，Try-Catch无论有无异常，Finally内部的东西都会执行，比如：
+
+```java
+public int test() {
+    try {
+        return 1; // 准备返回 1
+    } catch (Exception e) {
+        return 2;
+    } finally {
+        return 3; // 覆盖了前面的 return
+    }
+}
+// 结果：返回 3
+```
+
+结论： 如果 finally 里有 return，它会吞掉 try 或 catch 里的 return，也会吞掉 try 里抛出的异常！这就非常危险了。
+
+## Try-with-resources (Java 7+)
+
+首先看个例子：
+
+```java
+// 旧时代的眼泪
+FileInputStream in = null;
+try {
+    in = new FileInputStream("data.txt");
+    // ... 读文件
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    // 恶心点：关闭的时候还得再套一层 try-catch
+    if (in != null) {
+        try {
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+关闭流的时候你还得套一层try-catch块。这样写就很恶心。
+
+新版本中，实现了 java.lang.AutoCloseable 接口的类就可以这样写：
+
+```java
+
+try (FileInputStream in = new FileInputStream("data.txt")) {
+    // ... 读文件
+} catch (IOException e) {
+    // 处理异常
+}
+// 结束时，in.close() 已经被自动调用了！
+```
+
+所有的 IO 流（InputStream, Writer...）、数据库连接（Connection, Statement...）都实现了这个接口。当然如果你自己写一个类，想用这个机制，也必须实现这个接口。
+
+java 9改进成
+
+```java
+FileInputStream in = new FileInputStream("data.txt")
+//...
+try (in) {
+    // ... 读文件
+} catch (IOException e) {
+    // 处理异常
+}
+```
+允许在外部先声明，但这个变量必须是final或者事实final的，也就是没变过。
+
+而且这个括号里可以写多个资源：
+
+```java
+try (MyResource r1 = new MyResource("1");
+     MyResource r2 = new MyResource("2")) {
+    System.out.println("working...");
+}
+```
+我们都知道要关闭这两个资源，但是顺序是什么样的？
+
+是和声明的顺序反过来的，也就是先关闭r2，再关闭r1。因为资源之间往往有依赖关系。
+
+而且要注意`关闭`这个动作，在进入catch块之前，这两个资源就已经被关闭了。
+
+最后我们要介绍一个`被抑制的异常 (Suppressed Exceptions)`。
+
+想象一下，try块里出了问题，catch到了异常，但是像套娃一样，catch之前就得把这个资源关闭，而close的时候又出现了异常（他妈的傻逼）。这时候顺序如果处理不当，比如该报的异常被其他异常覆盖，那我们debug的时候压根就无从寻找病源，这该怎么办?
+
+Java 7 判定：try 块里的异常（Ex-A）才是主犯，close() 里的异常（Ex-B）是从犯。
+
+- Java 会抛出 Ex-A。
+
+- Java 会把 Ex-B 挂在 Ex-A 的身上（作为一个附件）。
+
+- 你可以通过 e.getSuppressed() 方法把 Ex-B 找出来。
+
+```java
+public class ExamTrap {
+    public static void main(String[] args) {
+        try (BadResource r = new BadResource()) {
+            throw new RuntimeException("我是主犯 A"); // 1. 抛出 A
+        } catch (Exception e) {
+            System.out.println("捕获到了: " + e.getMessage());
+            
+            // 查看有没有被抑制的小弟
+            for (Throwable t : e.getSuppressed()) {
+                System.out.println("发现被抑制的异常: " + t.getMessage());
+            }
+        }
+    }
+}
+
+class BadResource implements AutoCloseable {
+    @Override
+    public void close() {
+        throw new RuntimeException("我是从犯 B (关闭时出错)"); // 2. 抛出 B
+    }
+}
+```
+
+close() 抛出的异常会被标记为 Suppressed（挂在主异常下面）。
+
+还有关于父子类抛异常的规则，可以去OOA的章节看。
