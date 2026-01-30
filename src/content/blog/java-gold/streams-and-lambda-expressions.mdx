@@ -1,0 +1,366 @@
+---
+title: 'Streams and Lambda Expressions'
+description: ''
+date: 2026-1-30
+tags: ['Java','Streams and Lambda Expressions']
+authors: ['enscribe']
+order: 4
+---
+这里考纲的要求是：
+- 使用 Java 对象流和基本类型流（包括实现函数式接口的 Lambda 表达式）来提供、过滤、映射、消费和排序数据。
+- 在串行流和并行流上执行分解、连接、归约（Reduction）、分组和分区操作。
+
+## 简单介绍
+
+这里我们先来看看它们是用来干什么的：Java 8 引入了 Lambda 表达式和 Stream API，极大地增强了 Java 处理集合数据的能力。我们从以下几个方面去了解它们：
+
+1. Lambda 与 函数式接口 (Functional Interfaces)
+
+这是“语法基础”。不背下 Predicate, Consumer, Function, Supplier 这四大金刚，后面的 Stream 你根本看不懂。
+
+考点： 4 大核心接口的抽象方法、输入输出类型、默认方法 (and, or)。
+
+2. Stream 的流水线 (The Pipeline)
+
+这是“操作基础”。理解 源 (Source) -> 中间操作 (Intermediate) -> 终结操作 (Terminal) 的三部曲。
+
+考点： 惰性求值 (Lazy Evaluation)、filter vs map vs flatMap。
+
+3. 终结操作与收集器 (Collectors)
+
+这是“结果输出”。Stream 处理完了一堆数据，怎么变成一个 List？怎么变成一个 Map？
+
+考点： collect(), groupingBy (分组), partitioningBy (分区), joining。这是最难的！
+
+4. 原始流 (Primitive Streams)
+
+Java 为了性能搞的特殊化：IntStream, LongStream, DoubleStream。
+
+考点： mapToInt, average(), sum(), range()。
+
+5. Optional 与 并行流 (Parallel Streams)
+
+Optional: 如何优雅地避免空指针。
+
+Parallel: 多线程流的陷阱（reduce 的幺元问题、无序性）。
+
+## Lambda 与 函数式接口 (Functional Interfaces)
+
+Lambda 表达式是 Java 8 引入的一种新语法，用于实现函数式接口。
+函数式接口是仅包含一个抽象方法的接口，可以通过 Lambda 表达式来实例化。
+一般会打这个注解`@FunctionalInterface`。
+
+当然，Java 9 之后，接口里可以有多个默认方法和静态方法，这对函数式接口也适用。
+
+下面是四大核心函数式接口的总结，在 java.util.function 包里：
+
+export const cellStyle = { padding: '10px', borderBottom: '1px solid #eee' };
+export const headerStyle = { padding: '10px', borderBottom: '2px solid #333', textAlign: 'left' };
+
+<table>
+    <thead>
+      <tr>
+        <th style={headerStyle}>接口名</th>
+        <th style={headerStyle}>抽象方法名</th>
+        <th style={headerStyle}>输入参数</th>
+        <th style={headerStyle}>返回值</th>
+        <th style={headerStyle}>核心口诀</th>
+        <th style={headerStyle}>Stream 应用</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style={cellStyle}><strong>Predicate&lt;T&gt;</strong></td>
+        <td style={cellStyle}><code>test(T t)</code></td>
+        <td style={cellStyle}>T (一个)</td>
+        <td style={cellStyle}><code>boolean</code></td>
+        <td style={cellStyle}><strong style={{color: '#ff0000'}}>“断言/判断”</strong><br/><small style={{color:'#666'}}>你是对是错？</small></td>
+        <td style={cellStyle}><code>filter()</code></td>
+      </tr>
+      <tr>
+        <td style={cellStyle}><strong>Consumer&lt;T&gt;</strong></td>
+        <td style={cellStyle}><code>accept(T t)</code></td>
+        <td style={cellStyle}>T (一个)</td>
+        <td style={cellStyle}><code>void</code></td>
+        <td style={cellStyle}><strong style={{color: '#e67e22'}}>“消费/吃掉”</strong><br/><small style={{color:'#666'}}>只进不出</small></td>
+        <td style={cellStyle}><code>forEach(), peek()</code></td>
+      </tr>
+      <tr>
+        <td style={cellStyle}><strong>Supplier&lt;T&gt;</strong></td>
+        <td style={cellStyle}><code>get()</code></td>
+        <td style={cellStyle}>无</td>
+        <td style={cellStyle}>T</td>
+        <td style={cellStyle}><strong style={{color: '#27ae60'}}>“供应/生产”</strong><br/><small style={{color:'#666'}}>凭空变出</small></td>
+        <td style={cellStyle}><code>generate(), collect()</code></td>
+      </tr>
+      <tr>
+        <td style={cellStyle}><strong>Function&lt;T, R&gt;</strong></td>
+        <td style={cellStyle}><code>apply(T t)</code></td>
+        <td style={cellStyle}>T (一个)</td>
+        <td style={cellStyle}>R</td>
+        <td style={cellStyle}><strong style={{color: '#2980b9'}}>“转换/映射”</strong><br/><small style={{color:'#666'}}>进T出R</small></td>
+        <td style={cellStyle}><code>map()</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+考试中，采用Lambda表达式来实现这些接口是非常常见的。比如：
+
+```java
+Predicate<String> isEmpty = s -> s.isEmpty();
+Consumer<Integer> print = n -> System.out.println(n);
+Function<String, Integer> strLength = s -> s.length();
+Supplier<Double> randomValue = () -> Math.random();
+```
+`()->{}` 这种形式就是lambda表达式的标准写法，当只有一个参数时，可以省略括号；当只有一条语句时，可以省略大括号和 return 关键字。
+
+但是注意，后面的唯一一条语句不能是单独的return，否则会报错。
+
+再往后又出现了最新潮的写法--方法引用 (Method References)：
+
+```java 
+Predicate<String> isEmpty = String::isEmpty;
+```
+这种写法更简洁，当你写 Lambda 时，发现代码体仅仅是 `直接调用另一个现成的方法`，啥也没干，你就可以用 `::`。
+
+另外除了这4个最常用的，还有一些变种接口：
+- `BiPredicate<T, U>`：接受两个参数，返回 boolean。
+- `BiConsumer<T, U>`：接受两个参数，返回 void。
+- `BiFunction<T, U, R>`：接受两个参数，返回 R。
+
+以及一元操作符和二元操作符：
+- `UnaryOperator<T>`：继承自 Function，输入输出类型相同。
+- `BinaryOperator<T>`：继承自 BiFunction，两个输入参数和输出类型相同。
+
+## Stream 的流水线 (The Pipeline)
+
+既然有了Lambda表达式这种简化机制，我们就可以用它来处理集合数据了。Stream API 就是为此而生的。
+Stream 的处理过程分为三步：
+
+1. 源 (Source)：原材料从哪来？
+
+2. 中间操作 (Intermediate Operations)：机器臂（过滤、切割、上色）。
+
+3. 终结操作 (Terminal Operation)：打包出厂（按下启动按钮）。
+
+### 源 (Source)
+
+集合的数据来源一共就那么几种：
+- 集合 (Collection)：`List`, `Set`，通过 `collection.stream()` 或 `collection.parallelStream()` 获取。
+- 数组 (Array)：通过 `Arrays.stream(array)` 获取。
+- 直接创建：通过 `Stream.of(...)` 获取。
+
+### 中间操作 (Intermediate Operations)
+
+中间操作意味着，我们要对集合中的数据进行某种处理。
+它具有两个特点：
+1. `惰性求值` (Lazy Evaluation)：中间操作不会立即执行，而是等到终结操作被调用时才会执行。
+2. `链式调用` (Chaining)：由于它总是返回一个Stream对象，中间操作可以连续调用，形成一个流水线 (Pipeline)。
+
+
+常见的中间操作有：
+- `filter(Predicate<? super T> predicate)`：过滤，保留满足条件的元素。
+- `map(Function<? super T, ? extends R> mapper)`：映射，将元素转换为另一种形式。
+- `flatMap(Function<? super T, ? extends Stream<? extends R>> mapper)`：扁平化映射，将元素转换为流，然后合并成一个流。
+
+我们一个一个介绍，并且注意每个中间操作的输入输出数量，你就能猜出它们用到了上面lambda表达式中介绍的哪个函数式接口。
+
+filter--筛子。它其实就是用来过滤数据的。比如，你有一堆数字，你只想要其中的偶数，你就可以用 filter：
+
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+List<Integer> evenNumbers = numbers.stream()
+    .filter(n -> n % 2 == 0)
+    .collect(Collectors.toList());
+```
+注意它的输入输出数量，输入 N 个，输出 0 ~ N 个。所以它很可能用到了 Predicate 接口。
+
+map--变形机。它用来把数据从一种形式转换成另一种形式。比如，你有一堆字符串，你想要它们的长度：
+
+```java
+List<String> strings = Arrays.asList("apple", "banana", "cherry");
+List<Integer> lengths = strings.stream()
+    .map(s -> s.length())
+    .collect(Collectors.toList());
+```
+
+它的输入有 N 个，输出 还是 N 个（1对1）。这样1对1的转换，很明显用到了 Function 接口。
+
+flatMap--扁平化。主要是用来处理嵌套结构的流，比如多个流合并到一起。比如，你有一个字符串列表，每个字符串包含多个单词，你想要一个包含所有单词的列表：
+
+```java
+List<String> sentences = Arrays.asList("hello world", "java streams", "lambda expressions");
+List<String> words = sentences.stream()
+    .flatMap(s -> Arrays.stream(s.split(" ")))
+    .collect(Collectors.toList());
+```
+这样words 里面就包含了所有的单词。它的输入 N 个，输出 0 ~ M 个（M >= N）。所以它用到了 Function 接口，但是返回值是 Stream。
+
+### 终结操作 (Terminal Operations)
+
+它具有两个特点：
+- 返回值： 绝对 不是 Stream！可能是 void、int、List、Map 等。
+- 触发执行： 只有代码读到这一行，流的处理才会真正开始。
+
+常见的终结操作有：
+- `forEach(Consumer<? super T> action)`：遍历，对每个元素
+- `collect(Collector<? super T, A, R> collector)`：收集，将流中的元素收集到一个集合中。
+- `reduce(BinaryOperator<T> accumulator)`：归约，将流中的元素合并成一个值。 
+- `count()`：计数，返回流中元素的数量。
+- `findFirst()`：查找第一个元素。
+- `findAny()`：查找任意一个元素。
+
+只有你最后调用了这些终结操作，整个链式调用才会被执行。否则，中间操作只是被记录下来，并不会实际处理数据。
+
+这就引出了我们刚刚介绍的一个特性：惰性求值 (Lazy Evaluation)。
+
+看下面的例子：
+
+```java
+Stream.of("A", "B", "C")
+    .filter(s -> {
+        System.out.println("Filter: " + s);
+        return true;
+    }); 
+```
+
+它最终什么都不会输出，因为没有终结操作，流并没有被执行。
+
+另外我们看一个关于流的一次性的例子：
+
+```java
+Stream<String> stream = Stream.of("A", "B");
+stream.forEach(System.out::println); // ✅ 正常消费
+
+stream.count(); // ？
+// java.lang.IllegalStateException: stream has already been operated upon or closed
+```
+这种没有采用链式调用的写法具有迷惑性，但是我们注意到，有两个终结操作：`forEach` 和 `count`，这很奇怪。
+因为流是一次性的，流对象被消费后就不能再用了。如果你想操作两次，必须重新创建两个 Stream。
+
+接下来来一个实战例子：
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve");
+```
+
+现在有一个这样的人名集合，我想做：
+
+1. 只想要名字长度大于 4 的人
+2. 把这些名字全都变成大写
+3. 把处理好的名字打印出来
+4. 按名字首字母排序
+
+我会用到什么函数进行什么操作呢？
+
+1. filter 过滤
+2. map 转换
+3. foreach 遍历消费打印
+4. sorted 排序
+
+这些依次都属于什么操作？
+
+1. 中间操作
+2. 中间操作
+3. 终结操作
+4. 中间操作
+
+所以我们自然而然就得出：
+```java
+names.stream()
+    .filter(name -> name.length() > 4)          // 中间操作：过滤
+    .map(String::toUpperCase)                   // 中间操作：转换
+    .sorted()                                   // 中间操作：排序
+    .forEach(System.out::println);              // 终结操作：打印
+```
+到此为止，似乎我们已经能对流做各种各样的操作了，但是还远远不够。
+假设我最后一步不想打印，而是想把结果收集到一个新的列表 (List) 里，该怎么办呢？
+你可能发现了，我们之前的例子里：
+
+```java
+.collect(Collectors.toList());
+```
+出现了最后这个`collect`终结操作，而且我们用集合类型去接受它的结果，它有什么作用？
+
+### 终结操作与收集器 (Collectors)
+
+我们刚才就介绍了终结操作，了解了一个流处理完数据后是如何停止的。也就是伟大的`collect()`和 `Collectors` 工具类。
+
+1. 将处理过的数据收集到一个集合 (Collection) 中，比如 List、Set。
+
+- 变 List: stream.collect(Collectors.toList())
+
+  注：Java 16+ 可以直接写 stream.toList()，但返回的是不可变 List。
+
+- 变 Set: stream.collect(Collectors.toSet())
+
+考点： 会自动去重，且无序。
+
+- 最通用的，变特定集合: stream.collect(Collectors.toCollection(TreeSet::new))
+
+如果你想指定用 ArrayList 还是 LinkedList，或者要排序 (TreeSet)，就用这个。
+
+2. 字符串连接 (Joining)
+
+直接抛弃以前的遍历形式，我们快步进入新时代：
+
+- 简单拼接: Collectors.joining()
+
+- 带分隔符: Collectors.joining(", ") (比如: "A, B, C")
+
+- 带前缀后缀: Collectors.joining(", ", "[", "]") (比如: "[A, B, C]")
+
+```java
+Stream<String> s = Stream.of("Java", "Stream", "API");
+String result = s.collect(Collectors.joining("-")); 
+// 结果: "Java-Stream-API"
+```
+
+3. toMap
+
+将流中的元素收集到一个 Map 中。需要提供两个函数：一个用于生成键，另一个用于生成值。·`toMap(KeyMapper, ValueMapper)`
+
+```java
+Stream<User> users = Stream.of(new User("Alice", 1), new User("Bob", 2));
+
+// Key是名字，Value是年龄
+Map<String, Integer> map = users.collect(
+    Collectors.toMap(User::getName, User::getAge)
+);
+```
+这里假如有重复的key会报错，可以提供第三个参数来解决冲突：
+
+```java
+Collectors.toMap(
+    User::getName,
+    User::getAge,
+    (oldVal, newVal) -> newVal // 保留新值
+)
+```
+
+4. 分组 (Grouping)
+
+也就是把数据按照某个属性分类，形成一个 Map，键是分类依据，值是对应的元素列表。
+
+Collectors.groupingBy(Function分类器) 返回类型： `Map<K, List<V>>` (默认 Value 是一个 List)
+
+这有点类似于SQL里的 GROUP BY。
+
+```java
+//按名字长度分组
+Stream<String> s = Stream.of("A", "BB", "CCC", "DD");
+
+Map<Integer, List<String>> map = s.collect(
+    Collectors.groupingBy(String::length)
+);
+// 结果：
+// 1 -> ["A"]
+// 2 -> ["BB", "DD"]
+// 3 -> ["CCC"]
+```
+它还有加强用法：Collectors.groupingBy(Function分类器 , Collector下游收集器)。也就是我想对这些分类的集合做进一步处理。
+
+比如：我想按名字长度分组，但每组我只想要名字的数量，而不是名字列表：
+
+```java
+groupingBy(String::length, Collectors.counting())
+```
