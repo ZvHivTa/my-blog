@@ -1,0 +1,18 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Fm24Uploader from '@/components/Fm24Uploader'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="fm24-assistant-board" />
+  <Breadcrumbs
+    items={[
+      { label: `fm24-assistant-board`, icon: 'lucide:book-copy' },
+    ]}
+  />
+
+  <Fm24Uploader client:load />
+ 
+</Layout>
