@@ -1,0 +1,509 @@
+---
+title: 'Report 10'
+description: 'Discussion and idea for research.'
+date: 2026-4-15
+tags: ['Research', 'L-star algorithm','Syntactic Monoid',]
+authors: ['enscribe']
+order: 4
+---
+
+### 1. Terminology
+
+#### **i)** Syntactic Monoid: 
+
+For a language $L \subseteq \Sigma^*$, $w \in L$ and $w^{\prime} \in L$ is *syntactic congruence* when:
+
+$$
+\forall u,v \in \Sigma^* \space uwv \in L \Leftrightarrow uw^{\prime}v \in L
+$$
+
+We can use $u ∼_L v$ to describe this relation. 
+
+Then we can use $∼_L$ divide $\Sigma^*$ into many classes, for example $[u]$ means every string which is syntactic congruence with $u$. In other words:
+
+$$
+u ∼_L v \Leftrightarrow v\in [u]
+$$
+
+Define $\cdot$ as the symbol of *binary operation* on these equivalence classes, then:
+
+$$
+[u]\cdot[v] = [uv]
+$$
+
+Then by this equivalence relation, the monoid $M(L)$ is the *Syntactic Monoid* of the language $L$ and we can say $M(L)$ recognize the language $L$. Also, $M(L)$ is the smallest transition monoid which recognize the language $L$ and it is the transition monoid of the *minimal DFA* which recognize the language $L$.
+
+#### **ii)** unknown regular set: $U$
+
+#### **iii)** Fixed alphabet: $\Sigma$
+
+#### **iv)** Observation table( $OT$ ) :
+
+Observation table( $OT$ ) is a 4-tuple $OT = (I,P,S,T)$ : 
+
+① $I \subseteq \Sigma^*$ : prefix-closed infix set;
+
+② $P\subseteq \Sigma^*$ : prefix-closed prefix set;
+
+③ $S\subseteq \Sigma^*$ : suffix-closed suffix set;
+
+④ $T$ is a function 
+
+$$
+T := (P\cdot( I \cup I \cdot \Sigma) \cdot S ) \rightarrow \{0,1\}\\\\
+$$
+
+$T(u) = 1$  $\text{iff}$  $u$ is a member of $U$.
+
+Observation table is initially set to $(\{\epsilon\},\{\epsilon\},\{\epsilon\},T)$. This table can seen as a three-dimension array. 
+
+The result is:
+
+-  Elements of $I$ are the candidates for states of the syntactic monoid of $U$;
+
+-  Elements of $P$ and  $S$  correspond to distinguishing experiments for these states.
+
+-  Elements of $I \cdot \Sigma$ and are used to construct the transition function. 
+
+
+If 
+$$
+\forall p\in P,\forall s\in S, T(p\cdot i \cdot s) = T(p \cdot i^{\prime} \cdot s)
+$$
+It is observed that $i$ and $i^{\prime}$ are in the same status.
+
+So here is a new definition:
+
+⑤ $status$ is a function:
+$$
+status := (P \times S) \rightarrow \{0,1\}
+$$
+And 
+$$
+status_i(p,s) = T(p\cdot i \cdot s)
+$$
+
+
+This says: "The state for $i$, when given the pair $(p, s)$, is defined as the result of the membership query on the string $p·i·s$."
+
+Then if 
+$$
+\forall p\in P,\forall s\in S, status_i(p,s) = status_{i^{\prime}}(p,s)
+$$
+Then we call $i$ and $i^{\prime}$ is $\text{status - equivalent}$ which denoted $i \equiv_{status} i^{\prime}$. And we use $[i]_{status}$ to represent that at the condition of this $status$ function word $i$ forms a equivalence class. Then obviously $[i]_{status} = [i^{\prime}]_{status}$
+
+#### **v)** Acceptor:
+
+If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 5-tuples $\mathcal{M} = (Q,\Sigma,\delta,q_0,F)$ where
+
+• $Q = \{status_i| i \in I\}$
+
+• $q_0 = status_{\epsilon} \in Q$
+
+• $F = \{status_i \in Q|status(\epsilon,\epsilon) = 1\}$
+
+• $\delta:Q \times \Sigma\rightarrow Q$ is the transition function.
+
+The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
+
+$$
+\delta^{*}(q,w) = 
+\begin{cases}
+q & \text{if} & w = \epsilon \\\\
+\delta(\delta^*(q,w^{\prime}),a) & \text{if} & w = w^{\prime} \space, \space a \in \Sigma\\
+\end{cases}
+$$
+
+
+#### vi) Membership queries: 
+
+The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer whether or not $w \in L$.
+
+#### vii) Equivalence queries:
+
+When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{M}$ according to the acceptor, 
+and the teacher answers whether or not $L$ is the language of $\mathcal{M}$. 
+If the answer is yes, then we go to monoid consistency check. 
+If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{M}$.
+
+#### viii) Monoid Consistency Check:
+
+When the teacher replies yes to the equivalence query, 
+we need to check whether the monoid of $\mathcal{M}$ is consistent with the information we have in $OT$. 
+Because there is a possibility that we get the $\mathcal{M}$ 
+which is not the syntactic monoid of $L$ but accepts the same language. 
+
+The details of monoid consistency check will be discussed in the following part.
+
+#### ix) Separability and Closedness
+
+Actually at each step of the algorithm, the learner maintains:
+
+- A set $I \subseteq \Sigma^{*}$ of access words, with $\epsilon \in I$
+- A set $P \subseteq \Sigma^*$ of prefix test words.
+- A set $S \subseteq \Sigma ^{*}$ of suffix test words.
+
+On the $(I,P,S)$ we can define:
+
+- **Separability**: no two distinct words in $I$ are $\text{status-equivalent}$. 
+- **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some 
+$i^{\prime},i^{\prime\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$
+
+If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$.
+
+
+#### x) Monoid Consistency
+
+We mentioned monoid consistency check in the part of equivalence query. 
+The definition of monoid consistency is: 
+
+$$
+\forall v \in I, t\in I\cdot\Sigma. (t \equiv_{status} v) \Rightarrow \forall i\in I, s\in S, T(i\cdot t \cdot s) = T(i \cdot v \cdot s)
+$$
+
+We will intoduce how to check monoid consistency and why we define this in the following part.
+
+### 2. Some propositions
+
+**Proposition 1. (Closedness)** If $(I,P,S)$ is separable but not closed, 
+then using membership queries one can find $i^{\prime} \in I \cdot \Sigma$ such that  $(I ∪ {i^{\prime}}, P,S) $ remains separable.
+
+Obviously, according to the definition of closedness, there exists $i^{\prime} \in I \cdot \Sigma$  :
+$$
+\forall i \in I. i \not\equiv_{status} i^{\prime}
+$$
+We should add this $i^{\prime}$ into $I$ so that we try to make it separable. 
+
+------
+
+**Proposition 2. (Hypothesis Automaton)** 
+If the observation table $OT = (I, P, S, T)$ is closed and separable, 
+then the hypothesis automaton $\mathcal{M}$ is a well-defined, deterministic, 
+and finite automaton for the language it accepts. 
+Furthermore, for every state $q \in Q$, 
+there exists exactly one representative $i \in I$ such that $\delta^*(q_0, i) = q$.
+
+① Well-definedness of $\delta$ and $Q$
+
+First, according to the way of constructing $ \mathcal{M} $, we have:
+
+$$
+\forall i \in I, a \in \Sigma. \delta^*(status_i, a) = status_{ia}
+$$
+
+Because of the closedness, we have:
+
+$$
+\forall i \in I, a \in \Sigma. \exists i^{\prime} \in I. ia \equiv_{status} i^{\prime}
+$$
+
+Then because $i^{\prime} \in I$, then $status_{i^{\prime}} \in Q$.
+
+So $\delta$ is well-defined. 
+
+② Existence and Determinism of the Representative in $I$:
+
+This means that for every state $q \in Q$, 
+there exists exactly only one representative $i \in I$ such that $\delta^*(q_0, i) = q$.
+
+Base: If $|i| = 0$, $i = \epsilon$, then $\delta^*(q_0, \epsilon) = q_0$, so the representative is $\epsilon$.
+
+Inductive Step: 
+Assume that for all $|u| = k$, $\delta^*(q_0,u) = status_{u}$ is correct.
+Then for $|u| = k+1$, we can write $u$ as $u^{\prime}a$ where $|u^{\prime}| = k$ and $a \in \Sigma$. 
+Then we have:
+
+$$
+\delta^*(q_0,u^{\prime}\cdot a) = \delta^(\delta^*(q_0,u^{\prime}),a) = \delta^(status_{u^{\prime}},a) = status_{u^{\prime}\cdot a} = status_u
+$$
+
+So for any $q \in Q$, there exists a unique $i \in I$ such that $\delta^*(q_0, i) = status_i = q$.
+
+Then we need to show that there is only one representative in $I$ for each state in $Q$. 
+
+And because of the separability, we have:
+$$
+\forall i, i^{\prime} \in I. i \not\equiv_{status} i^{\prime}
+$$
+
+So $status_i \neq status_{i^{\prime}}$. 
+
+So in $I$, there is only one representative for each state in $Q$.
+
+------
+
+**Proposition 3. (Equivalence Query)**
+If the teacher answers "yes" to the equivalence query, 
+then the language $L(\mathcal{M})$ accepted by the hypothesis automaton $\mathcal{M}$ 
+is the same as the unknown regular set $U$.
+And consequently we have:
+$$
+    \forall w \in \Sigma^*, \delta^*(q_0,w) \in L(\mathcal{M}) \Leftrightarrow w \in U
+$$
+
+------
+
+**Proposition 4. (Monoid Consistency Check 1)**
+If the Acceptor $\mathcal{M}$ passes the equivalence query, 
+but fails the monoid consistency check,
+we must have:
+$$
+\exists t \in I\cdot\Sigma, v \in I. (t \equiv_{status} v) \wedge t \not\sim_L v
+$$
+
+Proof by contradiction:
+
+Assume that $\mathcal{M}$ fails the monoid consistency check. But proposition 4 is not true.
+
+That is:
+$$
+\forall t \in I\cdot\Sigma, v \in I. (t \equiv_{status} v) \rightarrow t \sim_L v
+$$
+
+Let $x \equiv_{status} v$ and $y \equiv_{status} t = wa$ where $w \in \Sigma^*$ and $a \in \Sigma$. 
+
+Here $x \not\sim_L \epsilon$ or $y \not\sim_L \epsilon$ is correct w.l.o.g.
+
+Because $x \equiv_{status} v \equiv_{status} t \equiv_{status} y$, 
+we have $x \sim_L $. 
+
+There must exist $i,i^{\prime}\in I$ such that $status_i = status_x$ and $status_{i^{\prime}} = status_y$. 
+And because $t$ and $v$ are any words in $I\cdot\Sigma$ and $I$ respectively,
+then $x$ and $y$ can be any words. 
+
+Then for any $x,y \in \Sigma^*$: 
+$$
+    x \equiv_{status} y \rightarrow x \sim_L y
+$$
+
+This means the acceptor actually passes the monoid consistency check, contradiction.
+
+------
+
+**proposition 5. (Monoid Consistency Check 2)**
+
+Assume that the Acceptor $\mathcal{M}$ passes the equivalence query, 
+but fails the monoid consistency check.
+
+We now pass the equivalence query, so we have $L(\mathcal{M}) = U$.
+So we use $U$ to replace $L(\mathcal{M})$ in the following proof and description.
+
+So we must have:
+
+$$
+\exists v \in I, t\in I\cdot\Sigma. (t \equiv_{status} v) \wedge t \not\sim_L v
+$$
+
+And for $v$ and $t$, there must exist $i\in I$ and $s \in S$ such that:
+$$
+ T(i\cdot t \cdot s) \neq T(i \cdot v \cdot s)
+$$
+
+in other words:
+
+$$
+    (i \cdot t \cdot s \in U \wedge i \cdot v \cdot s \not\in U)
+    \vee (i \cdot t \cdot s \not\in U \wedge i \cdot v \cdot s \in U)
+$$
+
+Proof:
+
+① Why use $i \in I$ can represent any String $x \in \Sigma^*$?
+
+First, since $t \not\sim_L v$:
+
+$$
+    \exists x,y \in \Sigma^*. 
+    ( (x\cdot t \cdot y \in U) \wedge (x\cdot v \cdot y \not\in U) )
+    \vee ((x\cdot t \cdot y \not\in U) \wedge (x\cdot v \cdot y \in U))
+$$
+
+So w.l.o.g, we can assume that $x\cdot t \cdot y \in U$ and $x\cdot v \cdot y \not\in U$.
+
+Then we can find $i \in I$ such that $status_i = status_x$. 
+
+Because $x\cdot t \cdot y \in U$ then $i \cdot t \cdot y \in U$.
+
+Because $x\cdot v \cdot y \not\in U$ then $i \cdot v \cdot y \not\in U$.
+
+So actually :
+
+$$
+    i \cdot t \cdot y \in U \wedge i \cdot v \cdot y \not\in U
+$$
+
+② Why we can find $s \in S$ to replace $y$?
+
+Now let's focus on $i \cdot t$ and $i \cdot v$, they concat with the same suffix $y$
+but one is in $U$ and the other is not.
+
+So we can find $i_1 \in I$ such that $status_{i_1} = status_{i \cdot t}$, 
+also we can find $i_2 \in I$ such that $status_{i_2} = status_{i \cdot v}$.
+
+$i_1 \not\equiv_{status} i_2$ then:
+
+$$
+    \exists s \in S. T(i_1 \cdot s) \neq T(i_2 \cdot s)
+$$
+
+You may ask why it can't be:
+
+$$
+    \exists p \in P, s \in S. T(p\cdot i_1 \cdot s) \neq T(p\cdot i_2 \cdot s)
+$$
+
+Actually, if there exists $p \in P$ such that $T(p\cdot i \cdot t \cdot s) \neq T(p\cdot i \cdot v \cdot s)$, 
+then we can find $i^{\prime} \in I$ such that $status_{i^{\prime}} = status_{p\cdot i}$. 
+
+And we can also find $i_1^{\prime} \equiv_{status} p \cdot i \cdot t = i^{\prime} \cdot t$ 
+and $i_2^{\prime} \equiv_{status} p \cdot i \cdot v = i^{\prime} \cdot v$. 
+
+We here actually introduce 2 facts, if the acceptor passes the equivalence query but fails the monoid consistency check:
+
+1. There must exist $t \in I\cdot\Sigma$ and $v \in I$ such that $t \equiv_{status} v$ but $t \not\sim_L v$.
+2. For such $t$ and $v$, there must exist $i \in I$ and $s \in S$ such that $T(i\cdot t \cdot s) \neq T(i \cdot v \cdot s)$.
+
+So the way we check monoid consistency is:
+
+1. Find $t \in I\cdot\Sigma$ and $v \in I$ such that $t \equiv_{status} v$.
+2. For such $t$ and $v$, find $i \in I$ and $s \in S$ to do the membership query on $i\cdot t \cdot s$ and $i \cdot v \cdot s$ to check whether they are belong to the language or not.
+3. If $T(i\cdot t \cdot s) \neq T(i \cdot v \cdot s)$, then we add $i$ into $P$ so that we can distinguish $t$ and $v$ to make the observation table not closed.
+
+------
+
+**proposition 6. (Correctness)** If the acceptor passes the equivalence query and the monoid consistency check,
+ in other words, the observation table is closed and separable, and monoid consistent,
+ then the acceptor is the syntactic monoid which recognizes $U$.
+
+Call back the definition of syntactic monoid, if $x,y\in \Sigma^*$:
+
+$$
+    x \sim_L y \iff \forall p, w \in \Sigma^*, \quad p \cdot x \cdot w \in U \Leftrightarrow p \cdot y \cdot w \in U
+$$
+
+① Right side
+
+Because $x \equiv_{status} y$, we have $q = status_x = status_y$.
+
+Then for any $w \in \Sigma^*$, $xw \equiv_{status} yw$.
+
+Because acceptor passes the equivalence query, we have $L(\mathcal{M}) = U$. So
+$$
+    xw \in U \Leftrightarrow yw \in U
+$$
+
+② Left side
+
+Check $p$, any $p \in \Sigma^*$, we can find $i \in I$ such that $i \equiv_{status} p$. 
+
+Because $x \equiv_{status} y$, there must exist $i^{\prime} \in I$ such that $x \equiv_{status} y \equiv_{status} i^{\prime}$.
+
+Because of the monoid consistency, we have:
+
+$$
+    \forall i \in I, s\in S, T(i \cdot x \cdot s) = T(i \cdot y \cdot s) = T(i \cdot i^{\prime} \cdot s)
+$$
+
+! Then $ix \equiv_{status} iy \equiv_{status} ii^{\prime}$.
+
+Proof:
+
+
+
+Then for any $p \in \Sigma^*$, we have:
+$$
+    px \equiv_{status} pi^{\prime} \equiv_{status} py
+$$
+
+
+③ Two-sides
+
+From ② we already know:
+
+$$
+    \forall p \in \Sigma^*, x \equiv_{status} y \Rightarrow px \equiv_{status} py
+$$
+
+Then for any suffix $w \in \Sigma^*$, we have:
+
+$$
+    (px)w \in U \Leftrightarrow (py)w \in U
+$$
+
+That is :
+
+$$
+    p \cdot x \cdot w \in U \Leftrightarrow p \cdot y \cdot w \in U
+$$
+
+This is exactly the definition of syntactic congruence. So we have $x \sim_L y$.
+
+### 3. Algorithm process
+
+#### 0. Initialization Phase
+
+The code first initializes three core sets:
+
+- **P Set (Left detectors/Prefixes):** Initially contains only the empty string.
+
+- **S Set (Right detectors/Suffixes):** Initially contains only the empty string.
+
+- **I Set (State representatives):** Initially contains only the empty string.
+
+------
+
+#### Phase 1: Table Filling & Closedness Check
+
+1. **`self.fill_table()`**: The algorithm issues Membership Queries (MQ) to the Oracle (Teacher) to populate the boolean values in the observation table for all strings formed by concatenating $P$, $I \cup (I \cdot \Sigma)$, and $S$.
+2. **`self.is_closed_and_separable()`**: Checks if the observation table is **Closed**. The specific logic checks every extended boundary element $t \in I \cdot \Sigma$ to see if its row vector perfectly matches an existing row in the main set $I$.
+   - **If no match is found:** A new state has been discovered. The element $t$ is moved into the $I$ set, and the function returns `False`. The code executes `continue`, returning to the start of the loop to refill the table.
+   - **If all elements find a match:** Returns `True`, meaning the table is closed.
+3. **`self.build_hypothesis()`**: Based on the currently closed observation table, each unique row vector in $I$ is defined as a DFA state to construct and return the current Hypothesis DFA.
+
+------
+
+#### Phase 2: External Equivalence Query (EQ)
+
+The DFA constructed in Phase 1 is submitted to the Teacher to execute an equivalence query (`equivalence_query`).
+
+- The Teacher checks if the language accepted by this DFA is perfectly identical to the target language.
+- If they are not identical, it returns a string that caused the incorrect judgment as a `counterexample`.
+- If they are perfectly identical, it returns `None`.
+
+------
+
+#### Phase 3: Processing the Counterexample (Executed when EQ returns a string)
+
+If a counterexample is received, the code extracts new probing strings based on the configured strategy (`ce_strategy`) to break the incorrect state merges in the current DFA:
+
+- **Strategy A: `expand` (Maler-Pnueli exhaustive expansion)**
+  - Iteratively adds all possible suffixes of the counterexample (from length 0 to full length) to the $S$ set.
+  - Iteratively adds all possible prefixes of the counterexample (incrementing character by character) to the $P$ set.
+- **Strategy B: `breakpoint` (Rivest-Schapire binary search)**
+  1. **Record Trajectory:** Simulates the counterexample character by character through the current hypothesis DFA, recording the state representative for each step (stored in the `reps` list).
+  2. **Two-End Verification:** Tests the starting point (`Q_low`) and ending point (`Q_high`) of the entire trajectory by appending the remaining suffixes and querying their true boolean values from the Teacher.
+  3. **Binary Search:** If the start and end results differ, a `while` loop performs a binary search to pinpoint the exact adjacent steps (`low` and `high`) where the DFA's expectation and the Teacher's reality flip (the breakpoint).
+  4. **Extract and Add:** Extracts the **precise suffix** (`w[high:]`) that caused the flip and adds it to the $S$ set; extracts the **state representative prefix** (`reps[low]`) at the breakpoint and adds it to the $P$ set.
+  5. *(Fallback)*: If the binary search fails to find a breakpoint due to unexpected conditions, it falls back to adding the entire counterexample directly to both $S$ and $P$.
+
+After appending to the sets, the code executes `continue`, jumping back to the start of the loop to refill the table.
+
+------
+
+#### Phase 4: Internal Algebraic Consistency Check (Executed when EQ returns None)
+
+This phase is triggered when the DFA's accepted language is 100% correct.
+
+It calls `self.ensure_monoid_consistency_doublesided()`, which iterates through all transition mappings in the current table:
+
+- It uses the $I$ set as left prefixes to rigorously interrogate whether the equivalent mappings between $I \cdot \Sigma$ and $I$ still hold true after a prefix is prepended.
+- **If an inconsistency is found:** The function internally adds the prefix that caused the discrepancy to the $P$ set and returns `False`. The code executes `continue`, jumping back to the start of the loop to refill the table (which will force the previously merged states to split).
+- **If no inconsistencies are found:** Returns `True`, indicating that the algebraic structure has completely converged into the Syntactic Monoid.
+
+------
+
+#### Finalization Phase
+
+The code breaks through all conditional interceptions, stops the timers, prints the performance statistics report, and returns the final generated automaton object.
+
+
