@@ -11,7 +11,7 @@ order: 4
 
 #### **i)** Syntactic Monoid: 
 
-For a language $L \subseteq \Sigma^*$, $w \in L$ and $w^{\prime} \in L$ is *syntactic congruence* when:
+For a language $L \subseteq \Sigma^*$, $w \in \Sigma^*$ and $w^{\prime} \in \Sigma^*$ is *syntactic congruence* when:
 
 $$
 \forall u,v \in \Sigma^* \space uwv \in L \Leftrightarrow uw^{\prime}v \in L
@@ -19,7 +19,7 @@ $$
 
 We can use $u ∼_L v$ to describe this relation. 
 
-Then we can use $∼_L$ divide $\Sigma^*$ into many classes, for example $[u]$ means every string which is syntactic congruence with $u$. In other words:
+Then we can use $∼_L$ divide $\Sigma^*$ into many classes, for example $[u]$ means the set of all strings which is syntactic congruence with $u$. In other words:
 
 $$
 u ∼_L v \Leftrightarrow v\in [u]
@@ -31,7 +31,7 @@ $$
 [u]\cdot[v] = [uv]
 $$
 
-Then by this equivalence relation, the monoid $M(L)$ is the *Syntactic Monoid* of the language $L$ and we can say $M(L)$ recognize the language $L$. Also, $M(L)$ is the smallest transition monoid which recognize the language $L$ and it is the transition monoid of the *minimal DFA* which recognize the language $L$.
+Then by this equivalence relation, the monoid $M(L)$ is the *Syntactic Monoid* of the language $L$ and we can say $M(L)$ recognize the language $L$. Also, $M(L)$ is the smallest monoid which recognize the language $L$ and it is the transition monoid of the *minimal DFA* which recognize the language $L$.
 
 #### **ii)** unknown regular set: $U$
 
@@ -70,7 +70,7 @@ If
 $$
 \forall p\in P,\forall s\in S, T(p\cdot i \cdot s) = T(p \cdot i^{\prime} \cdot s)
 $$
-It is observed that $i$ and $i^{\prime}$ are in the same status.
+it is observed that $i$ and $i^{\prime}$ are in the same status.
 
 So here is a new definition:
 
@@ -80,7 +80,7 @@ status := (P \times S) \rightarrow \{0,1\}
 $$
 And 
 $$
-status_i(p,s) = T(p\cdot i \cdot s)
+status_i(p,s) = T(p\cdot i \cdot s) \quad i \in \Sigma^*
 $$
 
 
@@ -100,12 +100,15 @@ If an observation table $OT = (I,P,S,T)$, then the acceptor of $(I,P,S,T)$ is a 
 
 • $q_0 = status_{\epsilon} \in Q$
 
-• $F = \{status_i \in Q|status(\epsilon,\epsilon) = 1\}$
+• $F = \{status_i \in Q|status_i(\epsilon,\epsilon) = 1\}$
 
-• $\delta:Q \times \Sigma\rightarrow Q$ is the transition function.
+• $\delta:Q \times \Sigma\rightarrow Q$​ is the transition function.
 
-The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
-
+For $q \in Q, a\in \Sigma$, if $q = status_i (i \in I)$ and we have $qa \equiv_{status} i^{\prime},i^{\prime}\in I$, then:
+$$
+\delta(q,a) = status_{i^{\prime}}
+$$
+ The transition function $\delta$ is extended to the function $\delta^{*}:Q \times \Sigma^{*} \rightarrow Q$:
 $$
 \delta^{*}(q,w) = 
 \begin{cases}
@@ -114,7 +117,6 @@ q & \text{if} & w = \epsilon \\\\
 \end{cases}
 $$
 
-
 #### vi) Membership queries: 
 
 The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer whether or not $w \in L$.
@@ -122,16 +124,24 @@ The learner selects a word $w \in \Sigma^{*}$ and the teacher gives an answer wh
 #### vii) Equivalence queries:
 
 When the $OT$ is closed, we can get a hypothesis automaton $\mathcal{M}$ according to the acceptor, 
-and the teacher answers whether or not $L$ is the language of $\mathcal{M}$. 
-If the answer is yes, then we go to monoid consistency check. 
-If no, then the teacher gives a counterexample, which differs $L$ from the language of $\mathcal{M}$.
+and the teacher answers whether or not unknown regular language $U$ is the language of $\mathcal{M}$. 
+
+If the teacher answers "yes" to the equivalence query, 
+then the language $L(\mathcal{M})$ accepted by the hypothesis automaton $\mathcal{M}$ 
+is the same as the unknown regular set $U$.
+And consequently we have:
+$$
+    \forall w \in \Sigma^*, w \in L(\mathcal{M}) \Leftrightarrow w \in U
+$$
+
+------
 
 #### viii) Monoid Consistency Check:
 
 When the teacher replies yes to the equivalence query, 
 we need to check whether the monoid of $\mathcal{M}$ is consistent with the information we have in $OT$. 
 Because there is a possibility that we get the $\mathcal{M}$ 
-which is not the syntactic monoid of $L$ but accepts the same language. 
+which is not the syntactic monoid of $U$ but accepts the same language. 
 
 The details of monoid consistency check will be discussed in the following part.
 
@@ -145,9 +155,14 @@ Actually at each step of the algorithm, the learner maintains:
 
 On the $(I,P,S)$ we can define:
 
-- **Separability**: no two distinct words in $I$ are $\text{status-equivalent}$. 
+- **Separability**: no two distinct words in $I$ are $\text{status-equivalent}$​. 
+  $$
+  \forall i_1,i_2 \in I. i_1 \neq i_2 \Leftrightarrow i_1 \not\equiv_{status} i_2
+  $$
+  
+
 - **Closedness**: for every $i ∈ I$ and $a ∈ Σ$, there is some 
-$i^{\prime},i^{\prime\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$
+  $i^{\prime}∈ I$ such that $ia ≡_{status} i^{\prime}$
 
 If $(I, P , S)$ is separable and closed then we can define a hypothesis automaton $\mathcal{M}$.
 
@@ -156,7 +171,6 @@ If $(I, P , S)$ is separable and closed then we can define a hypothesis automato
 
 We mentioned monoid consistency check in the part of equivalence query. 
 The definition of monoid consistency is: 
-
 $$
 \forall v \in I, t\in I\cdot\Sigma. (t \equiv_{status} v) \Rightarrow \forall i\in I, s\in S, T(i\cdot t \cdot s) = T(i \cdot v \cdot s)
 $$
@@ -177,13 +191,7 @@ We should add this $i^{\prime}$ into $I$ so that we try to make it separable.
 ------
 
 **Proposition 2. (Hypothesis Automaton)** 
-If the observation table $OT = (I, P, S, T)$ is closed and separable, 
-then the hypothesis automaton $\mathcal{M}$ is a well-defined, deterministic, 
-and finite automaton for the language it accepts. 
-Furthermore, for every state $q \in Q$, 
-there exists exactly one representative $i \in I$ such that $\delta^*(q_0, i) = q$.
-
-① Well-definedness of $\delta$ and $Q$
+If the observation table $OT = (I, P, S, T)$ is closed and separable, then the transition function $\delta$ is well-defined. This means in hypothesis automaton $\mathcal{M}$, for all $w\in \Sigma^*, q \in Q$, the result of $\delta(q,w)$ exists and is unique. 
 
 First, according to the way of constructing $ \mathcal{M} $, we have:
 
@@ -191,55 +199,42 @@ $$
 \forall i \in I, a \in \Sigma. \delta^*(status_i, a) = status_{ia}
 $$
 
+and
+$$
+q_0 = status_\epsilon \in Q
+$$
 Because of the closedness, we have:
-
 $$
 \forall i \in I, a \in \Sigma. \exists i^{\prime} \in I. ia \equiv_{status} i^{\prime}
 $$
 
-Then because $i^{\prime} \in I$, then $status_{i^{\prime}} \in Q$.
+Then because $i^{\prime} \in I$, then $status_{i^{\prime}} \in Q$​​​.
 
-So $\delta$ is well-defined. 
-
-② Existence and Determinism of the Representative in $I$:
-
-This means that for every state $q \in Q$, 
-there exists exactly only one representative $i \in I$ such that $\delta^*(q_0, i) = q$.
-
-Base: If $|i| = 0$, $i = \epsilon$, then $\delta^*(q_0, \epsilon) = q_0$, so the representative is $\epsilon$.
-
-Inductive Step: 
-Assume that for all $|u| = k$, $\delta^*(q_0,u) = status_{u}$ is correct.
-Then for $|u| = k+1$, we can write $u$ as $u^{\prime}a$ where $|u^{\prime}| = k$ and $a \in \Sigma$. 
-Then we have:
-
+Because the observation table is separable:
 $$
-\delta^*(q_0,u^{\prime}\cdot a) = \delta^(\delta^*(q_0,u^{\prime}),a) = \delta^(status_{u^{\prime}},a) = status_{u^{\prime}\cdot a} = status_u
+\forall i_1,i_2 \in I. i_1 \neq i_2 \Leftrightarrow i_1 \not\equiv_{status} i_2
 $$
+So for $w$ we use induction:
 
-So for any $q \in Q$, there exists a unique $i \in I$ such that $\delta^*(q_0, i) = status_i = q$.
-
-Then we need to show that there is only one representative in $I$ for each state in $Q$. 
-
-And because of the separability, we have:
+When $|w| = 0$, $w = \epsilon$, check the definition of transition function, 
 $$
-\forall i, i^{\prime} \in I. i \not\equiv_{status} i^{\prime}
+\delta(q_0,\epsilon) = q_0
 $$
+This means $status_w$ is the initial state $q_0$, and it is unique. 
 
-So $status_i \neq status_{i^{\prime}}$. 
-
-So in $I$, there is only one representative for each state in $Q$.
-
-------
-
-**Proposition 3. (Equivalence Query)**
-If the teacher answers "yes" to the equivalence query, 
-then the language $L(\mathcal{M})$ accepted by the hypothesis automaton $\mathcal{M}$ 
-is the same as the unknown regular set $U$.
-And consequently we have:
+When $|w| = k$, assume that $\delta^*(q_0,w) = q_w$​ exists and is unique.
 $$
-    \forall w \in \Sigma^*, \delta^*(q_0,w) \in L(\mathcal{M}) \Leftrightarrow w \in U
+\exists i_w \in I. i_w \equiv_{status} w
 $$
+In other words, $q_w = status_{i_w}$. So because of the closedness:
+$$
+\forall a \in \Sigma. \exists i^{\prime} \in I. i_wa \equiv_{status} i^{\prime}
+$$
+And for this $i^{\prime}$, because of the separability:
+$$
+\forall i \in I. i \neq i^{\prime} \Leftrightarrow i \not\equiv_{status} i^{\prime}
+$$
+These mean $q_{wa} = status_{i_wa} = status_{i^{\prime}}$ is exists and unique.
 
 ------
 
@@ -280,7 +275,7 @@ This means the acceptor actually passes the monoid consistency check, contradict
 
 ------
 
-**proposition 5. (Monoid Consistency Check 2)**
+**Proposition 5. (Monoid Consistency Check 2)**
 
 Assume that the Acceptor $\mathcal{M}$ passes the equivalence query, 
 but fails the monoid consistency check.
@@ -294,9 +289,9 @@ $$
 \exists v \in I, t\in I\cdot\Sigma. (t \equiv_{status} v) \wedge t \not\sim_L v
 $$
 
-And for $v$ and $t$, there must exist $i\in I$ and $s \in S$ such that:
+And for such $v$ and $t$:
 $$
- T(i\cdot t \cdot s) \neq T(i \cdot v \cdot s)
+ \exists i \in I, s \in S.T(i\cdot t \cdot s) \neq T(i \cdot v \cdot s)
 $$
 
 in other words:
@@ -322,9 +317,7 @@ So w.l.o.g, we can assume that $x\cdot t \cdot y \in U$ and $x\cdot v \cdot y \n
 
 Then we can find $i \in I$ such that $status_i = status_x$. 
 
-Because $x\cdot t \cdot y \in U$ then $i \cdot t \cdot y \in U$.
-
-Because $x\cdot v \cdot y \not\in U$ then $i \cdot v \cdot y \not\in U$.
+Because $\mathcal{M}$ passes the equivalence query, so if $x\cdot t \cdot y \in U$ then $i \cdot t \cdot y \in U$ and if $x\cdot v \cdot y \not\in U$ then $i \cdot v \cdot y \not\in U$.
 
 So actually :
 
@@ -334,7 +327,7 @@ $$
 
 ② Why we can find $s \in S$ to replace $y$?
 
-Now let's focus on $i \cdot t$ and $i \cdot v$, they concat with the same suffix $y$
+Now let's focus on $i \cdot t$ and $i \cdot v$, they concatenate with the same suffix $y$
 but one is in $U$ and the other is not.
 
 So we can find $i_1 \in I$ such that $status_{i_1} = status_{i \cdot t}$, 
@@ -371,7 +364,7 @@ So the way we check monoid consistency is:
 
 ------
 
-**proposition 6. (Correctness)** If the acceptor passes the equivalence query and the monoid consistency check,
+**Proposition 6. (Correctness)** If the acceptor passes the equivalence query and the monoid consistency check,
  in other words, the observation table is closed and separable, and monoid consistent,
  then the acceptor is the syntactic monoid which recognizes $U$.
 
@@ -404,11 +397,24 @@ $$
     \forall i \in I, s\in S, T(i \cdot x \cdot s) = T(i \cdot y \cdot s) = T(i \cdot i^{\prime} \cdot s)
 $$
 
-! Then $ix \equiv_{status} iy \equiv_{status} ii^{\prime}$.
+!!! Then $ix \equiv_{status} iy \equiv_{status} ii^{\prime}$.
 
 Proof:
+Assume that $ix \not\equiv_{status} iy$. Then:
 
+$$
+    \exists p \in P, s \in S. T(p\cdot i \cdot x \cdot s) \neq T(p\cdot i \cdot y \cdot s)
+$$
 
+Then we can find $i^{\prime\prime} \in I$ such that $status_{i^{\prime\prime}} = status_{p \cdot i}$.
+
+$$
+    T(i^{\prime\prime} \cdot x \cdot s) \neq T(i^{\prime\prime} \cdot y \cdot s)
+$$
+
+So this means $x \not\equiv_{status} y$. Contradiction.
+
+------
 
 Then for any $p \in \Sigma^*$, we have:
 $$
