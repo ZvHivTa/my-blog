@@ -67,13 +67,27 @@ export function getItemById(itemId?: number): DotaItem | null {
   return itemById[itemId] ?? null
 }
 
+export function getItemByKey(itemKey?: string): DotaItem | null {
+  if (!itemKey) return null
+  return itemMap[itemKey] ?? null
+}
+
 export function getItemName(itemId?: number): string {
   const item = getItemById(itemId)
   return item?.dname ?? (itemId ? `Item ${itemId}` : 'Empty slot')
 }
 
+export function getItemNameByKey(itemKey?: string): string {
+  const item = getItemByKey(itemKey)
+  return item?.dname ?? formatItemKey(itemKey)
+}
+
 export function getItemImage(itemId?: number) {
   return getAssetUrl(getItemById(itemId)?.img)
+}
+
+export function getItemImageByKey(itemKey?: string) {
+  return getAssetUrl(getItemByKey(itemKey)?.img)
 }
 
 export function getGameModeName(gameModeId?: number): string {
@@ -110,4 +124,12 @@ function getAssetUrl(path?: string) {
   if (!path) return null
   if (path.startsWith('http')) return path
   return `${STEAM_ASSET_BASE}${path}`
+}
+
+function formatItemKey(itemKey?: string) {
+  if (!itemKey) return 'Unknown item'
+  return itemKey
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }

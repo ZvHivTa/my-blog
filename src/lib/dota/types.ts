@@ -34,8 +34,23 @@ export type OpenDotaPlayer = {
   item_neutral2?: number
   lane_efficiency_pct?: number
   actions_per_min?: number
+  gold_t?: number[]
+  xp_t?: number[]
+  lh_t?: number[]
+  dn_t?: number[]
+  purchase_log?: OpenDotaLogEntry[]
+  kills_log?: OpenDotaLogEntry[]
+  buyback_log?: OpenDotaLogEntry[]
+  obs_log?: OpenDotaLogEntry[]
+  sen_log?: OpenDotaLogEntry[]
+  runes_log?: OpenDotaLogEntry[]
   purchase_time?: Record<string, number>
   benchmarks?: Record<string, { raw?: number; pct?: number }>
+}
+
+export type OpenDotaLogEntry = {
+  time?: number
+  key?: string
 }
 
 export type OpenDotaTeamfightPlayer = {
