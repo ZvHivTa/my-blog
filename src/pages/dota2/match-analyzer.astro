@@ -1,0 +1,23 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import DotaMatchAnalyzer from '@/components/dota/DotaMatchAnalyzer'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+---
+
+<Layout class="max-w-6xl">
+  <PageHead
+    slot="head"
+    title="Dota 2 Match Analyzer"
+    description="Inspect OpenDota match data by match ID."
+    noindex
+  />
+  <Breadcrumbs
+    items={[
+      { href: '/about', label: 'Tools', icon: 'lucide:blocks' },
+      { label: 'Dota 2 Match Analyzer', icon: 'lucide:swords' },
+    ]}
+  />
+
+  <DotaMatchAnalyzer client:load />
+</Layout>
