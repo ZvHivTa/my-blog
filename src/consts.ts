@@ -16,10 +16,6 @@ export const NAV_LINKS: SocialLink[] = [
     label: 'blog',
   },
   {
-    href: '/dota2/match-analyzer',
-    label: 'dota',
-  },
-  {
     href: '/authors',
     label: 'authors',
   },
