@@ -1,30 +1,23 @@
 ---
 import Link from '@/components/Link.astro'
 import ThemeToggle from '@/components/ThemeToggle.astro'
-import { NAV_LINKS, SITE } from '@/consts'
-import { Image } from 'astro:assets'
-import logo from '../../public/static/logo.svg'
+import { NAV_LINKS } from '@/consts'
 ---
 
-<div>
-  <div
-    class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3"
-  >
-    <Link href="/" class="flex shrink-0 items-center justify-center gap-3">
-      <Image src={logo} alt="Logo" class="size-5 sm:size-6" />
-      <span
-        class="hidden h-full text-lg leading-none font-medium min-[400px]:block"
-        >{SITE.title}</span
+<div class="site-header">
+  <div class="header-inner">
+    <Link href="/" class="identity" aria-label="ZHT home">
+      <span class="monogram">Z</span>
+      <span class="identity-copy"
+        ><strong>ZHT</strong><small>Research / Engineering</small></span
       >
     </Link>
-    <div class="flex items-center gap-4">
-      <nav class="flex items-center gap-4 text-sm sm:gap-6">
+    <div class="nav-group">
+      <nav aria-label="Main navigation">
         {
-          NAV_LINKS.map((item) => (
-            <Link
-              href={item.href}
-              class="text-foreground/60 hover:text-foreground capitalize transition-colors"
-            >
+          NAV_LINKS.map((item, index) => (
+            <Link href={item.href}>
+              <span>0{index + 1}</span>
               {item.label}
             </Link>
           ))
@@ -34,3 +27,95 @@ import logo from '../../public/static/logo.svg'
     </div>
   </div>
 </div>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid color-mix(in oklab, var(--border), transparent 20%);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0.8rem 1rem;
+  }
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .monogram {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--accent-foreground);
+    background: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .identity-copy strong,
+  .identity-copy small {
+    display: block;
+    line-height: 1.1;
+  }
+  .identity-copy strong {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+  }
+  .identity-copy small {
+    margin-top: 0.25rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    text-transform: uppercase;
+  }
+  .nav-group,
+  nav {
+    display: flex;
+    align-items: center;
+  }
+  .nav-group {
+    gap: 1.2rem;
+  }
+  nav {
+    gap: clamp(1rem, 3vw, 2.2rem);
+  }
+  nav a {
+    color: var(--muted-foreground);
+    font-size: 0.73rem;
+    font-weight: 550;
+    text-transform: uppercase;
+  }
+  nav a:hover {
+    color: var(--foreground);
+  }
+  nav span {
+    margin-right: 0.35rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+  }
+  @media (max-width: 560px) {
+    .identity-copy small,
+    nav span {
+      display: none;
+    }
+    .header-inner {
+      gap: 0.75rem;
+    }
+    .nav-group {
+      gap: 0.5rem;
+    }
+    nav {
+      gap: 0.85rem;
+    }
+    nav a {
+      font-size: 0.67rem;
+    }
+  }
+</style>

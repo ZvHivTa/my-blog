@@ -1,38 +1,778 @@
 ---
-import BlogCard from '@/components/BlogCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
-import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
-import { getRecentPosts } from '@/lib/data-utils'
+import { getAllPosts, getAllProjects } from '@/lib/data-utils'
+import { formatDate } from '@/lib/utils'
+import { Icon } from 'astro-icon/components'
+import { Image } from 'astro:assets'
 
-const blog = await getRecentPosts(SITE.featuredPostCount)
+const [allPosts, projects] = await Promise.all([
+  getAllPosts(),
+  getAllProjects(),
+])
+const featuredPostIds = ['l-star-algorithm', 'java-gold', 'exercise-c']
+const posts = featuredPostIds.flatMap((id) => {
+  const post = allPosts.find((entry) => entry.id === id)
+  return post ? [post] : []
+})
+const featuredProjects = projects.filter((project) =>
+  ['/dota2/match-analyzer', '/fm24-assistant/board'].includes(
+    project.data.link,
+  ),
+)
+const focusAreas = [
+  {
+    number: '01',
+    label: 'Formal language research',
+    note: 'Automata · L* · Syntactic monoids',
+  },
+  {
+    number: '02',
+    label: 'Applied AI systems',
+    note: 'Agents · RAG · Knowledge interfaces',
+  },
+  {
+    number: '03',
+    label: 'Data products',
+    note: 'Dota 2 · Football Manager · Visual analytics',
+  },
+]
 ---
 
-<Layout class="max-w-3xl">
-  <PageHead slot="head" title="Home" />
-  <section class="flex flex-col gap-y-4">
-    <h2 class="text-2xl font-medium">Latest posts</h2>
-    <ul class="flex flex-col gap-y-4">
+<Layout class="home-shell max-w-6xl">
+  <PageHead
+    slot="head"
+    title="ZHT — Research, code and field notes"
+    description="ZHT 的个人工作台：研究、数据产品、AI 实验与持续写作。"
+  />
+
+  <section class="hero-grid" aria-labelledby="home-title">
+    <div class="hero-copy">
+      <p class="eyebrow"><span></span> Based in Japan · Building in public</p>
+      <h1 id="home-title">
+        I research systems,<br /><span>then build them.</span>
+      </h1>
+      <p class="hero-intro">
+        我是 ZHT。这里不是一份静态简历，而是我的长期工作台：形式语言研究、AI
+        系统、数据产品，以及一路留下的技术笔记与日常观察。
+      </p>
+      <div class="hero-actions">
+        <Link href="#selected-work" class="primary-link"
+          >查看正在做的事 <Icon name="lucide:arrow-down-right" /></Link
+        >
+        <Link href="/blog" class="text-link"
+          >阅读笔记 <Icon name="lucide:arrow-up-right" /></Link
+        >
+      </div>
+    </div>
+    <aside class="hero-index" aria-label="Current focus">
+      <div class="index-head">
+        <span>Current focus</span><span class="status"><i></i> Active</span>
+      </div>
+      <ol>
+        {
+          focusAreas.map((area) => (
+            <li>
+              <>
+                <span class="focus-number">{area.number}</span>
+                <div>
+                  <>
+                    <strong>{area.label}</strong>
+                    <small>{area.note}</small>
+                  </>
+                </div>
+              </>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="index-foot">
+        <span>Researcher / Developer</span><Icon name="lucide:asterisk" />
+      </div>
+    </aside>
+  </section>
+
+  <section
+    id="selected-work"
+    class="section-block"
+    aria-labelledby="work-title"
+  >
+    <header class="section-heading">
+      <div>
+        <p class="section-kicker">Selected work</p><h2 id="work-title">
+          Projects that turn curiosity into tools.
+        </h2>
+      </div>
+      <p>不是练习作品，而是从真实兴趣和真实问题里长出来的产品。</p>
+    </header>
+    <div class="work-list">
       {
-        blog.map((post) => (
-          <li>
-            <BlogCard entry={post} />
-          </li>
+        featuredProjects.map((project, index) => (
+          <article class:list={['work-item', { reverse: index % 2 === 1 }]}>
+            <Link
+              href={project.data.link}
+              class="work-visual"
+              aria-label={`Open ${project.data.name}`}
+            >
+              {index === 0 ? (
+                <div class="dota-visual" aria-hidden="true">
+                  <div class="mock-toolbar">
+                    <span />
+                    <span />
+                    <span />
+                    <b>MATCH / 8379201546</b>
+                  </div>
+                  <div class="score-row">
+                    <strong>34</strong>
+                    <i>RADIANT</i>
+                    <span>42:18</span>
+                    <i>DIRE</i>
+                    <strong>29</strong>
+                  </div>
+                  <div class="data-lines">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <div class="chart-line" />
+                </div>
+              ) : (
+                <div class="fm-visual" aria-hidden="true">
+                  <div class="pitch">
+                    <span />
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                  <div class="player-panel">
+                    <b>INT · 3-5-2</b>
+                    <span>Tactical fit</span>
+                    <strong>87%</strong>
+                    <small>Squad analysis</small>
+                  </div>
+                </div>
+              )}
+            </Link>
+            <div class="work-copy">
+              <>
+                <span class="work-number">0{index + 1}</span>
+                <p class="work-type">
+                  {index === 0
+                    ? 'Data product / Ongoing'
+                    : 'Decision tool / Case study'}
+                </p>
+              </>
+              <>
+                <h3>
+                  <Link href={project.data.link}>{project.data.name}</Link>
+                </h3>
+                <p>{project.data.description}</p>
+              </>
+              <div class="tag-line">
+                {project.data.tags.map((tag) => (
+                  <span>{tag}</span>
+                ))}
+              </div>
+              <Link href={project.data.link} class="project-link">
+                Explore project <Icon name="lucide:arrow-up-right" />
+              </Link>
+            </div>
+          </article>
         ))
       }
-    </ul>
-    <div class="flex justify-center">
-      <Link
-        href="/blog"
-        class={buttonVariants({ variant: 'ghost' }) + ' group'}
-      >
-        See all posts <span
-          class="ml-1.5 transition-transform group-hover:translate-x-1"
-          >&rarr;</span
-        >
-      </Link>
     </div>
   </section>
+
+  <section class="notes-section" aria-labelledby="notes-title">
+    <header class="notes-intro">
+      <p class="section-kicker">Field notes</p><h2 id="notes-title">
+        Thinking,<br />documented.
+      </h2>
+      <p>
+        研究报告、技术学习和在日本生活中的观察。写作不是项目之外的附属品，而是思考过程的一部分。
+      </p>
+      <Link href="/blog" class="project-link"
+        >All writing <Icon name="lucide:arrow-right" /></Link
+      >
+    </header>
+    <div class="notes-list">
+      {
+        posts.map((post, index) => (
+          <article class="note-item">
+            <Link href={`/blog/${post.id}`}>
+              <span class="note-index">0{index + 1}</span>
+              <div class="note-copy">
+                <>
+                  <div class="note-meta">
+                    <>
+                      <time datetime={post.data.date.toISOString()}>
+                        {formatDate(post.data.date)}
+                      </time>
+                      <span>{post.data.tags?.[0] ?? 'Notes'}</span>
+                    </>
+                  </div>
+                  <h3>{post.data.title}</h3>
+                  <p>
+                    {post.data.description ||
+                      'A working note from the archive.'}
+                  </p>
+                </>
+              </div>
+              {post.data.image ? (
+                <Image
+                  src={post.data.image}
+                  alt=""
+                  width={180}
+                  height={112}
+                  class="note-image"
+                />
+              ) : (
+                <Icon name="lucide:arrow-up-right" class="note-arrow" />
+              )}
+            </Link>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="closing-line">
+    <p>Research in public. Build for real use. Keep the notes.</p><Link
+      href="/about">More about ZHT <Icon name="lucide:arrow-up-right" /></Link
+    >
+  </section>
 </Layout>
+
+<style>
+  :global(.home-shell) {
+    padding-top: clamp(2rem, 6vw, 5.5rem);
+    padding-bottom: 2rem;
+    gap: 0;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.75fr);
+    gap: clamp(3rem, 8vw, 8rem);
+    align-items: end;
+    min-height: min(42rem, calc(100svh - 7rem));
+    padding: 3rem 0 5rem;
+  }
+  .eyebrow,
+  .section-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+  .eyebrow span {
+    width: 1.8rem;
+    height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    max-width: 13ch;
+    margin-top: 2rem;
+    font-size: clamp(3.3rem, 7.5vw, 7.4rem);
+    font-weight: 520;
+    line-height: 0.91;
+    letter-spacing: -0.055em;
+  }
+  h1 span {
+    color: var(--muted-foreground);
+    font-weight: 380;
+  }
+  .hero-intro {
+    max-width: 42rem;
+    margin-top: 2rem;
+    color: var(--muted-foreground);
+    font-size: clamp(1rem, 1.5vw, 1.17rem);
+    line-height: 1.85;
+  }
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2.2rem;
+  }
+  .primary-link,
+  .text-link,
+  .project-link,
+  .closing-line a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .primary-link {
+    padding: 0.85rem 1.05rem;
+    color: var(--accent-foreground);
+    background: var(--accent);
+  }
+  .primary-link :global(svg),
+  .text-link :global(svg),
+  .project-link :global(svg),
+  .closing-line :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+  .hero-index {
+    border-top: 1px solid var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+  .index-head,
+  .index-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted-foreground);
+  }
+  .status i {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 0.2rem color-mix(in oklab, var(--signal), transparent 75%);
+  }
+  .hero-index ol {
+    border-top: 1px solid var(--border);
+  }
+  .hero-index li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 1rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .focus-number {
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+  }
+  .hero-index strong,
+  .hero-index small {
+    display: block;
+  }
+  .hero-index strong {
+    font-size: 0.9rem;
+    font-weight: 520;
+  }
+  .hero-index small {
+    margin-top: 0.35rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+  }
+  .index-foot {
+    color: var(--muted-foreground);
+  }
+  .index-foot :global(svg) {
+    width: 0.9rem;
+  }
+  .section-block {
+    padding: clamp(5rem, 10vw, 9rem) 0;
+    border-top: 1px solid var(--border);
+  }
+  .section-heading {
+    display: grid;
+    grid-template-columns: 1.2fr 0.65fr;
+    gap: 4rem;
+    align-items: end;
+  }
+  .section-heading h2,
+  .notes-intro h2 {
+    max-width: 15ch;
+    margin-top: 0.85rem;
+    font-size: clamp(2.2rem, 4.8vw, 4.7rem);
+    font-weight: 480;
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+  }
+  .section-heading > p,
+  .notes-intro > p {
+    color: var(--muted-foreground);
+    font-size: 0.92rem;
+    line-height: 1.75;
+  }
+  .work-list {
+    margin-top: clamp(4rem, 8vw, 7rem);
+  }
+  .work-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .work-item.reverse .work-visual {
+    order: 2;
+  }
+  .work-visual {
+    display: block;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    background: var(--project-surface);
+  }
+  .work-copy {
+    position: relative;
+  }
+  .work-number {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .work-type {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+  .work-copy h3 {
+    margin-top: 1rem;
+    font-size: clamp(1.8rem, 3vw, 3rem);
+    font-weight: 520;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+  .work-copy > p:not(.work-type) {
+    margin-top: 1.2rem;
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+  .tag-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.9rem;
+    margin-top: 1.4rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+  }
+  .tag-line span::before {
+    content: '/';
+    margin-right: 0.3rem;
+    color: var(--accent);
+  }
+  .project-link {
+    margin-top: 1.8rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--foreground);
+  }
+  .dota-visual,
+  .fm-visual {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 9%;
+    color: #e8eeeb;
+    background: #101718;
+  }
+  .mock-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #384242;
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+  }
+  .mock-toolbar span {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: #596565;
+  }
+  .mock-toolbar b {
+    margin-left: auto;
+    color: #9da9a6;
+    font-weight: 450;
+  }
+  .score-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 8% 0;
+    text-align: center;
+  }
+  .score-row strong {
+    font-size: clamp(2rem, 5vw, 4.8rem);
+    font-weight: 420;
+  }
+  .score-row strong:last-child {
+    color: #ef6a4c;
+  }
+  .score-row i,
+  .score-row span {
+    color: #8f9b99;
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    font-style: normal;
+  }
+  .data-lines {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .data-lines span {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: #2c3737;
+  }
+  .chart-line {
+    position: absolute;
+    left: 9%;
+    right: 9%;
+    bottom: 14%;
+    height: 17%;
+    border-bottom: 2px solid #65b3a5;
+    transform: skewY(-8deg);
+  }
+  .fm-visual {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 8%;
+    background: #eef0eb;
+    color: #15201a;
+  }
+  .pitch {
+    position: relative;
+    border: 1px solid #8ca193;
+    background: #d6dfd4;
+  }
+  .pitch::before,
+  .pitch::after {
+    content: '';
+    position: absolute;
+    inset: 12% 0 auto;
+    height: 1px;
+    background: #a5b5a9;
+    box-shadow:
+      0 5rem #a5b5a9,
+      0 10rem #a5b5a9;
+  }
+  .pitch span {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 32%;
+    aspect-ratio: 1;
+    border: 1px solid #8ca193;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .pitch i {
+    position: absolute;
+    z-index: 2;
+    width: 1.15rem;
+    height: 1.15rem;
+    border: 4px solid #173d31;
+    border-radius: 50%;
+    background: #68a48d;
+  }
+  .pitch i:nth-of-type(1) {
+    left: 45%;
+    top: 16%;
+  }
+  .pitch i:nth-of-type(2) {
+    left: 22%;
+    top: 42%;
+  }
+  .pitch i:nth-of-type(3) {
+    right: 22%;
+    top: 42%;
+  }
+  .pitch i:nth-of-type(4) {
+    left: 35%;
+    bottom: 18%;
+  }
+  .pitch i:nth-of-type(5) {
+    right: 35%;
+    bottom: 18%;
+  }
+  .player-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .player-panel b {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+  }
+  .player-panel span {
+    margin-top: 2rem;
+    color: #68776d;
+    font-size: 0.7rem;
+  }
+  .player-panel strong {
+    margin-top: 0.25rem;
+    color: #ce4c33;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 450;
+  }
+  .player-panel small {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #bac4bc;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+  }
+  .notes-section {
+    display: grid;
+    grid-template-columns: 0.62fr 1.38fr;
+    gap: clamp(3rem, 8vw, 8rem);
+    padding: clamp(5rem, 10vw, 9rem) 0;
+    border-top: 1px solid var(--border);
+  }
+  .notes-intro {
+    align-self: start;
+    position: sticky;
+    top: 7rem;
+  }
+  .notes-intro > p {
+    margin-top: 1.5rem;
+  }
+  .note-item {
+    border-top: 1px solid var(--border);
+  }
+  .note-item:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  .note-item > a {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    min-height: 10.5rem;
+    padding: 1.5rem 0;
+  }
+  .note-index {
+    align-self: start;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+  }
+  .note-meta {
+    display: flex;
+    gap: 1rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    text-transform: uppercase;
+  }
+  .note-copy h3 {
+    max-width: 24ch;
+    margin-top: 0.7rem;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 520;
+    line-height: 1.15;
+  }
+  .note-copy p {
+    max-width: 45ch;
+    margin-top: 0.6rem;
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+  }
+  .note-image {
+    width: 8.5rem;
+    aspect-ratio: 1.55;
+    object-fit: cover;
+    filter: saturate(0.72);
+    transition:
+      filter 0.25s,
+      transform 0.25s;
+  }
+  .note-item:hover .note-image {
+    filter: saturate(1);
+    transform: translateX(-0.25rem);
+  }
+  .note-arrow {
+    width: 1.2rem;
+  }
+  .closing-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+  @media (max-width: 800px) {
+    .hero-grid,
+    .section-heading,
+    .notes-section {
+      grid-template-columns: 1fr;
+    }
+    .hero-grid {
+      min-height: auto;
+      padding-top: 2rem;
+    }
+    .hero-index {
+      max-width: 32rem;
+    }
+    .work-item {
+      grid-template-columns: 1fr;
+      padding: 3rem 0;
+    }
+    .work-item.reverse .work-visual {
+      order: 0;
+    }
+    .notes-intro {
+      position: static;
+    }
+  }
+  @media (max-width: 560px) {
+    h1 {
+      font-size: clamp(3rem, 15vw, 4.3rem);
+    }
+    .hero-actions {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .section-heading {
+      gap: 1.5rem;
+    }
+    .note-item > a {
+      grid-template-columns: 1.5rem 1fr;
+    }
+    .note-image,
+    .note-arrow {
+      display: none;
+    }
+    .fm-visual {
+      grid-template-columns: 1fr 0.7fr;
+      padding: 7%;
+    }
+    .closing-line {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

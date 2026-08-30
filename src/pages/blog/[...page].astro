@@ -1,58 +1,196 @@
 ---
-import BlogCard from '@/components/BlogCard.astro'
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import PaginationComponent from '@/components/ui/pagination'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getAllPosts, groupPostsByYear } from '@/lib/data-utils'
+import { formatDate } from '@/lib/utils'
 import type { PaginateFunction } from 'astro'
+import { Icon } from 'astro-icon/components'
 
 export async function getStaticPaths({
   paginate,
 }: {
   paginate: PaginateFunction
 }) {
-  const allPosts = await getAllPosts()
-  return paginate(allPosts, { pageSize: SITE.postsPerPage })
+  return paginate(await getAllPosts(), { pageSize: SITE.postsPerPage })
 }
-
 const { page } = Astro.props
-
 const postsByYear = groupPostsByYear(page.data)
-const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
 ---
 
-<Layout class="max-w-3xl">
-  <PageHead slot="head" title="Blog" />
-  <Breadcrumbs
-    items={[
-      { label: 'Blog', href: '/blog', icon: 'lucide:library-big' },
-      { label: `Page ${page.currentPage}`, icon: 'lucide:book-copy' },
-    ]}
+<Layout class="writing-shell max-w-6xl">
+  <PageHead
+    slot="head"
+    title="Writing"
+    description="Research notes, technical studies and observations by ZHT."
   />
-
-  <div class="flex min-h-[calc(100vh-18rem)] flex-col gap-y-8">
+  <section class="writing-head">
+    <p>Writing / Archive</p><h1>
+      Notes from research,<br /><span>engineering and life.</span>
+    </h1><div>
+      <p>
+        本地写作，持续修订。这里收录研究过程、技术学习和日常观察，也保留尚未成为完整结论的想法。
+      </p><span>{page.total} collections · Page {page.currentPage}</span>
+    </div>
+  </section>
+  <div class="archive">
     {
       years.map((year) => (
-        <section class="flex flex-col gap-y-4">
-          <div class="font-medium">{year}</div>
-          <ul class="flex flex-col gap-4">
-            {postsByYear[year].map((post) => (
-              <li>
-                <BlogCard entry={post} />
-              </li>
-            ))}
-          </ul>
+        <section class="year-group">
+          <>
+            <time>{year}</time>
+            <div>
+              {postsByYear[year].map((post, index) => (
+                <article>
+                  <Link href={`/blog/${post.id}`}>
+                    <span class="row-number">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <p class="post-meta">
+                        {formatDate(post.data.date)} ·{' '}
+                        {post.data.tags?.slice(0, 2).join(' / ') || 'Notes'}
+                      </p>
+                      <h2>{post.data.title}</h2>
+                      <p class="description">
+                        {post.data.description ||
+                          'A working note from the archive.'}
+                      </p>
+                    </div>
+                    <Icon name="lucide:arrow-up-right" />
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </>
         </section>
       ))
     }
   </div>
-
-  <PaginationComponent
-    currentPage={page.currentPage}
-    totalPages={page.lastPage}
-    baseUrl="/blog/"
-    client:load
-  />
+  <div class="pagination">
+    <PaginationComponent
+      currentPage={page.currentPage}
+      totalPages={page.lastPage}
+      baseUrl="/blog/"
+      client:load
+    />
+  </div>
 </Layout>
+
+<style>
+  :global(.writing-shell) {
+    gap: 0;
+  }
+  .writing-head {
+    display: grid;
+    grid-template-columns: 1.5fr 0.6fr;
+    gap: 4rem;
+    align-items: end;
+    padding: clamp(4rem, 10vw, 9rem) 0;
+  }
+  .writing-head > p {
+    grid-column: 1 / -1;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: clamp(3rem, 6.7vw, 6.5rem);
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.055em;
+  }
+  h1 span {
+    color: var(--muted-foreground);
+    font-weight: 370;
+  }
+  .writing-head > div p {
+    color: var(--muted-foreground);
+    font-size: 0.85rem;
+    line-height: 1.75;
+  }
+  .writing-head > div span {
+    display: block;
+    margin-top: 1.5rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+  }
+  .archive {
+    border-top: 1px solid var(--foreground);
+  }
+  .year-group {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 2rem;
+    padding: 2.5rem 0 5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .year-group > time {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  article {
+    border-top: 1px solid var(--border);
+  }
+  article:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  article a {
+    display: grid;
+    grid-template-columns: 2rem 1fr 1.5rem;
+    gap: 1.3rem;
+    align-items: center;
+    min-height: 9rem;
+    padding: 1.25rem 0;
+  }
+  .row-number,
+  .post-meta {
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+  }
+  h2 {
+    max-width: 28ch;
+    margin-top: 0.55rem;
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    font-weight: 520;
+    line-height: 1.15;
+  }
+  .description {
+    max-width: 48rem;
+    margin-top: 0.55rem;
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+  }
+  article :global(svg) {
+    width: 1rem;
+    transition: transform 0.2s;
+  }
+  article:hover :global(svg) {
+    transform: translate(0.2rem, -0.2rem);
+  }
+  .pagination {
+    padding-top: 2rem;
+  }
+  @media (max-width: 700px) {
+    .writing-head,
+    .year-group {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .year-group {
+      padding-bottom: 3rem;
+    }
+    article a {
+      grid-template-columns: 1.5rem 1fr 1rem;
+    }
+  }
+</style>

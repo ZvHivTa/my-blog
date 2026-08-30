@@ -1,26 +1,122 @@
 ---
-import { Separator } from '@/components/ui/separator'
 import { SOCIAL_LINKS } from '@/consts'
 import Link from './Link.astro'
-import SocialIcons from './SocialIcons.astro'
 ---
 
-<footer
-  class="mx-auto mb-8 flex w-full max-w-3xl flex-col items-center justify-center gap-y-2 px-4 sm:mb-4 sm:flex-row sm:justify-between"
->
-  <div class="flex flex-wrap items-center justify-center gap-x-2 text-center">
-    <span class="text-muted-foreground text-sm">
-      &copy; {new Date().getFullYear()} All rights reserved.
-    </span>
-    <Separator orientation="vertical" className="hidden h-4! sm:block" />
-    <p class="text-muted-foreground text-sm">
-      Made with 🤍 by <Link
-        href="https://github.com/jktrn"
-        class="text-foreground"
-        external
-        underline>enscribe</Link
-      >!
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="mark">Z</span><p>
+        <strong>ZHT / Fieldwork</strong><small
+          >Research · Engineering · Writing</small>
+      </p>
+    </div>
+    <p class="footer-note">
+      A personal archive of things studied, built and learned along the way.
     </p>
+    <nav aria-label="Social links">
+      {
+        SOCIAL_LINKS.map(({ href, label }) => (
+          <Link href={href} external={href.startsWith('http')}>
+            {label}
+          </Link>
+        ))
+      }
+    </nav>
   </div>
-  <SocialIcons links={SOCIAL_LINKS} />
+  <div class="footer-bottom">
+    <span>© {new Date().getFullYear()} ZHT</span><span
+      >Built with Astro · Written in Markdown</span
+    ><span>Nagoya, Japan</span>
+  </div>
 </footer>
+
+<style>
+  footer {
+    width: calc(100% - 2rem);
+    max-width: 72rem;
+    margin: clamp(5rem, 10vw, 9rem) auto 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--foreground);
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr 0.8fr;
+    gap: 3rem;
+    align-items: start;
+    padding: 1rem 0 4rem;
+  }
+  .footer-top > div {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    color: var(--accent-foreground);
+    background: var(--accent);
+    font-family: var(--font-mono);
+  }
+  strong,
+  small {
+    display: block;
+  }
+  strong {
+    font-size: 0.8rem;
+  }
+  small,
+  .footer-note,
+  nav {
+    color: var(--muted-foreground);
+  }
+  small {
+    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+  }
+  .footer-note {
+    max-width: 25rem;
+    font-size: 0.8rem;
+    line-height: 1.7;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.7rem 1.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+  }
+  nav a:hover {
+    color: var(--foreground);
+  }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+  }
+  @media (max-width: 700px) {
+    .footer-top {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    nav {
+      justify-content: flex-start;
+    }
+    .footer-bottom {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

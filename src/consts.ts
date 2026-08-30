@@ -1,8 +1,8 @@
 import type { IconMap, SocialLink, Site } from '@/types'
 
 export const SITE: Site = {
-  title: 'ZHTのWebsite',
-  description: 'Useless things',
+  title: 'ZHT / Fieldwork',
+  description: 'Research, software, data products and field notes by ZHT.',
   href: '/',
   author: 'ZHT',
   locale: 'en-US',
@@ -12,12 +12,12 @@ export const SITE: Site = {
 
 export const NAV_LINKS: SocialLink[] = [
   {
-    href: '/blog',
-    label: 'blog',
+    href: '/#selected-work',
+    label: 'work',
   },
   {
-    href: '/authors',
-    label: 'authors',
+    href: '/blog',
+    label: 'writing',
   },
   {
     href: '/about',
@@ -31,15 +31,11 @@ export const SOCIAL_LINKS: SocialLink[] = [
     label: 'GitHub',
   },
   {
-    href: '/',
-    label: 'Twitter',
-  },
-  {
-    href: 'ZvHivTa@gmail.com',
+    href: 'mailto:ZvHivTa@gmail.com',
     label: 'Email',
   },
   {
-    href: '/',
+    href: '/rss.xml',
     label: 'RSS',
   },
 ]

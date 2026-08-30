@@ -52,6 +52,10 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  --accent: oklch(0.55 0.12 170);
+  --accent-foreground: oklch(0.98 0.01 170);
+  --signal: oklch(0.72 0.16 145);
+  --project-surface: oklch(0.94 0.015 150);
 }
 
 [data-theme='dark'] {
@@ -64,6 +68,10 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --ring: oklch(0.556 0 0);
+  --accent: oklch(0.72 0.12 166);
+  --accent-foreground: oklch(0.16 0.025 166);
+  --signal: oklch(0.76 0.17 145);
+  --project-surface: oklch(0.2 0.02 170);
 }
 
 @layer base {
@@ -73,5 +81,26 @@
   ::backdrop,
   ::file-selector-button {
     @apply border-border outline-ring/50 tracking-tight;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-image: linear-gradient(
+      to right,
+      transparent calc(50% - 0.5px),
+      color-mix(in oklab, var(--border), transparent 45%) 50%,
+      transparent calc(50% + 0.5px)
+    );
+    background-size: min(100% - 2rem, 72rem) 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  ::selection {
+    color: var(--accent-foreground);
+    background: var(--accent);
   }
 }
