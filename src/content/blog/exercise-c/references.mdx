@@ -1,0 +1,37 @@
+---
+title: 'References and Notation for Exercise C'
+description: 'Primary sources and a compact glossary for the report.'
+date: 2025-12-09
+tags: ['Research', 'References', 'Formal Languages', 'Exercise C']
+authors: ['enscribe']
+order: 8
+---
+
+## References
+
+1. J. A. Brzozowski. **On aperiodic I-monoids.** Technical Report CS-75-28, Department of Computer Science, University of Waterloo, November 1975.
+
+2. Dominique Perrin and Jean-Éric Pin. **Semigroups and automata on infinite words.** In _Semigroups, Formal Languages and Groups_, pages 49-72. Kluwer Academic Publishers, 1995. Proceedings of the NATO Advanced Study Institute, York, 1993.
+
+3. Thomas Wilke. **An Eilenberg theorem for ω-languages.** In _Automata, Languages and Programming_, pages 588-599. Springer, Berlin, Heidelberg, 1991.
+
+The characterization of definite languages by right-zero idempotents is attributed to Brzozowski. The linked-pair construction follows Perrin and Pin, and the two-sorted algebraic framework follows Wilke.
+
+## Notation
+
+| Symbol            | Meaning                                                 |
+| ----------------- | ------------------------------------------------------- |
+| $\Sigma^*$       | all finite words over $\Sigma$, including $\varepsilon$ |
+| $\Sigma^+$        | all nonempty finite words over $\Sigma$                 |
+| $\Sigma^\omega$   | all infinite words over $\Sigma$                        |
+| $S_L$             | syntactic semigroup of $L$                              |
+| $S_f$             | finite sort of a Wilke algebra                          |
+| $S_\omega$       | infinite sort of a Wilke algebra                        |
+| $E(S_f)$          | idempotents of $S_f$                                    |
+| $\mathcal L(S_f)$ | linked pairs of $S_f$                                   |
+| $[s,e]$           | conjugacy class of the linked pair $(s,e)$              |
+| $\pi(s)=s^\omega$ | ω-power of a finite element                             |
+
+## Terminology note
+
+The phrase **ω-trivial** is used in this series for the condition $|S_\omega|=1$. This is a statement about the infinite sort constructed from the finite semigroup. When the unique class is chosen as accepting, the recognized ω-language is $\Sigma^\omega$; when no class is chosen, it is $\varnothing$.

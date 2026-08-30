@@ -1,0 +1,68 @@
+---
+title: 'Definite and Suffix Languages'
+description: 'Using a classical syntactic-semigroup characterization to obtain a broader ω-trivial class.'
+date: 2025-12-09
+tags: ['Research', 'Definite Language', 'Syntactic Semigroup', 'Exercise C']
+authors: ['enscribe']
+order: 6
+---
+
+The finite-language result is part of a broader connection with **definite languages**.
+
+## Definition
+
+A language $L\subseteq\Sigma^+$ is definite if it can be written as
+
+$$
+L=E\cup\Sigma^*F,
+$$
+
+where $E$ and $F$ are finite languages. Membership is therefore determined by finitely many exceptions and, for all sufficiently long words, by a bounded suffix.
+
+The language $\Sigma^*ab$ is definite: take $E=\varnothing$ and $F=\{ab\}$.
+
+## Algebraic characterization
+
+A classical characterization states:
+
+> A regular language is definite if and only if every idempotent in its syntactic semigroup is right-zero.
+
+Combining this characterization with the right-zero criterion immediately gives:
+
+## Corollary
+
+If $L$ is definite and $S=(S_f,S_\omega)$ is constructed from its syntactic semigroup, then
+
+$$
+|S_\omega|=1.
+$$
+
+In particular, for every nonempty word $w\in\Sigma^+$,
+
+$$
+L=\Sigma^*w
+\quad\Longrightarrow\quad
+|S_\omega|=1.
+$$
+
+## Relation to the worked example
+
+For $L=\Sigma^*ab$, the idempotents are $a$, $ab$, and $bb$. The Cayley table shows that each of them is right-zero. The direct linked-pair calculation and the definite-language theorem therefore give the same result:
+
+$$
+S_\omega=\{[a,a]\}.
+$$
+
+The theorem is more useful than the example alone because it proves the result uniformly for every suffix language $\Sigma^*w$, without recomputing its semigroup and conjugacy classes from scratch.
+
+## Scope of the result
+
+Right-zero idempotents are a sufficient condition for ω-triviality and characterize definite languages at the finite-word level. The converse statement
+
+$$
+|S_\omega|=1
+\Longrightarrow
+\text{every idempotent is right-zero}
+$$
+
+is not established here. The SCC question in the next article explores whether ω-triviality may arise from other structural mechanisms.

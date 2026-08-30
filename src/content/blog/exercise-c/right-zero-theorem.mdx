@@ -1,0 +1,72 @@
+---
+title: 'The Right-Zero Criterion for ω-Triviality'
+description: 'A sufficient semigroup condition that collapses all linked pairs into one conjugacy class.'
+date: 2025-12-09
+tags: ['Research', 'Right-zero', 'Wilke Algebra', 'Exercise C']
+authors: ['enscribe']
+order: 4
+---
+
+Let $S=(S_f,S_\omega)$ be the complete Wilke algebra constructed from a finite semigroup $S_f$.
+
+## Theorem
+
+If every idempotent $e\in S_f$ is right-zero, then
+
+$$
+|S_\omega|=1.
+$$
+
+Equivalently, all linked pairs of $S_f$ belong to one conjugacy class.
+
+## Step 1: determine all linked pairs
+
+Let $E=E(S_f)$. Since every $e\in E$ is right-zero,
+
+$$
+se=e
+$$
+
+for every $s\in S_f$. A linked pair must also satisfy $se=s$. Combining the two equations gives $s=e$. Therefore
+
+$$
+\mathcal L(S_f)=\{(e,e)\mid e\in E\}.
+$$
+
+No linked pairs with different first and second components can occur.
+
+## Step 2: show that any two are conjugate
+
+Take $(e,e)$ and $(e',e')$ in $\mathcal L(S_f)$. To prove conjugacy, choose
+
+$$
+x=e',\qquad y=e.
+$$
+
+Because both $e$ and $e'$ are right-zero,
+
+$$
+\begin{aligned}
+xy&=e'e=e,\\
+yx&=ee'=e',\\
+ex&=ee'=e'.
+\end{aligned}
+$$
+
+These are exactly the equations required for
+
+$$
+(e,e)\sim(e',e').
+$$
+
+Thus every linked pair lies in the same conjugacy class, proving $|S_\omega|=1$.
+
+## Why this theorem matters
+
+Directly computing conjugacy classes can become expensive as the semigroup grows. The theorem replaces that quotient computation with a local test on idempotents:
+
+1. compute $E(S_f)$;
+2. verify $se=e$ for all $s\in S_f$ and $e\in E(S_f)$;
+3. conclude ω-triviality immediately.
+
+The remaining results identify language classes whose syntactic semigroups automatically pass this test.

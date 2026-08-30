@@ -1,27 +1,59 @@
 ---
-title: 'Exercise C: Investigate the ω-Triviality of Regular Languages by converting syntactic semigroup to Wilke algebra'
-description: 'Exercise C report'
+title: 'Exercise C: From Syntactic Semigroups to ω-Trivial Wilke Algebras'
+description: 'A study of when regular languages induce a Wilke algebra with a one-element infinite part.'
 date: 2025-12-09
-tags: ['Research','Syntactic Semigroup','Wilke Algebra','Exercise C']
+tags: ['Research', 'Syntactic Semigroup', 'Wilke Algebra', 'Exercise C']
 image: './banner.png'
 authors: ['enscribe']
 ---
 
-## Coversion from Regular Language to ω-Regular Language
+## Research question
 
-One can convert a regular language $L$ to a $\omega-$ regular language $L'$ in the following way:
+This exercise studies a bridge between regular languages over finite words and regular languages over infinite words. Starting with a regular language $L \subseteq \Sigma^*$, we:
 
-1. Transform a regular language $L$ into a unique finite semigroup $S_L$, the syntactic semigroup of $L$.
-2. By calculating linked pairs and conjugate classes in $S_L$, $S_L$ is converted to the Wilke algebra $S = (S_f,S_{\omega})$, the ``$\omega$-version'' of $S_L$.
-3. Reconstruct the $\omega$-language $L'$ from Wilke algebra $S$.
+1. compute the syntactic semigroup $S_L$ of $L$;
+2. construct a complete Wilke algebra $S=(S_f,S_\omega)$ from linked pairs of $S_L$;
+3. use the resulting infinite sort $S_\omega$ to recognize an ω-language $U \subseteq \Sigma^\omega$.
 
+The central question is:
 
-## Investigate the $\omega$-Triviality of Regular Languages
+> Which structural properties of $L$, its minimal DFA, or its syntactic semigroup force the infinite sort to collapse to one element?
 
-Using the above conversion, we can investigate the $\omega$-triviality of regular languages. 
-A regular language $L$ is said to be $\omega$-trivial if its corresponding Wilke algebra $S = (S_f,S_{\omega})$ satisfies condition:
+We call this situation **ω-triviality**:
+
 $$
-    |S_{\omega}| = 1
+|S_\omega|=1.
 $$
 
-We will introduce this investigation process with some examples. And we want to find what kind of regular languages are $\omega$-trivial. 
+When $S_\omega$ has one element, every infinite word has the same image under the canonical morphism. The only ω-languages recognized by choosing a subset of this sort are therefore $\varnothing$ and $\Sigma^\omega$. In the examples in this report, the unique class is selected, so the reconstructed language is $U=\Sigma^\omega$.
+
+## Construction pipeline
+
+The complete argument follows this chain:
+
+$$
+L
+\longrightarrow \mathcal A_L
+\longrightarrow S_L
+\longrightarrow \mathcal L(S_L)
+\longrightarrow S_\omega
+\longrightarrow U.
+$$
+
+Here $\mathcal A_L$ is the minimal DFA, $S_L$ is its transition semigroup, and $\mathcal L(S_L)$ is the set of linked pairs. Conjugacy classes of linked pairs form $S_\omega$.
+
+## Main results
+
+The report establishes a useful sufficient condition and applies it to two classes of languages.
+
+1. **Right-zero criterion.** If every idempotent of $S_f$ is right-zero, then all linked pairs are conjugate and $|S_\omega|=1$.
+2. **Finite languages.** Every finite language has a syntactic semigroup whose idempotents are right-zero. Hence its associated Wilke algebra is ω-trivial.
+3. **Definite languages.** A language is definite exactly when every idempotent of its syntactic semigroup is right-zero. In particular, suffix languages such as $\Sigma^*w$ are ω-trivial.
+
+The worked examples $L=\{a,ab\}$ and $L=\Sigma^*ab$ both produce a one-element infinite sort and therefore reconstruct $\Sigma^\omega$.
+
+## Structure of this series
+
+The subposts first introduce the algebraic objects and the construction, then work through the two examples in full. The second half contains the theorem and its applications, followed by the SCC conjecture that remains open in this exercise.
+
+Throughout the series, $S_f$ denotes the finite sort, $S_\omega$ the infinite sort, $E(S_f)$ the set of idempotents, and $[s,e]$ the conjugacy class of a linked pair $(s,e)$.

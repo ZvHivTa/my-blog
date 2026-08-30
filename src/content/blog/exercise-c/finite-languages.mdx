@@ -1,0 +1,71 @@
+---
+title: 'Why Every Finite Language Is ω-Trivial'
+description: 'A dead-state argument showing that idempotents of a finite language are right-zero.'
+date: 2025-12-09
+tags: ['Research', 'Finite Language', 'Minimal DFA', 'Exercise C']
+authors: ['enscribe']
+order: 5
+---
+
+## Conclusion
+
+Let $L\subseteq\Sigma^+$ be finite, and let $S=(S_f,S_\omega)$ be the Wilke algebra constructed from its syntactic semigroup. Then
+
+$$
+|S_\omega|=1.
+$$
+
+The proof connects the shape of the minimal DFA of a finite language to the right-zero criterion.
+
+## The unique dead state
+
+Let
+
+$$
+\mathcal A=(Q,\Sigma,\delta,q_0,F)
+$$
+
+be the minimal DFA of $L$. Because $L$ is finite, sufficiently long words cannot be accepted. The minimal DFA therefore contains a dead state $q_d$ satisfying
+
+$$
+\delta(q_d,a)=q_d
+\qquad\text{for every }a\in\Sigma.
+$$
+
+This dead state is unique. Two distinct dead states would have the same empty right language and would be merged by minimization.
+
+Every other state is co-accessible: from it, some continuation reaches a final state. Otherwise that state would also have an empty right language and would coincide with $q_d$.
+
+## Idempotent transformations collapse to the dead state
+
+Take an idempotent element $e=f_w\in S_f$, so $f_w^2=f_w$. For every state $q\in Q$, the image $f_w(q)$ is a fixed point of $f_w$:
+
+$$
+f_w(f_w(q))=f_w(q).
+$$
+
+Suppose some image $r=f_w(q)$ were not the dead state. Since $r$ is co-accessible, there would be a word $u$ taking $r$ to a final state. But $r$ is fixed by $w$, so all words
+
+$$
+w^n u \qquad (n\ge 1)
+$$
+
+would lead from $q$ to acceptance. Because $q$ is reachable in a minimal DFA, prefixing a word that reaches $q$ would produce infinitely many words in $L$, contradicting finiteness.
+
+Hence every idempotent transformation maps all states to $q_d$. It is therefore the zero transformation $0$, satisfying
+
+$$
+s0=0s=0
+$$
+
+for every $s\in S_f$. In particular, every idempotent is right-zero.
+
+## Apply the criterion
+
+The right-zero theorem now gives
+
+$$
+|S_\omega|=1.
+$$
+
+This explains the finite example $L=\{a,ab\}$ without requiring a separate conjugacy computation, and it extends the same conclusion to every finite regular language.

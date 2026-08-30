@@ -1,0 +1,50 @@
+---
+title: 'The Strongly Connected DFA Conjecture'
+description: 'An open direction relating the SCC structure of a minimal DFA to the size of the infinite sort.'
+date: 2025-12-09
+tags: ['Research', 'Conjecture', 'DFA', 'Exercise C']
+authors: ['enscribe']
+order: 7
+---
+
+The proven results use a semigroup condition: every idempotent is right-zero. A natural next question is whether a purely graph-theoretic property of the minimal DFA can also force ω-triviality.
+
+## Conjecture from the report
+
+Let
+
+$$
+\mathcal A=(Q,\Sigma,\delta,q_0,F)
+$$
+
+be the minimal DFA of $L$. If all states belong to a single strongly connected component, then the associated Wilke algebra $S=(S_f,S_\omega)$ satisfies
+
+$$
+|S_\omega|=1.
+$$
+
+This statement is recorded as a **conjecture**, not as a consequence of the right-zero theorem.
+
+## Why the previous proof does not apply directly
+
+For a finite or definite language, idempotent transformations collapse behavior toward a terminal suffix or dead state. A strongly connected DFA has the opposite geometry: every state can return to every other state, so there is generally no dead state and idempotents need not be right-zero.
+
+Consequently, proving the conjecture would require a different argument. One would need to show directly that all linked pairs are conjugate, even when their idempotent components are not right-zero.
+
+## A possible investigation strategy
+
+1. Generate small minimal strongly connected DFAs over a fixed alphabet.
+2. Compute each transition semigroup and its idempotents.
+3. Enumerate the linked pairs $(s,e)$ with $se=s$.
+4. Compute conjugacy classes and record $|S_\omega|$.
+5. Search for either a counterexample or an invariant explaining why only one class occurs.
+
+Useful intermediate questions include:
+
+- Does transitivity of the DFA action imply transitivity on linked pairs?
+- Which properties of the transition semigroup replace the right-zero argument?
+- Is one SCC sufficient, or is a stronger condition such as synchronizing behavior required?
+
+## Current status
+
+The exercise establishes the finite and definite cases, but leaves the SCC statement open. It should therefore be presented as a research direction until a proof or counterexample is obtained.
