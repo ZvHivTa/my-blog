@@ -1,0 +1,103 @@
+---
+title: 'Engineering Two Learning Strategies'
+description: 'How Post Check and Promote to P trade observation size for fewer equivalence queries.'
+date: 2026-08-29
+tags: ['Research', 'Implementation', 'Active Learning']
+authors: ['enscribe']
+order: 4
+---
+
+## One algorithmic decision, two strategies
+
+The current learner supports two ways to integrate left contexts. They share the same observation semantics, right-consistency refinement, hypothesis construction, exact Oracle and counterexample strategy. They differ at one important moment: what should happen when closedness discovers a new representative?
+
+## Post Check
+
+The `post_check` strategy grows the representative set conservatively.
+
+1. When closedness discovers $t\in I\Sigma$, add $t$ only to $I$.
+2. Build and refine the hypothesis until an EQ succeeds.
+3. Run the finite Monoid Consistency Check.
+4. Add a representative $i$ to $P$ only when it actually distinguishes a boundary word from its current representative.
+
+This keeps $P$ relatively small. Full rows contain fewer $P\times S$ coordinates, so the materialized observation structure and row width remain controlled.
+
+The price is delayed discovery. Post Check usually performs more EQ rounds and must spend local time probing representative-boundary pairs after language equivalence has already been established.
+
+An implementation detail avoids unnecessary repetition: if a successful EQ is followed only by a Monoid Check refinement of $P$, the language has not become incorrect. The `language_confirmed` state allows the next loop to skip another identical EQ. A change to $S$, however, invalidates this shortcut because it changes the right-language partition.
+
+## Promote to P
+
+The `promote_to_p` strategy is eager.
+
+1. When closedness adds a new word to $I$, add the same word to $P$.
+2. Continue until the observation structure is closed and right consistent.
+3. After a successful EQ, return the hypothesis directly.
+
+In many runs this gives $P=I$. Left contexts that Post would discover later are already embedded in every full row. The final Monoid Consistency Check is removed entirely, so `monoid_check_count` and `monoid_probe_time` remain zero.
+
+The risk is structural growth. Every new prefix widens all full rows and invalidates caches that depend on $P$. If the syntactic monoid is much larger than the minimal DFA, the number of representatives and left contexts can grow dramatically.
+
+## Strategy comparison
+
+| Property | Post Check | Promote to P |
+|---|---|---|
+| New closedness representative | Add to $I$ | Add to $I$ and $P$ |
+| Monoid Check after EQ | Required | Not used |
+| Typical $P$ size | Smaller | Often close to $I$ |
+| EQ count | Usually higher | Often lower |
+| Full-row width and Cells | Lower | Higher |
+| Main risk | External query cost | Space and local computation |
+
+This is not merely an implementation switch. It expresses two different policies for paying for algebraic information: discover left contexts lazily through witnesses, or materialize them eagerly before asking the teacher to validate another hypothesis.
+
+## Exact learner flow
+
+The main `learner.py` pipeline is:
+
+```text
+required MQ values
+  -> closedness
+  -> right consistency
+  -> hypothesis DFA
+  -> exact EQ
+  -> Post: monoid check
+     Promote: return
+```
+
+The Oracle in `oracle.py` supplies MQ answers, exact EQ through symmetric-difference BFS and final syntactic-monoid validation. `benchmark.py` is the daily entry point for running either strategy or comparing both against the classic L-star baseline.
+
+## Query cache versus observation materialization
+
+The implementation currently contains two structures that can look similar but have different meanings.
+
+### Global `query_cache`
+
+The key is a complete string $w$ and the value is `MQ(w)`. It lives for the entire learning run. Only a cache miss reaches the Teacher and increments the real `mq_count`.
+
+Changing $I$, $P$ or $S$ does not invalidate this cache because membership in the target language is immutable.
+
+### Materialized `table`
+
+The key is a structural coordinate $(i,p,s)$ and the value is `MQ(p+i+s)`. Different coordinates can produce the same complete string, so the table may hold duplicate boolean values even though the Teacher was asked only once.
+
+Its main purposes are incremental table filling, debugging and Cells reporting. Prototype experiments show that the main learner can reconstruct rows directly through `_ask_teacher()` and `query_cache` without changing the learned language, MQ count, EQ count or learning trajectory. Formal removal from the production learner remains future work.
+
+## Row and structure caches
+
+Several local caches reduce repeated Python work without reducing Teacher calls.
+
+- `row_cache` stores full $P\times S$ rows. It is cleared when $P$ or $S$ changes.
+- `suffix_row_cache` stores rows indexed only by $S$. It is cleared when $S$ changes, but survives changes to $P$.
+- `sorted_p_cache`, `sorted_s_cache` and `sorted_i_cache` provide deterministic coordinate and representative ordering.
+- `right_extensions_cache` stores $I\Sigma$ and is invalidated when $I$ changes.
+- `context_cache` exists only inside one Monoid Check and reuses finite context probes during that pass.
+
+Adding an element to $I$ does not invalidate already computed rows. It only creates additional rows and changes structures derived from the contents of $I$.
+
+## Engineering interpretation
+
+Promote should be attractive when EQ is expensive: for example, when it involves a network service, a costly system execution or a large PAC sample. Post should be attractive when memory and local row construction dominate, especially when the syntactic monoid can approach the $n^n$ size of a full transformation monoid for an $n$-state DFA.
+
+Local exact-Oracle time alone cannot choose between the strategies. The next article introduces a cost boundary that combines measured local work with an assumed cost for external EQ.
+

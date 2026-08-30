@@ -1,0 +1,480 @@
+---
+title: 'Appendix: Proofs and Lemmas'
+description: 'A formal proof that the terminal observation quotient is isomorphic to the syntactic monoid.'
+date: 2026-08-30
+tags: ['Research', 'Proof', 'Syntactic Monoid']
+authors: ['enscribe']
+order: 6
+---
+
+## Scope of the appendix
+
+This appendix isolates the mathematical proof obligations of the extended learner. The main theorem is conditional on explicit terminal invariants: closed representation, right compatibility, separability and the finite Monoid Consistency Check.
+
+This distinction matters. An exact EQ proves equality of recognized languages, but it does not alone prove that the hypothesis quotient is the syntactic monoid. The missing step is to establish that the learned equivalence is compatible with concatenation on both sides and contains no unnecessary split.
+
+## Notation
+
+Let $L\subseteq\Sigma^*$ be regular and let
+
+$$
+\chi_L(w)=
+\begin{cases}
+1,&w\in L,\\
+0,&w\notin L.
+\end{cases}
+$$
+
+At a fixed stage, let $I,P,S\subseteq\Sigma^*$ be finite and contain $\epsilon$. Define
+
+$$
+\operatorname{row}(w)
+=
+\bigl(\chi_L(pws)\bigr)_{(p,s)\in P\times S}.
+$$
+
+The current observational equivalence is
+
+$$
+x\equiv_T y
+\quad\Longleftrightarrow\quad
+\operatorname{row}(x)=\operatorname{row}(y).
+$$
+
+Right-consistency refinement uses the suffix row
+
+$$
+\operatorname{srow}(w)
+=
+\bigl(\chi_L(ws)\bigr)_{s\in S}.
+$$
+
+The target syntactic congruence is
+
+$$
+x\sim_L y
+\quad\Longleftrightarrow\quad
+\forall u,v\in\Sigma^*,\;
+uxv\in L\iff uyv\in L.
+$$
+
+## Terminal invariants
+
+The proof uses the following conditions.
+
+1. **Separability.** Distinct representatives in $I$ have distinct rows.
+2. **Closedness.** For every $i\in I$ and $a\in\Sigma$, there is a $j\in I$ such that $ia\equiv_Tj$.
+3. **Exact language equivalence.** The constructed hypothesis $\mathcal H$ has one chosen representative from $I$ for every state and has passed the exact EQ: $L(\mathcal H)=L$.
+4. **Finite right consistency.** For all $i,j\in I$ and $a\in\Sigma$,
+
+$$
+\operatorname{srow}(i)=\operatorname{srow}(j)
+\quad\Longrightarrow\quad
+\operatorname{srow}(ia)=\operatorname{srow}(ja).
+$$
+
+5. **Boundary left compatibility.** For $r\in I$ and $a\in\Sigma$, put $t=ra$ and let $v\in I$ be its unique representative. Then, for every $i\in I$ and $s\in S$,
+
+$$
+\chi_L(its)=\chi_L(ivs).
+$$
+
+The Monoid Consistency Check is precisely the finite test in Condition 5.
+
+## Lemma 0A: Finite right consistency implies right compatibility
+
+**Lemma.** Under Conditions 3 and 4,
+
+$$
+x\equiv_Ty
+\quad\Longrightarrow\quad
+xa\equiv_Tya
+$$
+
+for every $a\in\Sigma$.
+
+**Proof.** Fix $p\in P$. Equality of the full rows of $x$ and $y$ implies
+
+$$
+\operatorname{srow}(px)=\operatorname{srow}(py).
+$$
+
+Let $i,j\in I$ be the chosen representatives of the states reached in $\mathcal H$ by $px$ and $py$. Because $px$ and $i$ reach the same hypothesis state, they have the same continuation behavior in $\mathcal H$. Since $L(\mathcal H)=L$, for every $z\in\Sigma^*$,
+
+$$
+\chi_L(pxz)=\chi_L(iz).
+$$
+
+Similarly, $\chi_L(pyz)=\chi_L(jz)$. In particular,
+
+$$
+\operatorname{srow}(i)=\operatorname{srow}(px)
+=\operatorname{srow}(py)=\operatorname{srow}(j).
+$$
+
+Finite right consistency gives
+
+$$
+\operatorname{srow}(ia)=\operatorname{srow}(ja).
+$$
+
+For every $s\in S$, exact language equivalence and equality of hypothesis states yield
+
+$$
+\chi_L(pxas)=\chi_L(ias)
+=\chi_L(jas)=\chi_L(pyas).
+$$
+
+This holds for every $p\in P$ and $s\in S$, so $\operatorname{row}(xa)=\operatorname{row}(ya)$. Hence $xa\equiv_Tya$. $\square$
+
+## Lemma 0B: Existence of path representatives
+
+Define $\rho:\Sigma^*\to I$ recursively. Let $\rho(\epsilon)=\epsilon$. If $w=ua$, choose $\rho(w)$ to be the unique representative supplied by closedness for the boundary word $\rho(u)a$.
+
+**Lemma.** Every word has a unique path representative satisfying
+
+$$
+w\equiv_T\rho(w).
+$$
+
+**Proof.** We use induction on $|w|$. The claim is immediate for $w=\epsilon$.
+
+Suppose $u\equiv_T\rho(u)$ and let $a\in\Sigma$. Lemma 0A gives
+
+$$
+ua\equiv_T\rho(u)a.
+$$
+
+Closedness supplies some $j\in I$ with
+
+$$
+\rho(u)a\equiv_Tj.
+$$
+
+By transitivity, $ua\equiv_Tj$, so set $\rho(ua)=j$. If two representatives $j_1,j_2\in I$ satisfied this condition, then $j_1\equiv_Tj_2$; separability would force $j_1=j_2$. Thus the representative exists and is unique. $\square$
+
+## Lemma 1: Unique representatives
+
+**Lemma.** Under the terminal invariants,
+
+$$
+x\equiv_Ty
+\quad\Longleftrightarrow\quad
+\rho(x)=\rho(y).
+$$
+
+**Proof.** Suppose $x\equiv_Ty$. By Lemma 0B,
+
+$$
+x\equiv_T\rho(x)
+\qquad\text{and}\qquad
+y\equiv_T\rho(y).
+$$
+
+Transitivity gives $\rho(x)\equiv_T\rho(y)$. Both words belong to $I$, so separability implies $\rho(x)=\rho(y)$.
+
+Conversely, if $\rho(x)=\rho(y)$, Lemma 0B and transitivity give
+
+$$
+x\equiv_T\rho(x)=\rho(y)\equiv_Ty.
+$$
+
+Therefore the two conditions are equivalent. $\square$
+
+## Lemma 2: Extension from letters to words
+
+**Lemma.** Right compatibility for letters implies
+
+$$
+x\equiv_Ty
+\quad\Longrightarrow\quad
+xw\equiv_Tyw
+$$
+
+for every $w\in\Sigma^*$.
+
+**Proof.** Use induction on $|w|$. For $w=\epsilon$, the claim is immediate. Suppose it holds for $w$ and let $a\in\Sigma$. Then
+
+$$
+xw\equiv_Tyw.
+$$
+
+Applying right compatibility once gives
+
+$$
+xwa\equiv_Tywa.
+$$
+
+Thus the property holds for every finite word. $\square$
+
+## Lemma 3: The finite Monoid Check controls full rows
+
+The implemented check compares only contexts from $I\times S$. The next lemma explains why this is enough to recover every coordinate in $P\times S$.
+
+**Lemma.** Let $t=ra$ with $r\in I$, $a\in\Sigma$, and let $v=\rho(t)$. If the boundary left-compatibility check passes, then for every $i\in I$,
+
+$$
+it\equiv_Tiv.
+$$
+
+**Proof.** Fix $i\in I$. To prove equality of full rows, choose arbitrary $p\in P$ and $s\in S$. Let
+
+$$
+j=\rho(pi)\in I.
+$$
+
+By Lemma 0B, $pi\equiv_Tj$. Lemma 2 allows us to append $t$ and $v$:
+
+$$
+pit\equiv_Tjt,
+\qquad
+piv\equiv_Tjv.
+$$
+
+Since $(\epsilon,s)$ is a row coordinate, these equivalences imply
+
+$$
+\chi_L(pits)=\chi_L(jts),
+\qquad
+\chi_L(pivs)=\chi_L(jvs).
+$$
+
+The finite Monoid Check applies to $j\in I$, so
+
+$$
+\chi_L(jts)=\chi_L(jvs).
+$$
+
+Combining the three equalities gives
+
+$$
+\chi_L(pits)=\chi_L(pivs).
+$$
+
+Because $p$ and $s$ were arbitrary, every coordinate of $\operatorname{row}(it)$ and $\operatorname{row}(iv)$ agrees. Hence $it\equiv_Tiv$. $\square$
+
+## Lemma 4: Normal-form multiplication
+
+**Lemma.** For every representative $i\in I$ and word $w\in\Sigma^*$,
+
+$$
+iw\equiv_Ti\rho(w).
+$$
+
+**Proof.** We use induction on $|w|$.
+
+For $w=\epsilon$, choose $\rho(\epsilon)=\epsilon$. Then $i\epsilon=i=i\rho(\epsilon)$.
+
+For the induction step, write $w=ua$ with $a\in\Sigma$ and assume
+
+$$
+iu\equiv_Ti\rho(u).
+$$
+
+By right compatibility,
+
+$$
+iua\equiv_Ti\rho(u)a.
+$$
+
+The word $t=\rho(u)a$ is a boundary word in $I\Sigma$. Its representative is
+
+$$
+v=\rho(t)=\rho(ua)=\rho(w),
+$$
+
+where the middle equality follows from Lemma 1 and the definition of the path representative. Lemma 3 gives
+
+$$
+i\rho(u)a\equiv_Tiv=i\rho(w).
+$$
+
+By transitivity, $iw\equiv_Ti\rho(w)$. $\square$
+
+## Lemma 5: Arbitrary products reduce to representatives
+
+**Lemma.** For all $x,y\in\Sigma^*$,
+
+$$
+xy\equiv_T\rho(x)\rho(y).
+$$
+
+**Proof.** Lemma 0B gives $x\equiv_T\rho(x)$. By Lemma 2,
+
+$$
+xy\equiv_T\rho(x)y.
+$$
+
+Applying Lemma 4 with the representative $\rho(x)$ gives
+
+$$
+\rho(x)y\equiv_T\rho(x)\rho(y).
+$$
+
+Transitivity completes the proof. $\square$
+
+## Lemma 6: Observational equivalence is a congruence
+
+**Lemma.** At termination, $\equiv_T$ is compatible with concatenation on both sides.
+
+**Proof.** Right compatibility with arbitrary suffixes is Lemma 2.
+
+For left compatibility, suppose $x\equiv_Ty$ and choose any $z\in\Sigma^*$. Lemma 1 gives
+
+$$
+\rho(x)=\rho(y).
+$$
+
+Using Lemma 5 twice,
+
+$$
+zx\equiv_T\rho(z)\rho(x)
+=\rho(z)\rho(y)
+\equiv_Tzy.
+$$
+
+Therefore $zx\equiv_Tzy$. Since $z$ was arbitrary, $\equiv_T$ is both a left and right congruence. $\square$
+
+## Lemma 7: The quotient saturates the language
+
+**Lemma.** If $x\equiv_Ty$, then
+
+$$
+x\in L\iff y\in L.
+$$
+
+**Proof.** Because $\epsilon\in P\cap S$, the coordinate $(\epsilon,\epsilon)$ belongs to every full row. Equality of rows therefore implies
+
+$$
+\chi_L(x)=\chi_L(y).
+$$
+
+Hence every $\equiv_T$ class lies entirely inside $L$ or entirely outside $L$. $\square$
+
+## Theorem: Correctness of the learned quotient
+
+**Theorem.** If the terminal invariants hold and the finite Monoid Consistency Check passes, then
+
+$$
+\equiv_T=\sim_L.
+$$
+
+Consequently,
+
+$$
+\Sigma^*/{\equiv_T}
+\cong
+\Sigma^*/{\sim_L}=M(L).
+$$
+
+**Proof.** We prove both inclusions.
+
+### First inclusion
+
+Assume $x\equiv_Ty$. By Lemma 6, for all $u,v\in\Sigma^*$,
+
+$$
+uxv\equiv_Tuyv.
+$$
+
+Lemma 7 then gives
+
+$$
+uxv\in L\iff uyv\in L.
+$$
+
+Therefore $x\sim_Ly$, and so
+
+$$
+\equiv_T\;\subseteq\;\sim_L.
+$$
+
+### Reverse inclusion
+
+Assume $x\sim_Ly$ but $x\not\equiv_Ty$. By Lemma 1,
+
+$$
+\rho(x)\ne\rho(y).
+$$
+
+Separability says their rows differ. Hence there exist $p\in P$ and $s\in S$ such that
+
+$$
+\chi_L\bigl(p\rho(x)s\bigr)
+\ne
+\chi_L\bigl(p\rho(y)s\bigr).
+$$
+
+Lemma 0B gives $x\equiv_T\rho(x)$ and $y\equiv_T\rho(y)$. Lemmas 6 and 7 therefore imply
+
+$$
+\chi_L(pxs)=\chi_L\bigl(p\rho(x)s\bigr)
+$$
+
+and
+
+$$
+\chi_L(pys)=\chi_L\bigl(p\rho(y)s\bigr).
+$$
+
+Thus $\chi_L(pxs)\ne\chi_L(pys)$, contradicting $x\sim_Ly$. Therefore
+
+$$
+\sim_L\;\subseteq\;\equiv_T.
+$$
+
+The equivalences coincide, and their quotient is the syntactic monoid. $\square$
+
+## Corollary: Why Promote can skip the post-check
+
+**Corollary.** Suppose every representative is promoted into the prefix set, so that
+
+$$
+I\subseteq P.
+$$
+
+If a boundary word $t\in I\Sigma$ and its representative $v\in I$ have equal full rows, then the finite Monoid Consistency condition already holds.
+
+**Proof.** Equality of full rows means
+
+$$
+\forall p\in P,\forall s\in S,
+\qquad
+\chi_L(pts)=\chi_L(pvs).
+$$
+
+Since every $i\in I$ also belongs to $P$, choose $p=i$. Then
+
+$$
+\forall i\in I,\forall s\in S,
+\qquad
+\chi_L(its)=\chi_L(ivs).
+$$
+
+This is exactly boundary left compatibility. The post-EQ Monoid Check would therefore repeat information already encoded in the rows. $\square$
+
+## Termination under strict refinement
+
+Let $M=|M(L)|$. Every new representative added to $I$ has a row different from all existing representatives. That difference is witnessed by actual contexts $p\in P$ and $s\in S$, so the new representative belongs to a previously unrepresented syntactic class. Therefore
+
+$$
+|I|\le M.
+$$
+
+Similarly, every accepted refinement of $P$ or $S$ must split at least one current observational class. Under the progress condition that the learner never inserts a context that leaves the current partition unchanged, only finitely many such splits are possible because syntactic congruence has $M$ classes.
+
+With an exact equivalence teacher, the loop must therefore reach a hypothesis that recognizes $L$. Once the terminal invariants and boundary left compatibility also hold, the main theorem applies and the returned quotient is $M(L)$.
+
+## Proof obligations for the implementation
+
+The theorem separates mathematical correctness from engineering details. A concrete implementation should test the following properties independently:
+
+1. stable row coordinates and unique representatives;
+2. closedness after every representative insertion;
+3. right-compatibility refinement after changes to $S$;
+4. exact language equivalence of the final hypothesis in Oracle experiments;
+5. the boundary left-compatibility condition for Post;
+6. the invariant $I\subseteq P$ and zero Monoid Check calls for Promote;
+7. language, MQ and EQ trajectory preservation after cache or table refactors.
+
+These tests do not replace the proof. They establish that the running program satisfies the hypotheses under which the proof is valid.

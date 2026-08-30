@@ -1,0 +1,140 @@
+---
+title: 'Correctness and Complexity of the Extended Learner'
+description: 'The proof architecture behind the learned quotient and the theoretical query bounds.'
+date: 2026-06-24
+tags: ['Research', 'Correctness', 'Complexity']
+authors: ['enscribe']
+order: 3
+---
+
+## What must be proved
+
+The final goal is stronger than language recognition. At termination, equality of learned classes should coincide with syntactic congruence:
+
+$$
+\operatorname{row}_{P,S}(x)=\operatorname{row}_{P,S}(y)
+\quad\Longleftrightarrow\quad
+x\sim_L y.
+$$
+
+The proof is easier to follow as a chain of separate obligations rather than as one large argument.
+
+## 1. Closedness supplies transition targets
+
+For every $i\in I$ and $a\in\Sigma$, closedness gives a representative $j\in I$ such that
+
+$$
+\operatorname{row}_{P,S}(ia)=\operatorname{row}_{P,S}(j).
+$$
+
+Therefore every one-letter transition from a hypothesis state has a target represented in $I$.
+
+## 2. Right consistency supplies path representatives
+
+Define $\rho(w)\in I$ as the representative reached by reading $w$ in the hypothesis. Right consistency ensures that extending equivalent right behaviors by the same letter produces equivalent right behaviors.
+
+By induction over $|w|$, every word has a path representative satisfying
+
+$$
+w\equiv_S\rho(w),
+$$
+
+where $\equiv_S$ denotes equality of suffix rows. Once the hypothesis has passed the EQ, this representative agrees with $w$ on acceptance after every continuation represented by the hypothesis.
+
+## 3. The hypothesis transition is well-defined
+
+A hypothesis state is a row, not a particular spelling of its representative. We must show that choosing another representative of the same state cannot change the transition.
+
+Closedness gives existence of a target row. Separability of representatives and the consistency refinements give uniqueness. Consequently
+
+$$
+\delta:Q\times\Sigma\to Q
+$$
+
+and its extension $\delta^*:Q\times\Sigma^*\to Q$ are well-defined.
+
+## 4. EQ connects the finite hypothesis to the target
+
+After an exact EQ succeeds,
+
+$$
+L(\mathcal H)=L.
+$$
+
+Acceptance calculations made through the hypothesis can then be transferred to the unknown language. This supplies the right-context part of syntactic congruence, but it still does not justify arbitrary left multiplication.
+
+## 5. Monoid consistency supplies left compatibility
+
+The post-check examines a current merge between $t\in I\Sigma$ and $v\in I$. If there exists an observed left context $i\in I$ and suffix $s\in S$ such that
+
+$$
+\chi_L(its)\ne\chi_L(ivs),
+$$
+
+then $i$ is added to $P$ and the merge is split.
+
+When no such witness remains, multiplication by known representatives preserves every current representative-boundary merge. Together with the path-representative argument, this property extends from one-letter boundary steps to arbitrary finite words.
+
+## 6. From finite compatibility to syntactic congruence
+
+At termination, consider two words with the same learned class. Right consistency and the successful EQ preserve equality under arbitrary suffixes. Monoid consistency propagates that equality through arbitrary prefixes represented by paths in the hypothesis.
+
+Thus, for all $p,s\in\Sigma^*$,
+
+$$
+pxs\in L\iff pys\in L.
+$$
+
+This is exactly $x\sim_L y$. Conversely, syntactically congruent words cannot be separated by any finite $P\times S$ observation, so they must have the same learned row. The final quotient is therefore isomorphic to $M(L)$.
+
+## Complexity parameters
+
+Let
+
+- $k=|\Sigma|$ be the alphabet size;
+- $M=|M(L)|$ be the size of the target syntactic monoid;
+- $m$ be the maximum counterexample length.
+
+The theoretical analysis treats membership queries, equivalence queries and local structure computation as different resources.
+
+## Observation size
+
+The conceptual table contains values for
+
+$$
+P\times(I\cup I\Sigma)\times S.
+$$
+
+At convergence, $|I|=M$ and $|I\Sigma|\le kM$. Under the report's refinement bound $|P|+|S|\le M$,
+
+$$
+|P||S|\le\frac{M^2}{4}.
+$$
+
+Hence the materialized observation structure is bounded by
+
+$$
+|P|(|I|+|I\Sigma|)|S|=O(kM^3).
+$$
+
+The implementation reports a theoretical Cells statistic based on this coordinate space. It must not be confused with the number of unique teacher calls, because multiple coordinates can concatenate to the same complete query word.
+
+## Query and local-computation bounds
+
+Filling the observation space contributes $O(kM^3)$ membership-query coordinates. Breakpoint processing contributes
+
+$$
+O(M\log m)
+$$
+
+queries over at most $M$ counterexamples. Repeated Monoid Consistency Checks give the largest coarse term, producing the report's combined bound
+
+$$
+O(kM^4+M\log m)
+$$
+
+for membership-query work.
+
+The number of exact equivalence queries is at most $O(M)$ under the refinement argument. Closedness, right consistency and monoid consistency together have a coarse internal bound of $O(kM^4)$.
+
+These are worst-case structural bounds, not runtime predictions. Hashing, query deduplication, row caching, language shape and the cost of the external teacher determine observed performance. The experiments therefore report MQ, EQ, Cells and local time separately rather than compressing them into a single number.

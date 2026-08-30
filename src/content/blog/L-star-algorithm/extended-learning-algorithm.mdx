@@ -1,0 +1,144 @@
+---
+title: 'The Extended Learning Algorithm'
+description: 'Closedness, right consistency, counterexample refinement and the finite Monoid Consistency Check.'
+date: 2026-06-24
+tags: ['Research', 'Active Learning', 'Syntactic Monoid']
+authors: ['enscribe']
+order: 2
+---
+
+## Invariants of the learning loop
+
+The learner repeatedly moves through the following stages:
+
+```text
+obtain required MQ values
+  -> closedness
+  -> right consistency
+  -> build a hypothesis DFA
+  -> equivalence query
+  -> monoid consistency or termination
+```
+
+Every refinement adds information to $I$, $P$ or $S$. The target language never changes, so membership answers already stored for complete words remain valid throughout the run.
+
+## Closedness discovers representatives
+
+The observation structure is closed when every boundary word $t\in I\Sigma$ is represented by some $v\in I$ with the same full row:
+
+$$
+\forall t\in I\Sigma,\;\exists v\in I:
+\operatorname{row}_{P,S}(t)=\operatorname{row}_{P,S}(v).
+$$
+
+If no such $v$ exists, $t$ describes a newly observed class and is added to $I$. The learner handles one new representative at a time and then restarts the refinement loop.
+
+Closedness is both an algorithmic condition and a construction rule. It ensures that every one-letter transition from a represented class has a represented target.
+
+## Right consistency preserves future behavior
+
+Suppose two representatives have the same suffix row:
+
+$$
+\operatorname{row}_S(i)=\operatorname{row}_S(j).
+$$
+
+Right consistency requires their one-letter extensions to remain suffix-equivalent:
+
+$$
+\forall a\in\Sigma,\qquad
+\operatorname{row}_S(ia)=\operatorname{row}_S(ja).
+$$
+
+If this fails, some $s\in S$ satisfies
+
+$$
+\chi_L(ias)\ne\chi_L(jas).
+$$
+
+The learner adds $as$ to $S$. This exposes the hidden distinction and refines the right-language approximation.
+
+The implementation intentionally performs this test with suffix rows, not with the complete $P\times S$ rows. This retains the classical L-star meaning of right consistency while the additional left structure is handled separately.
+
+## Building the hypothesis DFA
+
+After closedness and right consistency hold, each distinct full row becomes a hypothesis state. For reproducibility, the implementation chooses the shortest stable-sorted element of $I$ as the representative of each row.
+
+The semantic mapping from hypothesis states to these words is stored as `state_to_rep`. It is not a cache: it is needed to interpret a hypothesis run and to locate a useful suffix inside a counterexample.
+
+## Processing an equivalence counterexample
+
+If the teacher returns $w=a_1a_2\cdots a_m$, then the hypothesis and the target disagree on $w$. The main implementation uses a Rivest-Schapire-style breakpoint search.
+
+It follows the hypothesis trajectory, compares the teacher's answers at selected boundaries and uses binary search to locate an adjacent pair where the expected behavior changes. The resulting distinguishing suffix is added to $S$.
+
+This needs $O(\log m)$ membership queries for a counterexample of length $m$, excluding answers already present in the global query cache. A simpler `expand` mode that inserts many prefixes and suffixes is retained for debugging, but the principal experiments use the breakpoint strategy.
+
+## Why a successful EQ is not the end
+
+An EQ proves that the hypothesis accepts the correct language:
+
+$$
+L(\mathcal H)=L.
+$$
+
+It does not by itself prove that the current row quotient is already the syntactic monoid. The same regular language can be accepted by automata whose internal algebraic structures are not the minimal two-sided quotient.
+
+For a boundary word $t=ua\in I\Sigma$, let $v\in I$ be its current representative:
+
+$$
+\operatorname{row}_{P,S}(t)=\operatorname{row}_{P,S}(v).
+$$
+
+The Monoid Consistency Check tests whether known left multiplication preserves this merge. For $i\in I$ and $s\in S$, it compares
+
+$$
+\chi_L(it s)
+\quad\text{and}\quad
+\chi_L(iv s).
+$$
+
+Equivalently, it checks the finite condition
+
+$$
+\forall i\in I,\forall s\in S,
+\qquad
+\chi_L(its)=\chi_L(ivs).
+$$
+
+If a mismatch is found, the left context $i$ is added to $P$. The previously merged boundary and representative then become distinguishable in their full rows.
+
+This check is finite and targeted. It does not enumerate every possible context in $\Sigma^*$ and should not be described as comparing infinite rows. It verifies only the representative-boundary pairs and the currently known $I\times S$ contexts.
+
+## Complete pseudocode
+
+```text
+I := {epsilon}
+P := {epsilon}
+S := {epsilon}
+
+repeat:
+  if some t in I.Sigma has no equal full row in I:
+    add t to I
+    continue
+
+  if some suffix-equivalent i,j fail right consistency on a:
+    add a.s to S for a distinguishing suffix s
+    continue
+
+  H := build_hypothesis(I, P, S)
+  counterexample := EQ(H)
+
+  if counterexample exists:
+    refine S with its breakpoint suffix
+    continue
+
+  if a representative-boundary pair fails monoid consistency:
+    add the distinguishing representative to P
+    continue
+
+  return H
+```
+
+The implementation supports a second policy that modifies the closedness step: every new member of $I$ is immediately promoted into $P$. That policy can omit the final Monoid Consistency Check and is studied in the engineering and experimental articles.
+

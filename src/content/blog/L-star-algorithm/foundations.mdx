@@ -1,0 +1,136 @@
+---
+title: 'Foundations: From L-star to Syntactic Monoids'
+description: 'The algebraic learning target, query model and three-dimensional observation structure.'
+date: 2026-06-24
+tags: ['Research', 'L-star Algorithm', 'Syntactic Monoid']
+authors: ['enscribe']
+order: 1
+---
+
+## The target is stronger than a minimal DFA
+
+Let $L\subseteq\Sigma^*$ be a regular language. Two words are syntactically congruent when no left or right context can distinguish them:
+
+$$
+u\sim_L v
+\quad\Longleftrightarrow\quad
+\forall x,y\in\Sigma^*,\;xuy\in L\iff xvy\in L.
+$$
+
+This is a congruence with respect to concatenation. If $[u]$ denotes the equivalence class of $u$, multiplication is defined by
+
+$$
+[u]\cdot[v]=[uv].
+$$
+
+The quotient
+
+$$
+M(L)=\Sigma^*/{\sim_L}
+$$
+
+is the **syntactic monoid** of $L$. It is the smallest monoid recognizing $L$ and is isomorphic to the transition monoid of the minimal DFA for $L$.
+
+Classical L-star learning distinguishes words by their future behavior. That is enough to identify minimal-DFA states, but syntactic congruence also quantifies over prefixes placed before a word. The extended learner must therefore collect both right experiments and left contexts.
+
+## Query access
+
+The learner does not inspect the target language directly. It communicates with a teacher through two interfaces.
+
+### Membership query
+
+For a chosen word $w\in\Sigma^*$, the teacher returns its characteristic value
+
+$$
+\chi_L(w)=
+\begin{cases}
+1,&w\in L,\\
+0,&w\notin L.
+\end{cases}
+$$
+
+In the implementation, a membership query is abbreviated as `MQ(w)`.
+
+### Equivalence query
+
+The learner submits a hypothesis DFA $\mathcal H$. An exact teacher answers whether
+
+$$
+L(\mathcal H)=L.
+$$
+
+If the languages differ, the teacher returns a counterexample in their symmetric difference. The current experimental Oracle knows the target DFA and uses breadth-first search to return a shortest counterexample.
+
+This exact EQ model is useful for validating the algorithm. It is not assumed to be a realistic interface for every black-box system; the distinction becomes important in the experimental cost model.
+
+## The observation structure
+
+The learner maintains three finite sets:
+
+- $I\subseteq\Sigma^*$: current representative words;
+- $P\subseteq\Sigma^*$: known left contexts;
+- $S\subseteq\Sigma^*$: known suffix experiments.
+
+All three initially contain only $\epsilon$. The one-letter right boundary of the representative set is
+
+$$
+I\Sigma=\{ia\mid i\in I,\;a\in\Sigma\}.
+$$
+
+The finite observation function is
+
+$$
+T(p,i,s)=\chi_L(pis),
+$$
+
+where $p\in P$, $i\in I\cup I\Sigma$ and $s\in S$. This can be viewed as a three-dimensional table, although the current implementation also keeps a global query cache keyed by the complete word $pis$.
+
+## Full rows and suffix rows
+
+For any word $w$, its full row is the vector
+
+$$
+\operatorname{row}_{P,S}(w)
+=
+\bigl(\chi_L(pws)\bigr)_{(p,s)\in P\times S}.
+$$
+
+Two words are **status-equivalent** under the current finite observation when
+
+$$
+u\equiv_{P,S}v
+\quad\Longleftrightarrow\quad
+\operatorname{row}_{P,S}(u)=\operatorname{row}_{P,S}(v).
+$$
+
+This is only a finite approximation to syntactic congruence. Enlarging $P$ or $S$ can split a class that looked equal before.
+
+Right consistency uses a second, deliberately narrower row:
+
+$$
+\operatorname{row}_{S}(w)
+=
+\bigl(\chi_L(ws)\bigr)_{s\in S}.
+$$
+
+Keeping these notions separate matters. Full rows represent the current two-sided quotient, while suffix rows maintain the ordinary right behavior required for a well-formed hypothesis DFA.
+
+## From rows to a hypothesis
+
+Once every boundary word in $I\Sigma$ has a representative with the same full row, the distinct rows of $I$ become hypothesis states:
+
+$$
+Q=\{\operatorname{row}_{P,S}(i)\mid i\in I\}.
+$$
+
+The initial state is the row of $\epsilon$. A state is accepting when its representative belongs to $L$. For $a\in\Sigma$, its transition is determined by the row of the representative followed by $a$:
+
+$$
+\delta\bigl(\operatorname{row}_{P,S}(i),a\bigr)
+=\operatorname{row}_{P,S}(ia).
+$$
+
+Closedness guarantees that this target row is represented inside $I$. Right consistency ensures that choosing equivalent representatives does not change the transition behavior.
+
+The next article develops these two refinement conditions and explains why language equivalence alone is not yet enough to certify the learned monoid.
+

@@ -1,22 +1,68 @@
 ---
-title: 'L-star algorithm research from ZHT'
-description: 'Research on extending L-star algorithm to learn syntactic monoid'
-date: 2025-12-09
-tags: ['Research','L-star algorithm','Syntactic Monoid',]
+title: 'Learning Syntactic Monoids with an Extended L-star Algorithm'
+description: 'Theory, implementation and experiments for an active learner that recovers the syntactic monoid of an unknown regular language.'
+date: 2026-08-30
+tags: ['Research', 'L-star Algorithm', 'Syntactic Monoid']
 image: './banner.png'
 authors: ['enscribe']
 ---
 
-## Overview of L-star algorithm
+## Research goal
 
-The L-star algorithm, developed by Dana Angluin in 1987, is a foundational algorithm in the field of automata learning. 
-It is designed to learn regular languages by interacting with a teacher through membership and equivalence queries. 
-The algorithm constructs a minimal deterministic finite automaton (DFA) that recognizes the target language.
+Angluin's L-star algorithm learns the minimal DFA of an unknown regular language through membership queries and equivalence queries. This project asks a stronger question:
 
-## Research: Learning Syntactic Monoid directly from extended L-star algorithm
+> Can an observation-table learner recover the syntactic monoid directly, while keeping the number and cost of external queries under control?
 
-My research focuses on extending the L-star algorithm to learn the syntactic monoid of a regular language directly, rather than just the minimal DFA.
-1. Correctness: We want to find a proper way to extend original L-star algorithm to learn syntactic monoid.
-2. Efficiency: We aim to improve the efficiency of the learning process to learn the syntactic monoid.
-3. Applications: If we can, we will implement it and apply it to practical problems and compare it with traditional ways.
+For a regular language $L\subseteq\Sigma^*$, the minimal DFA captures right-language equivalence. The syntactic monoid instead identifies two words only when they behave identically in every two-sided context:
+
+$$
+u\sim_L v
+\quad\Longleftrightarrow\quad
+\forall x,y\in\Sigma^*,\;xuy\in L\iff xvy\in L.
+$$
+
+The learner therefore has to preserve ordinary DFA behavior and refine enough left contexts to recover the stronger algebraic quotient.
+
+## Current system
+
+The current prototype is a runnable active-learning system with:
+
+- a three-dimensional observation structure indexed by representatives, left contexts and suffixes;
+- closedness and right-consistency refinement;
+- exact equivalence queries against a target DFA;
+- a post-EQ Monoid Consistency Check;
+- two competing integration strategies, `post_check` and `promote_to_p`;
+- global membership-query caching and local row caches;
+- reproducible benchmarks for Commutative and Star-free languages.
+
+The central algorithmic choice is when to add a discovered representative to the set of left contexts. `post_check` adds such contexts lazily when an algebraic inconsistency is observed. `promote_to_p` adds them eagerly, trading a larger observation structure for fewer equivalence queries.
+
+## Current result
+
+The fixed experiment from August 25, 2026 contains 480 classified cases. Across those cases, Promote reduced the number of equivalence queries from 1,725 to 1,014, a reduction of 41.2%. This came with a 5.13-fold increase in materialized cells and about 17% more aggregated local median time.
+
+This does not establish one universally superior strategy. It gives a decision rule: Promote becomes attractive when an external equivalence query is expensive enough to compensate for its additional local and memory cost.
+
+## Series guide
+
+1. [Foundations: From L-star to Syntactic Monoids](/blog/l-star-algorithm/foundations) introduces the algebraic target and the observation structure.
+2. [The Extended Learning Algorithm](/blog/l-star-algorithm/extended-learning-algorithm) explains closedness, right consistency, counterexamples and the Monoid Consistency Check.
+3. [Correctness and Complexity](/blog/l-star-algorithm/correctness-and-complexity) organizes the proof chain and theoretical cost bounds.
+4. [Engineering Two Learning Strategies](/blog/l-star-algorithm/implementation-strategies) documents the implementation, caching model and the Post/Promote trade-off.
+5. [480 Languages and a Query-Cost Decision Model](/blog/l-star-algorithm/experiments-and-cost-model) presents the latest large-scale experiment and its practical interpretation.
+6. [Appendix: Proofs and Lemmas](/blog/l-star-algorithm/proofs-and-lemmas) gives the formal invariant chain, the main correctness theorem and the Promote corollary.
+
+## What is established and what remains open
+
+The exact-oracle prototype, both strategies, the cache architecture and the August experiment are implemented. The latest milestone is reproducible from saved JSON data and tagged source history.
+
+The following items remain future work:
+
+- removing the redundant materialized three-dimensional `table` from the main learner;
+- recording membership-query length and timing distributions;
+- replaying query traces under realistic MQ and EQ cost models;
+- adding random or PAC-style equivalence queries for unknown black boxes;
+- extending the benchmark toward larger and more difficult Commutative languages.
+
+For a non-regular target, the intended output would no longer be an exact syntactic monoid. It would be a finite quotient observed under a stated distribution, confidence level and query budget.
 

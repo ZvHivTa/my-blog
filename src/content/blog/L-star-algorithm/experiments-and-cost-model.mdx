@@ -1,0 +1,141 @@
+---
+title: '480 Languages and a Query-Cost Decision Model'
+description: 'Large-scale Post versus Promote experiments across Commutative and Star-free languages.'
+date: 2026-08-29
+tags: ['Research', 'Experiments', 'Automata Learning']
+authors: ['enscribe']
+order: 5
+---
+
+## Experimental question
+
+Promote usually asks fewer equivalence queries, but it expands $P$ and therefore the observation structure. The practical question is not simply which strategy is faster on one laptop. It is:
+
+> At what external EQ cost does the reduction in teacher interactions justify Promote's additional local work?
+
+The fixed August 25 experiment evaluates this trade-off on two structured families of regular languages.
+
+## Language groups
+
+### Commutative languages
+
+Membership in a Commutative language depends on the number of occurrences of each letter, not their order. Words with the same Parikh vector must receive the same label.
+
+The benchmark includes presence constraints, thresholds, modular counters and combinations of independent counters. These cases are useful because direct products of counters can make the syntactic monoid grow while preserving an interpretable language definition.
+
+### Star-free languages
+
+Star-free languages can be constructed using finite languages, union, concatenation and complement, without Kleene star as a primitive. Equivalently, their syntactic monoids are aperiodic.
+
+The benchmark includes prefix and suffix conditions, fixed substring and subsequence conditions, finite thresholds and pattern avoidance. The appearance of $\Sigma^*$ in an expanded regular expression does not by itself make a language non-star-free.
+
+The two groups overlap but neither contains the other.
+
+## Dataset and measurement
+
+The experiment contains:
+
+- 240 classified Commutative cases;
+- 240 classified Star-free cases;
+- 480 classified cases in total;
+- alphabets of size 1 through 4;
+- 380 distinct language constructions, because some classifications overlap.
+
+Each run records local computation time, MQ, EQ, the final sizes of $P$, $I$ and $S$, conceptual Cells, Monoid Check activity and language metadata. Repeated timing measurements are summarized with medians and bootstrap intervals rather than conclusions from a single small timing value.
+
+## Aggregated results
+
+| Group | Cases | Local median sum Post / Promote | EQ Post / Promote | Cells Post / Promote |
+|---|---:|---:|---:|---:|
+| Commutative | 240 | 385.34 / 462.90 ms | 984 / 474 | 19,560 / 129,938 |
+| Star-free | 240 | 173.68 / 191.42 ms | 741 / 540 | 22,201 / 84,267 |
+| Total | 480 | 559.01 / 654.32 ms | 1,725 / 1,014 | 41,761 / 214,205 |
+
+Across all cases, Promote saved 711 EQs, or 41.2%. Its aggregated local median time was about 17% higher. Its conceptual Cells count was 5.13 times the Post count, while local time grew by only about 1.17 times at this scale.
+
+The mismatch between Cells growth and runtime is encouraging for the current implementation, but it is not evidence that the space cost is harmless. The largest monoids in this fixed dataset are 16 for the Commutative group and 12 for the Star-free group.
+
+## Why MQ was treated as controlled here
+
+In this particular dataset:
+
+- 402 cases had identical MQ counts between the strategies;
+- 467 cases differed by at most one MQ;
+- the median absolute per-language MQ difference was zero;
+- removing one large outlier left totals of 63,192 and 63,203 MQs across the other 479 cases.
+
+The outlier `comm_contains_all_abcd` used 10,319 MQs with Post and 6,954 with Promote. Earlier complex Commutative experiments also produced large positive and negative MQ differences.
+
+MQ can therefore be treated as approximately controlled only for this low-to-medium-complexity experiment. It is not a general property of the two algorithms.
+
+## The decision plane
+
+For each language, define the number of EQs saved by Promote as
+
+$$
+\Delta EQ=EQ_{\text{Post}}-EQ_{\text{Promote}},
+$$
+
+and its additional local cost as
+
+$$
+\Delta T_{\text{local}}
+=T_{\text{Promote,local}}-T_{\text{Post,local}}.
+$$
+
+If one real equivalence query costs $C_{EQ}$, the break-even line is
+
+$$
+\Delta T_{\text{local}}=C_{EQ}\cdot\Delta EQ.
+$$
+
+A point below the line favors Promote because the saved external EQ cost exceeds its additional local work. A point above the line favors Post. If a bootstrap interval crosses the line, the result is labeled **Inconclusive** instead of forcing a winner.
+
+For $\Delta EQ>0$, the language-specific critical cost is
+
+$$
+C^*=\frac{\Delta T_{\text{local}}}{\Delta EQ}.
+$$
+
+Promote is preferred when the expected average EQ cost exceeds $C^*$. This threshold is an engineering quantity tied to the implementation and platform, not an invariant property of the language.
+
+## Decisions under assumed EQ costs
+
+Using the bootstrap 95% rule:
+
+| Assumed EQ cost | Promote | Post | Inconclusive |
+|---:|---:|---:|---:|
+| 1 ms | 338 | 10 | 132 |
+| 10 ms | 352 | 10 | 118 |
+
+At the aggregate level, an average EQ cost above approximately 0.134 ms is enough for the saved EQs to offset the measured local-time difference. This small threshold reflects how cheap the in-memory exact Oracle is; a remote or sampling-based teacher can easily have a much larger EQ cost.
+
+## What the experiment supports
+
+The current evidence supports four conclusions.
+
+1. Promote can substantially reduce EQ count across both studied language groups.
+2. The reduction is purchased with wider rows and many more conceptual Cells.
+3. When EQ is externally expensive, the reduction can dominate the added local cost.
+4. Strategy selection should use confidence-aware cost boundaries, not raw EQ ratios or one timing run.
+
+It does **not** show that Promote is always faster, that MQ counts are generally equal, or that fewer PAC EQ rounds automatically imply a more correct final model.
+
+## Next experimental stage
+
+The next cost model should record real MQ traces and separate internal computation from ideal Oracle time:
+
+$$
+T_{\text{strategy}}
+=T_{\text{internal}}+C_{MQ}N_{MQ}+C_{EQ}N_{EQ}.
+$$
+
+A length-sensitive MQ model can use
+
+$$
+C_{MQ}(w)=\alpha+\beta|w|+\eta,
+$$
+
+where $\alpha$ is fixed latency, $\beta$ models per-symbol work and $\eta$ represents jitter. Saved query traces can then be replayed offline across many cost assumptions without sleeping during millions of real calls.
+
+For unknown black boxes, exact EQ should eventually be replaced with configurable random or PAC-style testing. A successful sampled EQ would mean that no counterexample was found under a stated distribution and budget, not that language equality was mathematically proved. Precision, confidence, evaluation distribution and total query budget must therefore become first-class reported metrics.
