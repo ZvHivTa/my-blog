@@ -11,13 +11,15 @@ const timeline = [
     period: '2025 — NOW',
     place: 'Nagoya University',
     role: 'Graduate School of Informatics',
-    detail: 'Computing and Software Science',
+    detail: 'Department of Computing and Software Systems',
+    website: 'https://www.i.nagoya-u.ac.jp/en/graduate-school-of-informatics/',
   },
   {
     period: '2019 — 2023',
     place: 'Jinan University',
     role: 'College of Information Science and Technology',
-    detail: 'Computer Science',
+    detail: 'Department of Computer Science · Network Engineering',
+    website: 'https://xxxy.jnu.edu.cn/main.htm',
   },
 ]
 ---
@@ -93,7 +95,14 @@ const timeline = [
               <div>
                 <>
                   <h3>{item.place}</h3>
-                  <p>{item.role}</p>
+                  <Link
+                    href={item.website}
+                    external
+                    class="faculty-link"
+                    aria-label={`${item.role} official website`}
+                  >
+                    {item.role}<Icon name="lucide:arrow-up-right" />
+                  </Link>
                   <small>{item.detail}</small>
                 </>
               </div>
@@ -262,10 +271,20 @@ const timeline = [
     font-size: 1.35rem;
     font-weight: 520;
   }
-  .timeline p {
+  .faculty-link {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
     margin-top: 0.35rem;
     color: var(--muted-foreground);
     font-size: 0.8rem;
+  }
+  .faculty-link:hover {
+    color: var(--foreground);
+  }
+  .faculty-link :global(svg) {
+    width: 0.75rem;
+    height: 0.75rem;
   }
   .timeline small {
     display: block;
