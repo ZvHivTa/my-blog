@@ -521,62 +521,38 @@ function PlayerStatsTable({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Player Stats</CardTitle>
-        <CardDescription>
-          Final scoreboard, final inventory, key upgrades, and support utility
-          totals from the parsed match response.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Team</TableHead>
-              <TableHead>Hero</TableHead>
-              <TableHead>Player</TableHead>
-              <TableHead>KDA</TableHead>
-              <TableHead>Level</TableHead>
-              <TableHead>LH/DN</TableHead>
-              <TableHead>GPM</TableHead>
-              <TableHead>XPM</TableHead>
-              <TableHead>Net</TableHead>
-              <TableHead>Final Items</TableHead>
-              <TableHead>Upgrades</TableHead>
-              <TableHead>Utility</TableHead>
-              <TableHead>Map</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players.map((player, index) => {
-              const utilityPurchases = getSupportUtilityPurchases(
-                player.purchase_log,
-                finalSeconds,
-              )
-              const upgrades = getUpgradeFlags(
-                player.purchase_log,
-                finalSeconds,
-              )
-
-              return (
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Player Performance</CardTitle>
+          <CardDescription>
+            Final scoreboard and combat impact for every player.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Team</TableHead>
+                <TableHead>Hero</TableHead>
+                <TableHead>Player</TableHead>
+                <TableHead>KDA</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>LH/DN</TableHead>
+                <TableHead>GPM</TableHead>
+                <TableHead>XPM</TableHead>
+                <TableHead>Net</TableHead>
+                <TableHead>Hero DMG</TableHead>
+                <TableHead>Tower DMG</TableHead>
+                <TableHead>Healing</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {players.map((player, index) => (
                 <TableRow
                   key={`${player.account_id ?? index}-${player.hero_id ?? 'hero'}`}
                 >
-                  <TableCell>
-                    <Badge variant={player.isRadiant ? 'muted' : 'outline'}>
-                      {player.isRadiant ? 'Radiant' : 'Dire'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <HeroAvatar heroId={player.hero_id} />
-                      <span>{getHeroLabel(player.hero_id)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-44 truncate">
-                    {getPlayerName(player, index)}
-                  </TableCell>
+                  <PlayerIdentityCells player={player} index={index} />
                   <TableCell>{getKda(player)}</TableCell>
                   <TableCell>{player.level ?? '-'}</TableCell>
                   <TableCell>
@@ -585,32 +561,170 @@ function PlayerStatsTable({
                   <TableCell>{player.gold_per_min ?? '-'}</TableCell>
                   <TableCell>{player.xp_per_min ?? '-'}</TableCell>
                   <TableCell>{formatNumber(player.net_worth)}</TableCell>
-                  <TableCell>
-                    <FinalItemList player={player} />
-                  </TableCell>
-                  <TableCell>
-                    <UpgradeFlags upgrades={upgrades} />
-                  </TableCell>
-                  <TableCell>
-                    <UtilityPurchases utilityPurchases={utilityPurchases} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-muted-foreground text-xs">
-                      Placed {player.obs_log?.length ?? 0}O/
-                      {player.sen_log?.length ?? 0}S
-                      <br />
-                      BB {player.buyback_log?.length ?? 0} 路 Rune{' '}
-                      {player.runes_log?.length ?? 0}
-                    </div>
-                  </TableCell>
+                  <TableCell>{formatNumber(player.hero_damage)}</TableCell>
+                  <TableCell>{formatNumber(player.tower_damage)}</TableCell>
+                  <TableCell>{formatNumber(player.hero_healing)}</TableCell>
                 </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Loadout & Contribution</CardTitle>
+          <CardDescription>
+            Final equipment, upgrades, utility spending, and map contribution.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Team</TableHead>
+                <TableHead>Hero</TableHead>
+                <TableHead>Player</TableHead>
+                <TableHead>Final Items</TableHead>
+                <TableHead>Neutral</TableHead>
+                <TableHead>Upgrades</TableHead>
+                <TableHead>Utility Purchased</TableHead>
+                <TableHead>Wards Placed</TableHead>
+                <TableHead>Wards Dewarded</TableHead>
+                <TableHead>Buybacks</TableHead>
+                <TableHead>Runes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {players.map((player, index) => {
+                const utilityPurchases = getSupportUtilityPurchases(
+                  player.purchase_log,
+                  finalSeconds,
+                )
+                const upgrades = getUpgradeFlags(
+                  player.purchase_log,
+                  finalSeconds,
+                )
+
+                return (
+                  <TableRow
+                    key={`${player.account_id ?? index}-${player.hero_id ?? 'hero'}`}
+                  >
+                    <PlayerIdentityCells player={player} index={index} />
+                    <TableCell>
+                      <FinalItemList player={player} />
+                    </TableCell>
+                    <TableCell>
+                      <FinalNeutralItem player={player} />
+                    </TableCell>
+                    <TableCell>
+                      <UpgradeFlags upgrades={upgrades} />
+                    </TableCell>
+                    <TableCell>
+                      <UtilityPurchases utilityPurchases={utilityPurchases} />
+                    </TableCell>
+                    <TableCell>
+                      <WardCount
+                        observer={
+                          player.obs_placed ?? player.obs_log?.length ?? 0
+                        }
+                        sentry={
+                          player.sen_placed ?? player.sen_log?.length ?? 0
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <WardCount
+                        observer={player.observer_kills ?? 0}
+                        sentry={player.sentry_kills ?? 0}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {player.buyback_count ?? player.buyback_log?.length ?? 0}
+                    </TableCell>
+                    <TableCell>
+                      <RuneSummary player={player} />
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   )
+}
+
+function PlayerIdentityCells({
+  player,
+  index,
+}: {
+  player: OpenDotaPlayer
+  index: number
+}) {
+  return (
+    <>
+      <TableCell>
+        <Badge variant={player.isRadiant ? 'muted' : 'outline'}>
+          {player.isRadiant ? 'Radiant' : 'Dire'}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <HeroAvatar heroId={player.hero_id} />
+          <span>{getHeroLabel(player.hero_id)}</span>
+        </div>
+      </TableCell>
+      <TableCell className="max-w-44 truncate">
+        {getPlayerName(player, index)}
+      </TableCell>
+    </>
+  )
+}
+
+function WardCount({ observer, sentry }: { observer: number; sentry: number }) {
+  return (
+    <span className="text-sm whitespace-nowrap">
+      {observer}O / {sentry}S
+    </span>
+  )
+}
+
+function RuneSummary({ player }: { player: OpenDotaPlayer }) {
+  const total =
+    player.runes_log?.length ??
+    Object.values(player.runes ?? {}).reduce((sum, count) => sum + count, 0)
+  const breakdown = Object.entries(player.runes ?? {})
+    .filter(([, count]) => count > 0)
+    .map(([key, count]) => `${getRuneName(key)} ${count}`)
+    .join(' · ')
+
+  return (
+    <span
+      className="text-sm"
+      title={breakdown || `${player.rune_pickups ?? total} rune pickups`}
+    >
+      {total}
+    </span>
+  )
+}
+
+function getRuneName(key: string) {
+  const runeNames: Record<string, string> = {
+    '0': 'Double Damage',
+    '1': 'Haste',
+    '2': 'Illusion',
+    '3': 'Invisibility',
+    '4': 'Regeneration',
+    '5': 'Bounty',
+    '6': 'Arcane',
+    '7': 'Water',
+    '8': 'Wisdom',
+    '9': 'Shield',
+  }
+
+  return runeNames[key] ?? `Rune ${key}`
 }
 
 function FinalItemList({ player }: { player: OpenDotaPlayer }) {
@@ -649,6 +763,49 @@ function FinalItemList({ player }: { player: OpenDotaPlayer }) {
         </span>
       ))}
     </div>
+  )
+}
+
+function FinalNeutralItem({ player }: { player: OpenDotaPlayer }) {
+  if (!player.item_neutral && !player.item_neutral2) {
+    return <span className="text-muted-foreground">-</span>
+  }
+
+  return (
+    <div className="flex min-w-20 items-center gap-1.5">
+      {player.item_neutral ? (
+        <FinalItemIcon itemId={player.item_neutral} />
+      ) : null}
+      {player.item_neutral2 ? (
+        <FinalItemIcon itemId={player.item_neutral2} />
+      ) : null}
+    </div>
+  )
+}
+
+function FinalItemIcon({ itemId }: { itemId: number }) {
+  const name = getItemName(itemId)
+  const image = getItemImage(itemId)
+
+  return (
+    <span
+      className="bg-muted flex size-8 overflow-hidden rounded-sm border"
+      title={name}
+      aria-label={name}
+    >
+      {image ? (
+        <img
+          src={image}
+          alt={name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <span className="text-muted-foreground m-auto text-[10px]">
+          {itemId}
+        </span>
+      )}
+    </span>
   )
 }
 
@@ -811,6 +968,13 @@ type PurchaseEvent = {
   key: string
 }
 
+type NeutralCraftEvent = {
+  playerIndex: number
+  time: number
+  itemKey?: string
+  enhancementKey?: string
+}
+
 function PurchaseTimeline({
   match,
   players,
@@ -826,6 +990,10 @@ function PurchaseTimeline({
   const bucketStarts = useMemo(
     () => getPurchaseBucketStarts(match, purchaseEvents),
     [match, purchaseEvents],
+  )
+  const neutralCraftEvents = useMemo(
+    () => getNeutralCraftEvents(players),
+    [players],
   )
 
   if (!players.length) {
@@ -917,6 +1085,69 @@ function PurchaseTimeline({
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         )}
+
+        {neutralCraftEvents.length ? (
+          <div className="mt-6">
+            <div className="mb-3">
+              <h3 className="text-sm font-medium">Neutral Item Crafting</h3>
+              <p className="text-muted-foreground text-xs">
+                Neutral item and enhancement choices recorded by the parser.
+              </p>
+            </div>
+            <ScrollArea className="w-full rounded-md border">
+              <Table className="min-w-max">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="bg-background sticky left-0 z-10 min-w-56">
+                      Player
+                    </TableHead>
+                    {bucketStarts.map((bucketStart) => (
+                      <TableHead key={bucketStart} className="min-w-44">
+                        {Math.floor(bucketStart / 60)}'
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {players.map((player, index) => (
+                    <TableRow
+                      key={`${player.account_id ?? index}-${player.hero_id ?? 'neutral'}`}
+                    >
+                      <TableCell className="bg-background sticky left-0 z-10">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <HeroAvatar heroId={player.hero_id} />
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium">
+                              {getPlayerName(player, index)}
+                            </div>
+                            <div className="text-muted-foreground truncate text-xs">
+                              {getHeroLabel(player.hero_id)}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      {bucketStarts.map((bucketStart) => {
+                        const bucketEvents = neutralCraftEvents.filter(
+                          (event) =>
+                            event.playerIndex === index &&
+                            (bucketStart === 0 || event.time >= bucketStart) &&
+                            event.time < bucketStart + PURCHASE_BUCKET_SECONDS,
+                        )
+
+                        return (
+                          <TableCell key={bucketStart} className="align-top">
+                            <NeutralCraftEventList events={bucketEvents} />
+                          </TableCell>
+                        )
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )
@@ -945,6 +1176,34 @@ function PurchaseEventList({ events }: { events: PurchaseEvent[] }) {
   )
 }
 
+function NeutralCraftEventList({ events }: { events: NeutralCraftEvent[] }) {
+  if (!events.length) {
+    return <span className="text-muted-foreground text-xs">-</span>
+  }
+
+  return (
+    <div className="flex max-w-44 flex-wrap gap-2">
+      {events.map((event, index) => (
+        <span
+          key={`${event.time}-${event.itemKey ?? 'no-item'}-${event.enhancementKey ?? 'no-enhancement'}-${index}`}
+          className="bg-muted/30 relative flex gap-1 rounded-sm border p-1"
+          title={`Crafted at ${formatClock(event.time)}`}
+        >
+          {event.itemKey ? (
+            <ItemKeyIcon itemKey={event.itemKey} className="size-9" />
+          ) : null}
+          {event.enhancementKey ? (
+            <ItemKeyIcon itemKey={event.enhancementKey} className="size-9" />
+          ) : null}
+          <span className="absolute right-0 bottom-0 rounded-tl-sm bg-black/75 px-0.5 text-[10px] leading-3 text-white">
+            {formatClock(event.time)}
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function getPurchaseEvents(
   players: OpenDotaPlayer[],
   showConsumables: boolean,
@@ -957,6 +1216,32 @@ function getPurchaseEvents(
     )
     .filter((event): event is PurchaseEvent => Boolean(event))
     .filter((event) => showConsumables || !CONSUMABLE_ITEM_KEYS.has(event.key))
+    .sort((a, b) => a.time - b.time)
+}
+
+function getNeutralCraftEvents(players: OpenDotaPlayer[]) {
+  return players
+    .flatMap((player, playerIndex) =>
+      (player.neutral_item_history ?? []).flatMap<NeutralCraftEvent>(
+        (entry) => {
+          if (
+            typeof entry.time !== 'number' ||
+            (!entry.item_neutral && !entry.item_neutral_enhancement)
+          ) {
+            return []
+          }
+
+          return [
+            {
+              playerIndex,
+              time: entry.time,
+              itemKey: entry.item_neutral,
+              enhancementKey: entry.item_neutral_enhancement,
+            },
+          ]
+        },
+      ),
+    )
     .sort((a, b) => a.time - b.time)
 }
 

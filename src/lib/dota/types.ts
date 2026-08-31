@@ -21,6 +21,13 @@ export type OpenDotaPlayer = {
   hero_damage?: number
   tower_damage?: number
   hero_healing?: number
+  obs_placed?: number
+  sen_placed?: number
+  observer_kills?: number
+  sentry_kills?: number
+  buyback_count?: number
+  rune_pickups?: number
+  runes?: Record<string, number>
   item_0?: number
   item_1?: number
   item_2?: number
@@ -32,6 +39,7 @@ export type OpenDotaPlayer = {
   backpack_2?: number
   item_neutral?: number
   item_neutral2?: number
+  neutral_item_history?: OpenDotaNeutralItemHistoryEntry[]
   lane_efficiency_pct?: number
   actions_per_min?: number
   gold_t?: number[]
@@ -51,6 +59,12 @@ export type OpenDotaPlayer = {
 export type OpenDotaLogEntry = {
   time?: number
   key?: string
+}
+
+export type OpenDotaNeutralItemHistoryEntry = {
+  time?: number
+  item_neutral?: string
+  item_neutral_enhancement?: string
 }
 
 export type OpenDotaTeamfightPlayer = {
