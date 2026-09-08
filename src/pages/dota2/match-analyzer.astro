@@ -5,7 +5,7 @@ import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 ---
 
-<Layout class="max-w-6xl">
+<Layout class="max-w-[96rem] py-6">
   <PageHead
     slot="head"
     title="Dota 2 Match Analyzer"
@@ -21,3 +21,27 @@ import Layout from '@/layouts/Layout.astro'
 
   <DotaMatchAnalyzer client:load />
 </Layout>
+
+<style>
+  :global(.player-performance th:nth-child(2)),
+  :global(.player-performance td:nth-child(2)),
+  :global(.player-contribution th:nth-child(2)),
+  :global(.player-contribution td:nth-child(2)) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--background);
+    border-right: 1px solid var(--border);
+  }
+  :global(.player-performance th:nth-child(n + 4)),
+  :global(.player-performance td:nth-child(n + 4)) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 639px) {
+    :global(.player-performance td:nth-child(2) span),
+    :global(.player-contribution td:nth-child(2) span) {
+      display: none;
+    }
+  }
+</style>

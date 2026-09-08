@@ -74,12 +74,12 @@ export default function ResearchAssistant() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans">
+    <div className="fixed inset-x-4 bottom-4 z-[60] flex flex-col items-end gap-4 font-sans sm:bottom-6 sm:left-auto sm:right-6 sm:w-[380px]">
       <div 
         className={cn(
-          "w-[380px] bg-background border rounded-xl shadow-2xl transition-all duration-300 overflow-hidden flex flex-col",
+          "w-full bg-background border rounded-lg shadow-2xl transition-all duration-300 overflow-hidden flex flex-col",
           // 固定高度 600px
-          isOpen ? "h-[600px] opacity-100 translate-y-0" : "h-0 opacity-0 translate-y-10 pointer-events-none"
+          isOpen ? "h-[min(600px,calc(100dvh-2rem))] opacity-100 translate-y-0" : "hidden"
         )}
       >
         {/* Header */}
@@ -90,8 +90,8 @@ export default function ResearchAssistant() {
             </div>
             <span className="font-semibold">Assistant</span>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20" onClick={() => setIsOpen(false)}>
-            <X size={18} />
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20" onClick={() => setIsOpen(false)} aria-label="Close assistant">
+            <X size={18} aria-hidden="true" />
           </Button>
         </div>
 
@@ -157,8 +157,8 @@ export default function ResearchAssistant() {
               disabled={isLoading}
             />
 
-            <Button size="icon" className="shrink-0 rounded-full" onClick={handleSend} disabled={!input.trim() || isLoading}>
-              <Send size={18} />
+            <Button size="icon" className="shrink-0 rounded-full" aria-label="Send message" onClick={handleSend} disabled={!input.trim() || isLoading}>
+              <Send size={18} aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -168,8 +168,9 @@ export default function ResearchAssistant() {
         size="icon"
         className={cn(
           "h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95",
-          isOpen ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"
+          isOpen ? "hidden" : "rotate-0 scale-100 opacity-100"
         )}
+        aria-label="Open research assistant"
         onClick={() => setIsOpen(true)}
       >
         <MessageCircle size={28} />

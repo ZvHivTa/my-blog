@@ -80,23 +80,28 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    @apply border-border outline-ring/50 tracking-tight;
+    @apply border-border outline-ring/50;
   }
 
   html {
     scroll-behavior: smooth;
+    --reading-header-offset: 8rem;
   }
 
   body {
-    background-image: linear-gradient(
-      to right,
-      transparent calc(50% - 0.5px),
-      color-mix(in oklab, var(--border), transparent 45%) 50%,
-      transparent calc(50% + 0.5px)
-    );
-    background-size: min(100% - 2rem, 72rem) 100%;
-    background-position: center;
-    background-repeat: no-repeat;
+    letter-spacing: 0;
+  }
+
+  @media (min-width: 1280px) {
+    html {
+      --reading-header-offset: 6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   ::selection {

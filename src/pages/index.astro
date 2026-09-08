@@ -51,11 +51,11 @@ const focusAreas = [
     <div class="hero-copy">
       <p class="eyebrow"><span></span> Based in Japan · Building in public</p>
       <h1 id="home-title">
-        I research systems,<br /><span>then build them.</span>
+        ZHT.<br /><span>Research &amp;<br />working code.</span>
       </h1>
       <p class="hero-intro">
-        我是 ZHT。这里不是一份静态简历，而是我的长期工作台：形式语言研究、AI
-        系统、数据产品，以及一路留下的技术笔记与日常观察。
+        我在名古屋大学研究形式语言与自动机学习，也开发 AI
+        系统和数据工具。这里记录我的研究成果、技术笔记与在日本的日常。
       </p>
       <div class="hero-actions">
         <Link href="#selected-work" class="primary-link"
@@ -93,6 +93,59 @@ const focusAreas = [
     </aside>
   </section>
 
+  <section class="notes-section" aria-labelledby="notes-title">
+    <header class="notes-intro">
+      <p class="section-kicker">Field notes</p><h2 id="notes-title">
+        Research &amp; writing.
+      </h2>
+      <p>
+        研究报告、技术学习和在日本生活中的观察。写作不是项目之外的附属品，而是思考过程的一部分。
+      </p>
+      <Link href="/blog" class="project-link"
+        >All writing <Icon name="lucide:arrow-right" /></Link
+      >
+    </header>
+    <div class="notes-list">
+      {
+        posts.map((post, index) => (
+          <article class="note-item">
+            <Link href={`/blog/${post.id}`}>
+              <span class="note-index">0{index + 1}</span>
+              <div class="note-copy">
+                <>
+                  <div class="note-meta">
+                    <>
+                      <time datetime={post.data.date.toISOString()}>
+                        {formatDate(post.data.date)}
+                      </time>
+                      <span>{post.data.tags?.[0] ?? 'Notes'}</span>
+                    </>
+                  </div>
+                  <h3>{post.data.title}</h3>
+                  <p>
+                    {post.data.description ||
+                      'A working note from the archive.'}
+                  </p>
+                </>
+              </div>
+              {post.data.image ? (
+                <Image
+                  src={post.data.image}
+                  alt=""
+                  width={180}
+                  height={112}
+                  class="note-image"
+                />
+              ) : (
+                <Icon name="lucide:arrow-up-right" class="note-arrow" />
+              )}
+            </Link>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
   <section
     id="selected-work"
     class="section-block"
@@ -101,10 +154,10 @@ const focusAreas = [
     <header class="section-heading">
       <div>
         <p class="section-kicker">Selected work</p><h2 id="work-title">
-          Projects that turn curiosity into tools.
+          Selected projects.
         </h2>
       </div>
-      <p>不是练习作品，而是从真实兴趣和真实问题里长出来的产品。</p>
+      <p>从比赛数据到战术分析，把兴趣做成可以使用的工具。</p>
     </header>
     <div class="work-list">
       {
@@ -188,59 +241,6 @@ const focusAreas = [
     </div>
   </section>
 
-  <section class="notes-section" aria-labelledby="notes-title">
-    <header class="notes-intro">
-      <p class="section-kicker">Field notes</p><h2 id="notes-title">
-        Thinking,<br />documented.
-      </h2>
-      <p>
-        研究报告、技术学习和在日本生活中的观察。写作不是项目之外的附属品，而是思考过程的一部分。
-      </p>
-      <Link href="/blog" class="project-link"
-        >All writing <Icon name="lucide:arrow-right" /></Link
-      >
-    </header>
-    <div class="notes-list">
-      {
-        posts.map((post, index) => (
-          <article class="note-item">
-            <Link href={`/blog/${post.id}`}>
-              <span class="note-index">0{index + 1}</span>
-              <div class="note-copy">
-                <>
-                  <div class="note-meta">
-                    <>
-                      <time datetime={post.data.date.toISOString()}>
-                        {formatDate(post.data.date)}
-                      </time>
-                      <span>{post.data.tags?.[0] ?? 'Notes'}</span>
-                    </>
-                  </div>
-                  <h3>{post.data.title}</h3>
-                  <p>
-                    {post.data.description ||
-                      'A working note from the archive.'}
-                  </p>
-                </>
-              </div>
-              {post.data.image ? (
-                <Image
-                  src={post.data.image}
-                  alt=""
-                  width={180}
-                  height={112}
-                  class="note-image"
-                />
-              ) : (
-                <Icon name="lucide:arrow-up-right" class="note-arrow" />
-              )}
-            </Link>
-          </article>
-        ))
-      }
-    </div>
-  </section>
-
   <section class="closing-line">
     <p>Research in public. Build for real use. Keep the notes.</p><Link
       href="/about">More about ZHT <Icon name="lucide:arrow-up-right" /></Link
@@ -250,17 +250,17 @@ const focusAreas = [
 
 <style>
   :global(.home-shell) {
-    padding-top: clamp(2rem, 6vw, 5.5rem);
+    padding-top: 2rem;
     padding-bottom: 2rem;
     gap: 0;
   }
   .hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.75fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     gap: clamp(3rem, 8vw, 8rem);
     align-items: end;
-    min-height: min(42rem, calc(100svh - 7rem));
-    padding: 3rem 0 5rem;
+    min-height: 0;
+    padding: 1.5rem 0 3rem;
   }
   .eyebrow,
   .section-kicker {
@@ -278,12 +278,12 @@ const focusAreas = [
     background: var(--accent);
   }
   h1 {
-    max-width: 13ch;
+    max-width: 18ch;
     margin-top: 2rem;
-    font-size: clamp(3.3rem, 7.5vw, 7.4rem);
+    font-size: 4rem;
     font-weight: 520;
-    line-height: 0.91;
-    letter-spacing: -0.055em;
+    line-height: 1.05;
+    letter-spacing: 0;
   }
   h1 span {
     color: var(--muted-foreground);
@@ -293,7 +293,7 @@ const focusAreas = [
     max-width: 42rem;
     margin-top: 2rem;
     color: var(--muted-foreground);
-    font-size: clamp(1rem, 1.5vw, 1.17rem);
+    font-size: 1.0625rem;
     line-height: 1.85;
   }
   .hero-actions {
@@ -335,7 +335,7 @@ const focusAreas = [
     justify-content: space-between;
     padding: 0.85rem 0;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
   }
   .status {
@@ -364,7 +364,7 @@ const focusAreas = [
   .focus-number {
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.75rem;
   }
   .hero-index strong,
   .hero-index small {
@@ -378,7 +378,7 @@ const focusAreas = [
     margin-top: 0.35rem;
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.75rem;
   }
   .index-foot {
     color: var(--muted-foreground);
@@ -387,7 +387,7 @@ const focusAreas = [
     width: 0.9rem;
   }
   .section-block {
-    padding: clamp(5rem, 10vw, 9rem) 0;
+    padding: 3rem 0;
     border-top: 1px solid var(--border);
   }
   .section-heading {
@@ -400,10 +400,10 @@ const focusAreas = [
   .notes-intro h2 {
     max-width: 15ch;
     margin-top: 0.85rem;
-    font-size: clamp(2.2rem, 4.8vw, 4.7rem);
+    font-size: 2rem;
     font-weight: 480;
     line-height: 1.03;
-    letter-spacing: -0.045em;
+    letter-spacing: 0;
   }
   .section-heading > p,
   .notes-intro > p {
@@ -412,14 +412,14 @@ const focusAreas = [
     line-height: 1.75;
   }
   .work-list {
-    margin-top: clamp(4rem, 8vw, 7rem);
+    margin-top: 2rem;
   }
   .work-item {
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
     gap: clamp(2rem, 6vw, 6rem);
     align-items: center;
-    padding: 4rem 0;
+    padding: 2rem 0;
     border-top: 1px solid var(--border);
   }
   .work-item.reverse .work-visual {
@@ -445,12 +445,12 @@ const focusAreas = [
   .work-type {
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
   }
   .work-copy h3 {
     margin-top: 1rem;
-    font-size: clamp(1.8rem, 3vw, 3rem);
+    font-size: 2rem;
     font-weight: 520;
     line-height: 1.05;
     letter-spacing: -0.035em;
@@ -519,7 +519,7 @@ const focusAreas = [
     text-align: center;
   }
   .score-row strong {
-    font-size: clamp(2rem, 5vw, 4.8rem);
+    font-size: 3rem;
     font-weight: 420;
   }
   .score-row strong:last-child {
@@ -629,7 +629,7 @@ const focusAreas = [
   .player-panel strong {
     margin-top: 0.25rem;
     color: #ce4c33;
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: 3rem;
     font-weight: 450;
   }
   .player-panel small {
@@ -642,9 +642,9 @@ const focusAreas = [
   }
   .notes-section {
     display: grid;
-    grid-template-columns: 0.62fr 1.38fr;
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.6fr);
     gap: clamp(3rem, 8vw, 8rem);
-    padding: clamp(5rem, 10vw, 9rem) 0;
+    padding: 3rem 0;
     border-top: 1px solid var(--border);
   }
   .notes-intro {
@@ -666,7 +666,7 @@ const focusAreas = [
     grid-template-columns: 2rem 1fr auto;
     gap: 1.5rem;
     align-items: center;
-    min-height: 10.5rem;
+    min-height: 8rem;
     padding: 1.5rem 0;
   }
   .note-index {
@@ -680,13 +680,13 @@ const focusAreas = [
     gap: 1rem;
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.63rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
   }
   .note-copy h3 {
     max-width: 24ch;
     margin-top: 0.7rem;
-    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-size: 1.375rem;
     font-weight: 520;
     line-height: 1.15;
   }
@@ -694,10 +694,10 @@ const focusAreas = [
     max-width: 45ch;
     margin-top: 0.6rem;
     color: var(--muted-foreground);
-    font-size: 0.78rem;
+    font-size: 0.9375rem;
   }
   .note-image {
-    width: 8.5rem;
+    width: 7rem;
     aspect-ratio: 1.55;
     object-fit: cover;
     filter: saturate(0.72);
@@ -723,7 +723,7 @@ const focusAreas = [
     font-size: 0.72rem;
     text-transform: uppercase;
   }
-  @media (max-width: 800px) {
+  @media (max-width: 900px) {
     .hero-grid,
     .section-heading,
     .notes-section {
@@ -734,7 +734,28 @@ const focusAreas = [
       padding-top: 2rem;
     }
     .hero-index {
-      max-width: 32rem;
+      max-width: none;
+    }
+    .hero-grid {
+      gap: 2rem;
+    }
+    .hero-index ol {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .hero-index li {
+      display: block;
+    }
+    .focus-number,
+    .index-foot {
+      display: none;
+    }
+    .notes-section {
+      gap: 1.5rem;
+    }
+    .notes-intro h2 {
+      max-width: none;
     }
     .work-item {
       grid-template-columns: 1fr;
@@ -749,17 +770,28 @@ const focusAreas = [
   }
   @media (max-width: 560px) {
     h1 {
-      font-size: clamp(3rem, 15vw, 4.3rem);
+      font-size: 2.75rem;
     }
     .hero-actions {
-      align-items: flex-start;
-      flex-direction: column;
+      align-items: center;
+      flex-wrap: wrap;
       gap: 1rem;
     }
     .section-heading {
       gap: 1.5rem;
     }
+    .hero-index ol {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .hero-index li {
+      padding: 0.65rem 0;
+    }
+    .hero-index small {
+      display: none;
+    }
     .note-item > a {
+      gap: 0.75rem;
       grid-template-columns: 1.5rem 1fr;
     }
     .note-image,

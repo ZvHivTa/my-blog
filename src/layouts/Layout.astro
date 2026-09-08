@@ -29,8 +29,10 @@ const { class: className } = Astro.props
       class="bg-background/85 sticky top-0 z-50 divide-y backdrop-blur-md xl:divide-none"
     >
       <Header />
-      <slot name="subposts-navigation" />
-      <slot name="table-of-contents" />
+      <div class="reading-navigation">
+        <slot name="subposts-navigation" />
+        <slot name="table-of-contents" />
+      </div>
     </header>
     <main
       class={cn('w-full mx-auto flex grow flex-col gap-y-6 px-4', className)}
@@ -41,3 +43,48 @@ const { class: className } = Astro.props
     <ResearchAssistant client:load />
   </body>
 </html>
+
+<style>
+  .reading-navigation {
+    display: flex;
+    position: relative;
+    max-width: 48rem;
+    margin: auto;
+  }
+  .reading-navigation:empty {
+    display: none;
+  }
+  .reading-navigation > :global(div) {
+    flex: 1;
+    min-width: 0;
+  }
+  .reading-navigation :global(summary) {
+    min-height: 44px;
+  }
+  .reading-navigation :global(details[open] [data-slot='scroll-area']) {
+    /* Radix sets position: relative inline on the scroll root. */
+    position: absolute !important;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 8%);
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const menus = document.querySelectorAll<HTMLDetailsElement>(
+      '.reading-navigation details',
+    )
+    menus.forEach((menu) =>
+      menu.addEventListener('toggle', () => {
+        if (menu.open)
+          menus.forEach((other) => {
+            if (other !== menu) other.open = false
+          })
+      }),
+    )
+  })
+</script>

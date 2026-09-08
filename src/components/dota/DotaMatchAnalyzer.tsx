@@ -292,6 +292,7 @@ function MatchDashboard({ match }: { match: OpenDotaMatch }) {
             <TabsTrigger value="teamfights">Teamfights</TabsTrigger>
             <TabsTrigger value="json">Raw JSON</TabsTrigger>
           </TabsList>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
         <TabsContent value="players">
@@ -530,7 +531,7 @@ function PlayerStatsTable({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="player-performance">
             <TableHeader>
               <TableRow>
                 <TableHead>Team</TableHead>
@@ -579,7 +580,7 @@ function PlayerStatsTable({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="player-contribution">
             <TableHeader>
               <TableRow>
                 <TableHead>Team</TableHead>

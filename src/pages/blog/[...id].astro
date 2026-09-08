@@ -58,7 +58,7 @@ const combinedReadingTime =
 const tocSections = await getTOCSections(currentPostId)
 ---
 
-<Layout>
+<Layout class="reading-shell">
   <PostHead slot="head" post={post} />
   {
     (hasChildPosts || isCurrentSubpost) && (
@@ -77,10 +77,8 @@ const tocSections = await getTOCSections(currentPostId)
       ) && <TOCHeader slot="table-of-contents" headings={headings} />
   }
 
-  <section
-    class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)] gap-y-6"
-  >
-    <div class="col-start-2">
+  <section class="reading-grid">
+    <div class="reading-breadcrumb col-start-2">
       <Breadcrumbs
         items={[
           { href: '/blog', label: 'Blog', icon: 'lucide:library-big' },
@@ -108,33 +106,21 @@ const tocSections = await getTOCSections(currentPostId)
       />
     </div>
 
-    {
-      post.data.image && (
-        <Image
-          src={post.data.image}
-          alt={post.data.title}
-          width={1200}
-          height={630}
-          class="col-span-full mx-auto w-full max-w-5xl object-cover"
-        />
-      )
-    }
-
-    <section class="col-start-2 flex flex-col gap-y-6 text-center">
+    <section class="reading-title col-start-2 flex flex-col gap-y-4 text-left">
       <div class="flex flex-col">
         <h1
-          class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
+          class="mb-2 text-3xl leading-tight font-medium sm:text-4xl"
           id="post-title"
         >
           {post.data.title}
         </h1>
 
         <div
-          class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
+          class="post-meta-row text-muted-foreground mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
         >
           {
             authors.length > 0 && (
-              <div class="flex w-full items-center justify-center gap-x-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+              <div class="flex items-center gap-x-2">
                 {authors.map((author) => (
                   <div class="flex items-center gap-x-1.5">
                     <Image
@@ -161,15 +147,11 @@ const tocSections = await getTOCSections(currentPostId)
             )
           }
 
-          <div
-            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-          >
+          <div class="flex items-center gap-2">
             <span>{formatDate(post.data.date)}</span>
           </div>
 
-          <div
-            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-          >
+          <div class="flex items-center gap-2">
             <span>
               {postReadingTime}
               {
@@ -186,14 +168,14 @@ const tocSections = await getTOCSections(currentPostId)
 
           {
             subpostCount > 0 && (
-              <div class="flex w-full items-center justify-center gap-1 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+              <div class="flex items-center gap-1">
                 <Icon name="lucide:file-text" class="size-3" />
                 {subpostCount} subpost{subpostCount === 1 ? '' : 's'}
               </div>
             )
           }
         </div>
-        <div class="flex flex-wrap justify-center gap-2">
+        <div class="flex flex-wrap gap-2">
           {
             post.data.tags &&
               post.data.tags.length > 0 &&
@@ -210,11 +192,17 @@ const tocSections = await getTOCSections(currentPostId)
         </div>
       </div>
 
-      <PostNavigation
-        newerPost={navigation.newer}
-        olderPost={navigation.older}
-        parentPost={isCurrentSubpost ? navigation.parent : undefined}
-      />
+      {
+        post.data.image && (
+          <Image
+            src={post.data.image}
+            alt={post.data.title}
+            width={1200}
+            height={630}
+            class="mt-4 max-h-64 w-full object-cover"
+          />
+        )
+      }
     </section>
 
     {
@@ -223,7 +211,7 @@ const tocSections = await getTOCSections(currentPostId)
       )
     }
 
-    <article class="prose col-start-2 max-w-none">
+    <article class="prose col-start-2 max-w-none min-w-0 xl:row-start-3">
       <Content />
     </article>
 
@@ -248,7 +236,7 @@ const tocSections = await getTOCSections(currentPostId)
   <Button
     variant="outline"
     size="icon"
-    className="group fixed right-8 bottom-8 z-50 hidden"
+    className="group fixed right-6 bottom-24 z-50 hidden"
     id="scroll-to-top"
     title="Scroll to top"
     aria-label="Scroll to top"
@@ -294,3 +282,41 @@ const tocSections = await getTOCSections(currentPostId)
     }
   }
 </script>
+<style>
+  :global(.reading-shell) {
+    max-width: 96rem;
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+  }
+  .reading-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(46rem, 100%) minmax(0, 1fr);
+    gap: 1.5rem 0;
+  }
+  .reading-title {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  #post-title {
+    scroll-margin-top: var(--reading-header-offset);
+  }
+  @media (max-width: 1279px) {
+    .reading-grid {
+      max-width: 46rem;
+      width: 100%;
+      margin: auto;
+      grid-template-columns: 0 minmax(0, 1fr) 0;
+    }
+  }
+  @media (max-width: 639px) {
+    .reading-breadcrumb :global(li:not(:nth-child(3)):not(:nth-child(4))) {
+      display: none;
+    }
+    .reading-breadcrumb :global(li:nth-child(4)) {
+      display: none;
+    }
+    .reading-title h1 {
+      font-size: 1.875rem;
+    }
+  }
+</style>

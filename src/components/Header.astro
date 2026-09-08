@@ -2,6 +2,7 @@
 import Link from '@/components/Link.astro'
 import ThemeToggle from '@/components/ThemeToggle.astro'
 import { NAV_LINKS } from '@/consts'
+const path = Astro.url.pathname
 ---
 
 <div class="site-header">
@@ -16,7 +17,15 @@ import { NAV_LINKS } from '@/consts'
       <nav aria-label="Main navigation">
         {
           NAV_LINKS.map((item, index) => (
-            <Link href={item.href}>
+            <Link
+              href={item.href}
+              aria-current={
+                (item.href === '/blog' && path.startsWith('/blog')) ||
+                (item.href === '/about' && path.startsWith('/about'))
+                  ? 'page'
+                  : undefined
+              }
+            >
               <span>0{index + 1}</span>
               {item.label}
             </Link>
@@ -71,7 +80,7 @@ import { NAV_LINKS } from '@/consts'
     margin-top: 0.25rem;
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
   }
   .nav-group,
@@ -86,12 +95,16 @@ import { NAV_LINKS } from '@/consts'
     gap: clamp(1rem, 3vw, 2.2rem);
   }
   nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--muted-foreground);
-    font-size: 0.73rem;
+    font-size: 0.8rem;
     font-weight: 550;
     text-transform: uppercase;
   }
-  nav a:hover {
+  nav a:hover,
+  nav a[aria-current='page'] {
     color: var(--foreground);
   }
   nav span {
@@ -115,7 +128,7 @@ import { NAV_LINKS } from '@/consts'
       gap: 0.85rem;
     }
     nav a {
-      font-size: 0.67rem;
+      font-size: 0.75rem;
     }
   }
 </style>

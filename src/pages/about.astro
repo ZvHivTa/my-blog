@@ -34,7 +34,7 @@ const timeline = [
     <p class="kicker">Profile / 2026</p>
     <div class="about-title">
       <h1>
-        Researcher by training.<br /><span>Builder by instinct.</span>
+        ZHT.<br /><span>Researcher &amp; developer.</span>
       </h1><div class="profile-mark">ZHT<small>NAGOYA<br />JAPAN</small></div>
     </div>
     <div class="about-lead">
@@ -44,6 +44,39 @@ const timeline = [
         这个网站记录两条并行的线：一条通向更严谨的研究，另一条通向更好用的工具。它们经常在
         AI、数据可视化和知识系统中汇合。
       </p>
+    </div>
+  </section>
+
+  <section class="journey">
+    <header>
+      <p class="kicker">Background</p><h2>
+        A path through<br />computer science.
+      </h2>
+    </header><div class="timeline">
+      {
+        timeline.map((item) => (
+          <article>
+            <>
+              <time>{item.period}</time>
+              <div>
+                <>
+                  <h3>{item.place}</h3>
+                  <Link
+                    href={item.website}
+                    external
+                    class="faculty-link"
+                    aria-label={`${item.role} official website`}
+                  >
+                    {item.role}
+                    <Icon name="lucide:arrow-up-right" />
+                  </Link>
+                  <small>{item.detail}</small>
+                </>
+              </div>
+            </>
+          </article>
+        ))
+      }
     </div>
   </section>
 
@@ -81,38 +114,6 @@ const timeline = [
     </ol>
   </section>
 
-  <section class="journey">
-    <header>
-      <p class="kicker">Background</p><h2>
-        A path through<br />computer science.
-      </h2>
-    </header><div class="timeline">
-      {
-        timeline.map((item) => (
-          <article>
-            <>
-              <time>{item.period}</time>
-              <div>
-                <>
-                  <h3>{item.place}</h3>
-                  <Link
-                    href={item.website}
-                    external
-                    class="faculty-link"
-                    aria-label={`${item.role} official website`}
-                  >
-                    {item.role}<Icon name="lucide:arrow-up-right" />
-                  </Link>
-                  <small>{item.detail}</small>
-                </>
-              </div>
-            </>
-          </article>
-        ))
-      }
-    </div>
-  </section>
-
   <section class="project-archive">
     <header>
       <div>
@@ -147,7 +148,8 @@ const timeline = [
       <Link href="mailto:ZvHivTa@gmail.com"
         >ZvHivTa@gmail.com <Icon name="lucide:arrow-up-right" /></Link
       ><Link href="https://github.com/ZvHivTa" external
-        >GitHub / ZvHivTa <Icon name="lucide:arrow-up-right" /></Link>
+        >GitHub / ZvHivTa <Icon name="lucide:arrow-up-right" /></Link
+      >
     </div>
   </section>
 </Layout>
@@ -163,7 +165,7 @@ const timeline = [
     text-transform: uppercase;
   }
   .about-hero {
-    padding: clamp(4rem, 10vw, 9rem) 0;
+    padding: 3rem 0;
   }
   .about-title {
     display: grid;
@@ -173,10 +175,10 @@ const timeline = [
     margin-top: 1.5rem;
   }
   h1 {
-    font-size: clamp(3rem, 7vw, 6.8rem);
+    font-size: 3.5rem;
     font-weight: 500;
-    line-height: 0.94;
-    letter-spacing: -0.055em;
+    line-height: 1.1;
+    letter-spacing: 0;
   }
   h1 span {
     color: var(--muted-foreground);
@@ -204,7 +206,7 @@ const timeline = [
     grid-template-columns: repeat(2, 1fr);
     gap: 3rem;
     max-width: 50rem;
-    margin: clamp(3rem, 7vw, 6rem) 0 0 auto;
+    margin: 2rem 0 0;
     color: var(--muted-foreground);
     font-size: 1rem;
     line-height: 1.9;
@@ -214,16 +216,16 @@ const timeline = [
   .contact-line {
     display: grid;
     grid-template-columns: 0.75fr 1.25fr;
-    gap: clamp(3rem, 8vw, 8rem);
-    padding: clamp(5rem, 10vw, 9rem) 0;
+    gap: 3rem;
+    padding: 3rem 0;
     border-top: 1px solid var(--border);
   }
   h2 {
     margin-top: 0.8rem;
-    font-size: clamp(2.2rem, 4.5vw, 4.5rem);
+    font-size: 2rem;
     font-weight: 470;
     line-height: 1;
-    letter-spacing: -0.045em;
+    letter-spacing: 0;
   }
   .profile-grid li {
     display: grid;
@@ -248,7 +250,7 @@ const timeline = [
     max-width: 40rem;
     margin-top: 0.55rem;
     color: var(--muted-foreground);
-    font-size: 0.84rem;
+    font-size: 0.9375rem;
     line-height: 1.7;
   }
   .timeline article {
@@ -265,7 +267,7 @@ const timeline = [
   .timeline small {
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.8125rem;
   }
   .timeline h3 {
     font-size: 1.35rem;
@@ -292,7 +294,7 @@ const timeline = [
     text-transform: uppercase;
   }
   .project-archive {
-    padding: clamp(5rem, 10vw, 9rem) 0;
+    padding: 3rem 0;
     border-top: 1px solid var(--border);
   }
   .project-archive > header {
@@ -322,17 +324,17 @@ const timeline = [
   .project-row time {
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.8125rem;
   }
   .project-row h3 {
-    font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+    font-size: 1.5rem;
     font-weight: 520;
   }
   .project-row p {
     margin-top: 0.35rem;
     color: var(--muted-foreground);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
   }
   .project-row :global(svg) {
@@ -370,7 +372,28 @@ const timeline = [
       grid-template-columns: 1fr;
     }
     .profile-mark {
-      width: 7rem;
+      display: none;
+    }
+    .about-title h1 {
+      font-size: 2.5rem;
+    }
+    .timeline article {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+    }
+    .timeline small {
+      text-transform: none;
+      line-height: 1.6;
+    }
+    .faculty-link {
+      font-size: 0.9375rem;
+    }
+    .faculty-link :global(svg) {
+      flex-shrink: 0;
+    }
+    .journey,
+    .profile-grid {
+      gap: 1.5rem;
     }
     .about-lead {
       gap: 1.3rem;
