@@ -1,0 +1,244 @@
+---
+import PageHead from '@/components/PageHead.astro'
+import JournalSeriesNav from '@/components/JournalSeriesNav.astro'
+import JournalLayout from '@/layouts/JournalLayout.astro'
+import {
+  getJournalEntries,
+  getJournalEntry,
+  getJournalNavigation,
+  getJournalParentId,
+  getJournalSeries,
+  isJournalChapter,
+} from '@/lib/content/journal'
+import { formatDate } from '@/lib/utils'
+import { render } from 'astro:content'
+
+export async function getStaticPaths() {
+  const posts = await getJournalEntries()
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }))
+}
+const { post } = Astro.props
+const currentId = post.id
+const isChapter = isJournalChapter(currentId)
+const parentId = isChapter ? getJournalParentId(currentId) : currentId
+const [parent, chapters, navigation] = await Promise.all([
+  isChapter ? getJournalEntry(parentId) : Promise.resolve(post),
+  getJournalSeries(parentId),
+  getJournalNavigation(currentId),
+])
+const hasSeries = chapters.length > 0
+const { Content } = await render(post)
+---
+
+<JournalLayout>
+  <PageHead
+    slot="head"
+    title={post.data.title}
+    description={post.data.description}
+    image={post.data.cover?.src ?? parent?.data.cover?.src}
+    imageAlt={post.data.coverAlt || parent?.data.coverAlt}
+    noindex={post.data.example}
+  />
+  <section class:list={['journal-reading-grid', { 'with-series': hasSeries }]}>
+    {
+      hasSeries && (
+        <JournalSeriesNav parentId={parentId} currentId={currentId} />
+      )
+    }
+    <header class="journal-title">
+      <a href="/journal" class="back-link">← Journal</a>
+      {isChapter && parent && (
+        <a href={`/journal/${parent.id}`} class="series-parent">
+          / {parent.data.title}
+        </a>
+      )}
+      <div class="article-meta">
+        <time datetime={post.data.date.toISOString()}>
+          {formatDate(post.data.date)}
+        </time>
+        {isChapter && <span>Chapter {post.data.order}</span>}
+        {post.data.example && <span>Sample</span>}
+      </div>
+      <h1>{post.data.title}</h1>
+      <p>{post.data.description}</p>
+      {
+        post.data.tags.length > 0 && (
+          <div class="journal-tags">
+            {post.data.tags.map((tag) => (
+              <span>#{tag}</span>
+            ))}
+          </div>
+        )
+      }
+      {
+        post.data.example && (
+          <aside>
+            This is a layout and writing sample. The text and original
+            illustrations are fictional, so you can replace them directly with
+            your own story and photographs.
+          </aside>
+        )
+      }
+    </header>
+    <article class="prose journal-body"><Content /></article>
+    <nav class="journal-pagination" aria-label="Journal navigation">
+      <div>
+        {
+          navigation.previous && (
+            <a href={`/journal/${navigation.previous.id}`}>
+              <small>← {isChapter ? 'Previous chapter' : 'Older entry'}</small>
+              {navigation.previous.data.title}
+            </a>
+          )
+        }
+      </div>
+      <div class="parent-link">
+        {isChapter && navigation.parent && (
+          <a href={`/journal/${navigation.parent.id}`}>
+            <small>Series overview</small>
+            {navigation.parent.data.title}
+          </a>
+        )}
+      </div>
+      <div>
+        {
+          navigation.next && (
+            <a href={`/journal/${navigation.next.id}`}>
+              <small>{isChapter ? 'Next chapter' : 'Newer entry'} →</small>
+              {navigation.next.data.title}
+            </a>
+          )
+        }
+      </div>
+    </nav>
+  </section>
+</JournalLayout>
+<style>
+  .journal-reading-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 68rem);
+    justify-content: center;
+    width: 100%;
+  }
+  .journal-reading-grid.with-series {
+    grid-template-columns: minmax(11rem, 14rem) minmax(0, 68rem);
+  }
+  .journal-title {
+    grid-column: -2;
+    grid-row: 1;
+    width: 100%;
+    max-width: 43rem;
+    margin: 0 auto 1rem;
+  }
+  .back-link {
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .series-parent {
+    margin-left: 0.35rem;
+    color: var(--muted-foreground);
+    font-size: 0.8rem;
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+  h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 500;
+    line-height: 1.3;
+    margin-top: 1rem;
+  }
+  .journal-title > p {
+    color: var(--muted-foreground);
+    line-height: 1.9;
+    margin-top: 1rem;
+  }
+  .journal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  aside {
+    padding: 1rem;
+    border-left: 2px solid var(--accent);
+    background: var(--muted);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+    margin-top: 1.5rem;
+    color: var(--muted-foreground);
+  }
+  .journal-pagination {
+    display: grid;
+    grid-column: -2;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    width: 100%;
+    max-width: 43rem;
+    margin: 2rem auto 0;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .journal-pagination .parent-link {
+    text-align: center;
+  }
+  .journal-pagination div:last-child {
+    text-align: right;
+  }
+  .journal-pagination a {
+    display: block;
+    font-size: 0.9375rem;
+  }
+  .journal-pagination small {
+    display: block;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+  }
+  :global(.journal-reading-grid > .journal-body) {
+    grid-column: -2;
+    grid-row: 2;
+  }
+  @media (max-width: 960px) {
+    .journal-reading-grid,
+    .journal-reading-grid.with-series {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .journal-title {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .with-series .journal-title {
+      grid-row: 2;
+    }
+    :global(.journal-reading-grid > .journal-body) {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    :global(.journal-reading-grid.with-series > .journal-body) {
+      grid-row: 3;
+    }
+    .journal-pagination {
+      grid-column: 1;
+    }
+  }
+  @media (max-width: 620px) {
+    .journal-pagination {
+      grid-template-columns: 1fr;
+    }
+    .journal-pagination .parent-link,
+    .journal-pagination div:last-child {
+      text-align: left;
+    }
+  }
+</style>

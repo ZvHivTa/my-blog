@@ -1,0 +1,37 @@
+---
+import Layout from './Layout.astro'
+---
+
+<Layout class="journal-shell max-w-6xl">
+  <slot name="head" slot="head" />
+  <slot />
+</Layout>
+<style>
+  :global(.journal-shell) {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  :global(.journal-body) {
+    max-width: none;
+    width: 100%;
+    display: flow-root;
+  }
+  :global(.journal-body > *) {
+    max-width: 43rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  :global(.journal-body > .figure-wide) {
+    max-width: 68rem;
+  }
+  :global(.journal-body > .figure-small) {
+    max-width: 27.5rem;
+  }
+  :global(.journal-body > ul),
+  :global(.journal-body > ol) {
+    padding-left: 1.5rem;
+  }
+  :global(.journal-body > :is(h2, h3)) {
+    margin-top: 2.5rem;
+  }
+</style>

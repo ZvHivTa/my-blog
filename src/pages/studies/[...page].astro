@@ -8,7 +8,7 @@ import {
   getAllPosts,
   getSubpostCount,
   groupPostsByYear,
-} from '@/lib/data-utils'
+} from '@/lib/content/studies'
 import { formatDate } from '@/lib/utils'
 import type { PaginateFunction } from 'astro'
 import { Icon } from 'astro-icon/components'
@@ -31,7 +31,7 @@ export async function getStaticPaths({
   }
   return pages
 }
-if ('legacyRedirect' in Astro.props) return Astro.redirect('/blog')
+if ('legacyRedirect' in Astro.props) return Astro.redirect('/studies')
 const { page } = Astro.props
 const postsByYear = groupPostsByYear(page.data)
 const counts = Object.fromEntries(
@@ -45,18 +45,37 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
 <Layout class="writing-shell max-w-6xl">
   <PageHead
     slot="head"
-    title="Writing"
-    description="Research notes, technical studies and observations by ZHT."
+    title="Study & Research"
+    description="Research, technical studies and evolving collections of notes."
   />
   <section class="writing-head">
-    <p>Writing / Archive</p><h1>
-      Writing<span> / Notes &amp; collections</span>
+    <p>Study &amp; Research / Archive</p><h1>
+      Study &amp; Research<span> / Notes &amp; collections</span>
     </h1><div>
       <p>
-        本地写作，持续修订。这里收录研究过程、技术学习和日常观察，也保留尚未成为完整结论的想法。
-      </p><span>{page.total} collections{page.lastPage > 1 ? ` · Page ${page.currentPage}` : ''}</span>
+        Begin with a question, then follow it through chapters. This archive
+        brings together research reports, technical studies and notes that
+        continue to evolve.
+      </p><span
+        >{page.total} collections{
+          page.lastPage > 1 ? ` · Page ${page.currentPage}` : ''
+        }</span
+      >
     </div>
   </section>
+  <nav class="study-filters" aria-label="Filter study and research">
+    <button type="button" data-kind-filter="all" aria-pressed="true"
+      >All</button
+    >
+    <button type="button" data-kind-filter="research" aria-pressed="false"
+      >Research</button
+    >
+    <button type="button" data-kind-filter="learning" aria-pressed="false"
+      >Study</button
+    >
+    <a href="/journal">Visit the journal →</a>
+    <a href="/studies/rss.xml">Studies RSS ↗</a>
+  </nav>
   <div class="archive">
     {
       years.map((year) => (
@@ -65,19 +84,23 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
             <time>{year}</time>
             <div>
               {postsByYear[year].map((post, index) => (
-                <article>
-                  <Link href={`/blog/${post.id}`}>
+                <article data-study-kind={post.data.kind}>
+                  <Link href={`/studies/${post.id}`}>
                     <span class="row-number">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <div>
                       <p class="post-meta">
+                        {post.data.kind === 'research' ? 'Research' : 'Study'} ·{' '}
                         {formatDate(post.data.date)} ·{' '}
                         {post.data.tags?.slice(0, 2).join(' / ') || 'Notes'}
                       </p>
                       <h2>{post.data.title}</h2>
                       {counts[post.id] > 0 && (
-                        <p class="chapter-count">{counts[post.id]} {counts[post.id] === 1 ? 'chapter' : 'chapters'}</p>
+                        <p class="chapter-count">
+                          {counts[post.id]}{' '}
+                          {counts[post.id] === 1 ? 'chapter' : 'chapters'}
+                        </p>
                       )}
                       <p class="description">
                         {post.data.description ||
@@ -100,7 +123,7 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
         <PaginationComponent
           currentPage={page.currentPage}
           totalPages={page.lastPage}
-          baseUrl="/blog/"
+          baseUrl="/studies/"
           client:load
         />
       </div>
@@ -108,7 +131,59 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a))
   }
 </Layout>
 
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const filters =
+      document.querySelectorAll<HTMLButtonElement>('[data-kind-filter]')
+    filters.forEach((button) =>
+      button.addEventListener('click', () => {
+        const kind = button.dataset.kindFilter
+        filters.forEach((filter) =>
+          filter.setAttribute('aria-pressed', String(filter === button)),
+        )
+        document
+          .querySelectorAll<HTMLElement>('[data-study-kind]')
+          .forEach((post) => {
+            post.hidden = kind !== 'all' && post.dataset.studyKind !== kind
+          })
+        document
+          .querySelectorAll<HTMLElement>('.year-group')
+          .forEach((group) => {
+            group.hidden = !group.querySelector(
+              '[data-study-kind]:not([hidden])',
+            )
+          })
+      }),
+    )
+  })
+</script>
+
 <style>
+  [hidden] {
+    display: none !important;
+  }
+  .study-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .study-filters button {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+  .study-filters button[aria-pressed='true'] {
+    background: var(--foreground);
+    color: var(--background);
+  }
+  .study-filters a {
+    margin-left: auto;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
   :global(.writing-shell) {
     gap: 0;
   }

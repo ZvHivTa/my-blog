@@ -42,7 +42,7 @@
       @apply mt-0;
     }
 
-    /* Don't use an <h1> in your posts, one is already generated in blog/[...id].astro */
+    /* The reading layout already renders an h1 for the article title. */
     :where(h1):not(:where(.not-prose, .not-prose *)) {
       @apply mt-8 mb-6 text-4xl;
     }
@@ -127,6 +127,12 @@
         :where(.not-prose, .not-prose *)
       ) {
       @apply mx-auto my-6;
+    }
+
+    :where(img):not(:where(.not-prose, .not-prose *)) {
+      max-width: 100%;
+      height: auto;
+      display: block;
     }
 
     :where(pre):not(:where(.not-prose, .not-prose *)) {

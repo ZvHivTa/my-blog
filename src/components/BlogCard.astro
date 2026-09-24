@@ -7,7 +7,7 @@ import {
   getSubpostCount,
   isSubpost,
   parseAuthors,
-} from '@/lib/data-utils'
+} from '@/lib/content/studies'
 import { formatDate } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
@@ -15,7 +15,7 @@ import type { CollectionEntry } from 'astro:content'
 import Link from './Link.astro'
 
 interface Props {
-  entry: CollectionEntry<'blog'>
+  entry: CollectionEntry<'studies'>
 }
 
 const { entry } = Astro.props

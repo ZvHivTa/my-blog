@@ -1,0 +1,23 @@
+---
+title: '回程：远景、结构与细节'
+description: '用三张照片给一场散步收尾；三图裁切组图的章节示例。'
+date: 2026-09-23
+order: 3
+tags: ['散步', '组图示例']
+example: true
+---
+
+import Gallery from '@/components/content/Gallery.astro'
+import river from './images/river.svg'
+import bridge from './images/bridge.svg'
+import leaves from './images/leaves.svg'
+
+风景不一定需要很壮观。有时候，一张远景、一处结构和一个细节，就足以记住当时的感觉。
+
+<Gallery columns={3} crop={true} images={[
+  { src: river, alt: '河岸全景', caption: '01 / 远景' },
+  { src: bridge, alt: '河上的小桥', caption: '02 / 结构' },
+  { src: leaves, alt: '枝头的树叶', caption: '03 / 细节' },
+]} caption="三图示例：统一使用 4:3 预览比例。点击图片可看完整画面，手机端会自动改为单列。" />
+
+回程比去程短一些，可能是因为不再想着还要走多远。

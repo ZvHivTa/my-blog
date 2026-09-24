@@ -1,0 +1,168 @@
+---
+import { getJournalEntry, getJournalSeries } from '@/lib/content/journal'
+
+interface Props {
+  parentId: string
+  currentId: string
+}
+
+const { parentId, currentId } = Astro.props
+const [parent, chapters] = await Promise.all([
+  getJournalEntry(parentId),
+  getJournalSeries(parentId),
+])
+const entries = parent ? [parent, ...chapters] : chapters
+const current = entries.find((entry) => entry.id === currentId)
+---
+
+<aside class="journal-series-sidebar" aria-label="Journal series">
+  <p>In this series</p>
+  <ol>
+    {
+      entries.map((entry, index) => (
+        <li>
+          <a
+            href={`/journal/${entry.id}`}
+            aria-current={entry.id === currentId ? 'page' : undefined}
+          >
+            <span>{String(index).padStart(2, '0')}</span>
+            <div>
+              <small>{index === 0 ? 'Overview' : `Chapter ${index}`}</small>
+              {entry.data.title}
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</aside>
+
+<details class="journal-series-mobile">
+  <summary>
+    <span>Series</span>
+    <strong>{current?.data.title ?? parent?.data.title}</strong>
+    <i aria-hidden="true">⌄</i>
+  </summary>
+  <ol>
+    {
+      entries.map((entry, index) => (
+        <li>
+          <a
+            href={`/journal/${entry.id}`}
+            aria-current={entry.id === currentId ? 'page' : undefined}
+          >
+            <span>{index === 0 ? 'Overview' : `Chapter ${index}`}</span>
+            {entry.data.title}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</details>
+
+<style>
+  .journal-series-sidebar {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+    grid-column: 1;
+    grid-row: 2;
+    max-height: calc(100dvh - 8rem);
+    margin-right: 2rem;
+    overflow-y: auto;
+  }
+  .journal-series-sidebar > p {
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--foreground);
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+  ol { list-style: none; }
+  .journal-series-sidebar li { border-bottom: 1px solid var(--border); }
+  .journal-series-sidebar a {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 0.6rem;
+    padding: 0.9rem 0;
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  .journal-series-sidebar a:hover,
+  .journal-series-sidebar a[aria-current='page'] { color: var(--foreground); }
+  .journal-series-sidebar a[aria-current='page'] { font-weight: 600; }
+  .journal-series-sidebar a > span,
+  .journal-series-sidebar small {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+  }
+  .journal-series-sidebar small {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+  }
+  .journal-series-mobile { display: none; }
+  @media (max-width: 960px) {
+    .journal-series-sidebar { display: none; }
+    .journal-series-mobile {
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
+      margin-bottom: 1rem;
+      border-top: 1px solid var(--foreground);
+      border-bottom: 1px solid var(--border);
+    }
+    .journal-series-mobile summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      min-height: 3rem;
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.8rem;
+    }
+    .journal-series-mobile summary::-webkit-details-marker { display: none; }
+    .journal-series-mobile summary > span {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+    }
+    .journal-series-mobile summary strong {
+      overflow: hidden;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .journal-series-mobile summary i {
+      font-size: 1rem;
+      font-style: normal;
+      transition: transform 0.2s;
+    }
+    .journal-series-mobile[open] summary i { transform: rotate(180deg); }
+    .journal-series-mobile ol { padding-bottom: 0.75rem; }
+    .journal-series-mobile a {
+      display: block;
+      padding: 0.7rem 0;
+      color: var(--muted-foreground);
+      font-size: 0.82rem;
+    }
+    .journal-series-mobile a[aria-current='page'] {
+      color: var(--foreground);
+      font-weight: 600;
+    }
+    .journal-series-mobile a span {
+      display: block;
+      margin-bottom: 0.2rem;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+    }
+  }
+</style>

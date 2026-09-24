@@ -20,7 +20,8 @@ const path = Astro.url.pathname
             <Link
               href={item.href}
               aria-current={
-                (item.href === '/blog' && path.startsWith('/blog')) ||
+                (item.href === '/studies' && path.startsWith('/studies')) ||
+                (item.href === '/journal' && path.startsWith('/journal')) ||
                 (item.href === '/about' && path.startsWith('/about'))
                   ? 'page'
                   : undefined
@@ -114,6 +115,9 @@ const path = Astro.url.pathname
     font-size: 0.55rem;
   }
   @media (max-width: 560px) {
+    .identity-copy {
+      display: none;
+    }
     .identity-copy small,
     nav span {
       display: none;

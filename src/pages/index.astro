@@ -1,8 +1,10 @@
 ---
+import JournalCard from '@/components/JournalCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getAllPosts, getAllProjects } from '@/lib/data-utils'
+import { getJournalPosts } from '@/lib/content/journal'
+import { getAllPosts, getAllProjects } from '@/lib/content/studies'
 import { formatDate } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
@@ -11,11 +13,8 @@ const [allPosts, projects] = await Promise.all([
   getAllPosts(),
   getAllProjects(),
 ])
-const featuredPostIds = ['l-star-algorithm', 'java-gold', 'exercise-c']
-const posts = featuredPostIds.flatMap((id) => {
-  const post = allPosts.find((entry) => entry.id === id)
-  return post ? [post] : []
-})
+const posts = allPosts.filter((post) => post.data.featured).slice(0, 3)
+const journalPosts = (await getJournalPosts()).slice(0, 3)
 const featuredProjects = projects.filter((project) =>
   ['/dota2/match-analyzer', '/fm24-assistant/board'].includes(
     project.data.link,
@@ -61,7 +60,7 @@ const focusAreas = [
         <Link href="#selected-work" class="primary-link"
           >查看正在做的事 <Icon name="lucide:arrow-down-right" /></Link
         >
-        <Link href="/blog" class="text-link"
+        <Link href="/studies" class="text-link"
           >阅读笔记 <Icon name="lucide:arrow-up-right" /></Link
         >
       </div>
@@ -95,21 +94,22 @@ const focusAreas = [
 
   <section class="notes-section" aria-labelledby="notes-title">
     <header class="notes-intro">
-      <p class="section-kicker">Field notes</p><h2 id="notes-title">
-        Research &amp; writing.
+      <p class="section-kicker">Study &amp; Research</p><h2 id="notes-title">
+        Study &amp; research.
       </h2>
       <p>
-        研究报告、技术学习和在日本生活中的观察。写作不是项目之外的附属品，而是思考过程的一部分。
+        Research reports, technical studies and evolving collections that bring
+        questions, proofs, experiments and understanding together.
       </p>
-      <Link href="/blog" class="project-link"
-        >All writing <Icon name="lucide:arrow-right" /></Link
+      <Link href="/studies" class="project-link"
+        >All study &amp; research <Icon name="lucide:arrow-right" /></Link
       >
     </header>
     <div class="notes-list">
       {
         posts.map((post, index) => (
           <article class="note-item">
-            <Link href={`/blog/${post.id}`}>
+            <Link href={`/studies/${post.id}`}>
               <span class="note-index">0{index + 1}</span>
               <div class="note-copy">
                 <>
@@ -241,6 +241,37 @@ const focusAreas = [
     </div>
   </section>
 
+  {
+    journalPosts.length > 0 && (
+      <section class="section-block" aria-labelledby="journal-title">
+        <header class="section-heading">
+          <div>
+            <>
+              <p class="section-kicker">Journal / Off the clock</p>
+              <h2 id="journal-title">Life, slowly observed.</h2>
+            </>
+          </div>
+          <div>
+            <>
+              <p>
+                Places visited, ordinary days, and small moments worth keeping
+                beyond research and work.
+              </p>
+              <Link href="/journal" class="project-link">
+                All journal entries <Icon name="lucide:arrow-right" />
+              </Link>
+            </>
+          </div>
+        </header>
+        <div class="home-journal-grid">
+          {journalPosts.map((post) => (
+            <JournalCard post={post} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
   <section class="closing-line">
     <p>Research in public. Build for real use. Keep the notes.</p><Link
       href="/about">More about ZHT <Icon name="lucide:arrow-up-right" /></Link
@@ -249,6 +280,18 @@ const focusAreas = [
 </Layout>
 
 <style>
+  .home-journal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  @media (max-width: 700px) {
+    .home-journal-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
   :global(.home-shell) {
     padding-top: 2rem;
     padding-bottom: 2rem;

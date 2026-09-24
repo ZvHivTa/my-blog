@@ -1,12 +1,12 @@
 name: Sync Blog Changes to AI Brain
 
-# 触发条件：只有当 push 到 main 分支，且 src/content/blog 下的 mdx 文件发生变化时才触发
+# 学习与研究继续同步到科研助手；日常文章独立管理，不自动进入科研知识库。
 on:
   push:
     branches:
       - main
     paths:
-      - 'src/content/blog/**/*.mdx'
+      - 'src/content/studies/**/*.mdx'
 
 jobs:
   sync-posts:
@@ -23,7 +23,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v44
         with:
-          files: src/content/blog/**/*.mdx
+          files: src/content/studies/**/*.mdx
 
       # 3. 遍历变化的文件，逐个上传给后端
       - name: Upload to Spring Boot Backend
@@ -36,6 +36,7 @@ jobs:
           
           # 遍历所有修改或新增的文件
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            [ -f "$file" ] || continue
             echo "正在同步文件: $file"
             
             # 使用 curl 发送 POST 请求

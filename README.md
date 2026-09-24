@@ -1,3 +1,13 @@
+# ZHT / Fieldwork
+
+当前网站分为学习与研究（`src/content/studies` → `/studies`）和日常（`src/content/journal` → `/journal`）。
+
+写文章、插入单图/组图、添加图注，请先看 **[当前写作指南](docs/writing.md)**。日常目录包含三篇可复制的示例文章。
+
+运行 `npm run dev` 本地预览，`npm run build` 检查并构建。旧 `/blog` 地址保留跳转。以下是上游模板的历史说明，涉及旧内容目录的内容以当前写作指南为准。
+
+---
+
 ![Showcase Card](/public/static/twitter-card.png)
 
 <div align="center">

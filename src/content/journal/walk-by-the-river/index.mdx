@@ -1,0 +1,26 @@
+---
+title: '沿着河边，多走了一站'
+description: '把一次散步拆成几个画面。双图、三图、逐张图注与整组说明的示例。'
+date: 2026-09-23
+cover: ./images/river.svg
+coverAlt: 河流、步道和小桥的示意插画
+tags: ['散步', '组图示例']
+example: true
+---
+
+import Figure from '@/components/content/Figure.astro'
+import river from './images/river.svg'
+
+原本只想走到桥边，后来又往前走了一站。
+
+这篇日常被拆成了一个小系列：从出发、走到桥边，到回程时才注意到的树叶。点开左侧的 **In this series**，可以在三个章节之间切换。
+
+<Figure src={river} alt="浅绿色河流绕过草地，小桥连接两岸" caption="散步的起点。本系列配图均为原创示意插画。" width="wide" />
+
+## 这个系列里有什么
+
+- **Chapter 1 · 出发**：为什么临时多走了一站。
+- **Chapter 2 · 桥与水面**：用两张图记录同一段路的两个方向。
+- **Chapter 3 · 回程**：用三张组图收尾。
+
+这个 Overview 作为主题入口，不必塞进所有内容。新的章节只需放在同一文件夹下，再填写 `order`。

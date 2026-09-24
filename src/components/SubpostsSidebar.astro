@@ -9,7 +9,7 @@ import {
   getPostReadingTime,
   getSubpostsForParent,
   isSubpost,
-} from '@/lib/data-utils'
+} from '@/lib/content/studies'
 import { Icon } from 'astro-icon/components'
 
 const { parentId } = Astro.props
@@ -84,7 +84,7 @@ const subpostsWithReadingTime = await Promise.all(
                 </div>
               ) : (
                 <Link
-                  href={`/blog/${activePost.id}#post-title`}
+                  href={`/studies/${activePost.id}#post-title`}
                   class="hover:text-foreground text-muted-foreground hover:bg-muted/50 subposts-sidebar-link flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-pretty transition-colors"
                 >
                   <Icon
@@ -138,7 +138,7 @@ const subpostsWithReadingTime = await Promise.all(
                   </div>
                 ) : (
                   <Link
-                    href={`/blog/${subpost.id}`}
+                    href={`/studies/${subpost.id}`}
                     class="hover:text-foreground text-muted-foreground hover:bg-muted/50 subposts-sidebar-link flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-pretty transition-colors"
                   >
                     <Icon

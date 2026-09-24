@@ -1,0 +1,91 @@
+---
+import { formatDate } from '@/lib/utils'
+import { getJournalSeriesCount } from '@/lib/content/journal'
+import { Image } from 'astro:assets'
+import type { CollectionEntry } from 'astro:content'
+interface Props {
+  post: CollectionEntry<'journal'>
+}
+const { post } = Astro.props
+const seriesCount = await getJournalSeriesCount(post.id)
+---
+
+<article class="journal-card">
+  <a href={`/journal/${post.id}`}>
+    {
+      post.data.cover && (
+        <Image
+          src={post.data.cover}
+          alt={post.data.coverAlt}
+          width={720}
+          widths={[360, 720]}
+          sizes="(max-width: 700px) 92vw, 360px"
+          loading="lazy"
+        />
+      )
+    }
+    <div class="card-meta">
+      <time datetime={post.data.date.toISOString()}
+        >{formatDate(post.data.date)}</time
+      >{seriesCount > 0 && <span>{seriesCount} chapters</span>}{
+        post.data.example && <span>Sample</span>
+      }
+    </div>
+    <h3>{post.data.title}</h3>
+    <p>{post.data.description}</p>
+    <span class="read-more">Read entry ↗</span>
+  </a>
+</article>
+<style>
+  a {
+    display: block;
+    height: 100%;
+  }
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 6px;
+  }
+  a :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3/2;
+    object-fit: cover;
+    background: var(--muted);
+  }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-top: 1.2rem;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--muted-foreground);
+  }
+  .card-meta span {
+    color: var(--accent);
+  }
+  h3 {
+    margin-top: 0.65rem;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    font-weight: 520;
+  }
+  p {
+    margin-top: 0.65rem;
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+  }
+  .read-more {
+    display: inline-block;
+    margin-top: 1.1rem;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.2rem;
+  }
+  a:hover .read-more {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

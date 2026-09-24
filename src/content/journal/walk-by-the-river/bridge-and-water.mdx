@@ -1,0 +1,21 @@
+---
+title: '桥与水面：同一段路的两个方向'
+description: '向前看桥，回头看树叶；双图组图的章节示例。'
+date: 2026-09-23
+order: 2
+tags: ['散步', '组图示例']
+example: true
+---
+
+import Gallery from '@/components/content/Gallery.astro'
+import bridge from './images/bridge.svg'
+import leaves from './images/leaves.svg'
+
+同一段路，往前看和回头看是两种风景。桥下的水面很安静，岸边的叶子却一直在动。
+
+<Gallery images={[
+  { src: bridge, alt: '跨越河流的拱桥与水面', caption: '向前：桥和水面的几条平行线。' },
+  { src: leaves, alt: '枝条上的绿色与褐色树叶', caption: '回头：开始换颜色的叶子。' },
+]} caption="双图示例：每张图有自己的说明，整组也可以再写一句。默认保留原图比例。" />
+
+照片并不需要把整条路线交代清楚。两个方向，已经足够留下这一小段路的感觉。

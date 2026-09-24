@@ -1,0 +1,13 @@
+---
+import StudyLayout from '@/layouts/StudyLayout.astro'
+import { getAllPostsAndSubposts } from '@/lib/content/studies'
+export async function getStaticPaths() {
+  return (await getAllPostsAndSubposts()).map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }))
+}
+const { post } = Astro.props
+---
+
+<StudyLayout post={post} />

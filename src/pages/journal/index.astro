@@ -1,0 +1,87 @@
+---
+import JournalCard from '@/components/JournalCard.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getJournalPosts } from '@/lib/content/journal'
+const posts = await getJournalPosts()
+---
+
+<Layout class="journal-index max-w-6xl">
+  <PageHead
+    slot="head"
+    title="Journal"
+    description="Places visited, ordinary days and small moments worth keeping."
+  />
+  <header class="journal-heading">
+    <p class="eyebrow">Journal / Off the clock</p>
+    <h1>Journal<span>Leave a little room for ordinary life.</span></h1>
+    <p class="intro">
+      No conclusions required. A place for walks, changing light and ordinary
+      days, recorded at their own pace.
+    </p>
+    <div class="index-links">
+      <a href="/studies">Study &amp; Research ↗</a><a href="/journal/rss.xml"
+        >Journal RSS ↗</a>
+    </div>
+  </header>
+  <section class="journal-grid" aria-label="Journal entries">
+    {posts.map((post) => <JournalCard post={post} />)}
+    {!posts.length && <p>The first journal entry is still on its way.</p>}
+  </section>
+</Layout>
+<style>
+  :global(.journal-index) {
+    padding-top: 3rem;
+  }
+  .journal-heading {
+    max-width: 48rem;
+    padding-bottom: 2rem;
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin-top: 1.4rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.2;
+    font-weight: 500;
+  }
+  h1 span {
+    display: block;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    color: var(--muted-foreground);
+    margin-top: 0.75rem;
+    font-weight: 380;
+  }
+  .intro {
+    margin-top: 1.5rem;
+    color: var(--muted-foreground);
+    line-height: 1.9;
+  }
+  .index-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+  }
+  .journal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem 2rem;
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+  }
+  @media (max-width: 900px) {
+    .journal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 600px) {
+    .journal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
